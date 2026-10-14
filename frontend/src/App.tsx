@@ -5,6 +5,7 @@ import { LoadingState } from '@/components/states'
 import { AuthPage } from '@/pages/AuthPage'
 import { BudgetPage } from '@/pages/BudgetPage'
 import { OverviewPage } from '@/pages/OverviewPage'
+import { ReportsPage } from '@/pages/ReportsPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { TransactionsPage } from '@/pages/TransactionsPage'
 
@@ -20,6 +21,7 @@ function App() {
         <Route index element={<OverviewPage />} />
         <Route path="transactions" element={<TransactionsPage />} />
         <Route path="budget" element={<BudgetPage />} />
+        <Route path="reports" element={<ReportsPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

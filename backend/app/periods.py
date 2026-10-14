@@ -47,4 +47,5 @@ def parse_month(value: str) -> Month:
     return month
 
 
-MonthParam = Annotated[str, Query(pattern=r"^\d{4}-\d{2}$", examples=["2026-10"])]
+MONTH_PATTERN = r"^\d{4}-\d{2}$"
+MonthParam = Annotated[str, Query(pattern=MONTH_PATTERN, examples=["2026-10"])]

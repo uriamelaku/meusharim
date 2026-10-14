@@ -1,4 +1,12 @@
-import { ArrowLeftRight, LayoutDashboard, LogOut, Plus, Settings, Wallet } from 'lucide-react'
+import {
+  ArrowLeftRight,
+  BarChart3,
+  LayoutDashboard,
+  LogOut,
+  Plus,
+  Settings,
+  Wallet,
+} from 'lucide-react'
 import { NavLink, Outlet } from 'react-router'
 import { signOut } from '@/auth/signOut'
 import { useCurrentUser } from '@/auth/useCurrentUser'
@@ -18,6 +26,7 @@ const NAV_ITEMS = [
   { to: '/', label: 'סקירה', icon: LayoutDashboard },
   { to: '/transactions', label: 'תנועות', icon: ArrowLeftRight },
   { to: '/budget', label: 'תקציב', icon: Wallet },
+  { to: '/reports', label: 'דוחות', icon: BarChart3 },
   { to: '/settings', label: 'הגדרות', icon: Settings },
 ]
 
@@ -143,7 +152,7 @@ function MobileTabBar() {
       aria-label="ניווט ראשי"
       className="fixed inset-x-0 bottom-0 z-30 border-t bg-card/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden"
     >
-      <ul className="grid grid-cols-4">
+      <ul className="grid grid-cols-5">
         {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
           <li key={to}>
             <NavLink
