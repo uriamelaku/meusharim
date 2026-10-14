@@ -63,13 +63,21 @@ Follow this file as the project source of truth; propose edits when decisions ch
 - Keep every change runnable and testable locally through Docker.
 
 **Code quality**
-- Clean, readable, maintainable code following Python/FastAPI and React/TypeScript best practices. Reuse existing components and functions.
-- No overengineering: no unnecessary abstractions, microservices, Redis, AWS, or speculative features.
-- Do not add frameworks, services or dependencies without a clear reason. Ask before major architectural changes.
+- Treat this as a real product maintained over time, but avoid overengineering.
+- Clean, readable, maintainable code following Python/FastAPI and React/TypeScript best practices. Prefer the simplest solution that works (KISS).
+- No duplication (DRY): reuse existing components and functions. No speculative features or abstractions (YAGNI): no unnecessary layers, files, microservices, Redis or AWS.
+- Clear, descriptive names for variables, functions and classes.
+- Small functions with a single clear responsibility, without excessive splitting.
+- Keep business logic, database access and UI separate.
+- Comment only where the code is not self-explanatory. Handle errors explicitly; never swallow them silently.
+- Do not rewrite working code or optimize without a concrete need.
+- Do not add frameworks, libraries, services or dependencies without a clear reason. Ask before major architectural changes.
+- If you spot a problem or a better approach, present it with a recommendation instead of silently changing course.
 
 **Testing**
 - Run relevant tests and lint checks after changes, and fix errors before considering a task complete.
 - Never claim tests passed unless they were actually executed.
+- Write tests for important logic, especially financial calculations and security/authorization.
 
 **Security**
 - Never expose or commit API keys, passwords, secrets or `.env` files with real values.
