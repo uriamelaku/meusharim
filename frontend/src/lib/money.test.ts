@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { amountToInput, formatFlow, formatMoney, parseAmountInput } from './money'
+import {
+  amountToInput,
+  formatFlow,
+  formatMoney,
+  parseAmountInput,
+  previewInstallments,
+} from './money'
 
 describe('parseAmountInput', () => {
   it.each([
@@ -57,5 +63,22 @@ describe('formatFlow', () => {
   it('signs income and expense', () => {
     expect(formatFlow('80.00', 'income')).toMatch(/\+.*80/)
     expect(formatFlow('350.40', 'expense')).toMatch(/-.*350\.40/)
+  })
+})
+
+describe('previewInstallments', () => {
+  it.each([
+    ['100.00', 3, '33.34', '33.33'],
+    ['1000.00', 12, '83.37', '83.33'],
+    ['0.05', 3, '0.03', '0.01'],
+    ['1200.00', 12, '100.00', '100.00'],
+    ['9999999999.99', 360, '27777780.56', '27777777.77'],
+  ])('%s in %i payments', (total, count, first, rest) => {
+    expect(previewInstallments(total, count)).toEqual({ first, rest })
+  })
+
+  it('rejects splits below one agora per payment', () => {
+    expect(previewInstallments('0.05', 6)).toBeNull()
+    expect(previewInstallments('100.00', 1)).toBeNull()
   })
 })

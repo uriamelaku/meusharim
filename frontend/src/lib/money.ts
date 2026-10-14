@@ -67,3 +67,29 @@ export function parseAmountInput(input: string): string | null {
 export function amountToInput(amount: string): string {
   return amount.replace(/\.?0+$/, '')
 }
+
+function toAgorot(amount: string): bigint {
+  const [whole, fraction = ''] = amount.split('.')
+  return BigInt(whole) * 100n + BigInt(fraction.padEnd(2, '0').slice(0, 2))
+}
+
+function fromAgorot(agorot: bigint): string {
+  return `${agorot / 100n}.${String(agorot % 100n).padStart(2, '0')}`
+}
+
+/**
+ * Preview of an installment split, in exact integer agorot (the same rule as the
+ * server: equal payments, leftover agorot on the first). The server's split is the
+ * one that is stored.
+ */
+export function previewInstallments(
+  total: string,
+  count: number,
+): { first: string; rest: string } | null {
+  if (!Number.isInteger(count) || count < 2) return null
+  const agorot = toAgorot(total)
+  const base = agorot / BigInt(count)
+  if (base === 0n) return null
+  const remainder = agorot - base * BigInt(count)
+  return { first: fromAgorot(base + remainder), rest: fromAgorot(base) }
+}

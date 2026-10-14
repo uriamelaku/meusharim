@@ -10,6 +10,7 @@ from app.errors import InvalidError, NotFoundError
 from app.scope import HouseholdScope
 from app.transactions.schemas import (
     CategoryRef,
+    ScheduleRef,
     SortOrder,
     Transaction,
     TransactionCreate,
@@ -21,9 +22,11 @@ SELECT_TRANSACTION = """
 SELECT t.id, t.kind, t.amount, t.occurred_on, t.description, t.status, t.party_user_id,
        t.created_by, t.created_at, t.updated_at,
        c.id AS category_id, c.name AS category_name, c.color AS category_color,
-       c.icon AS category_icon, c.archived_at IS NOT NULL AS category_archived
+       c.icon AS category_icon, c.archived_at IS NOT NULL AS category_archived,
+       t.schedule_id, t.sequence_no, s.type AS schedule_type, s.installments_count
 FROM transactions t
 JOIN categories c ON c.id = t.category_id
+LEFT JOIN schedules s ON s.id = t.schedule_id
 """
 
 ORDER_BY: dict[SortOrder, str] = {
@@ -53,6 +56,16 @@ def to_transaction(row: Row) -> Transaction:
         created_by=row.created_by,
         created_at=row.created_at,
         updated_at=row.updated_at,
+        schedule=(
+            ScheduleRef(
+                id=row.schedule_id,
+                type=row.schedule_type,
+                sequence_no=row.sequence_no,
+                installments_count=row.installments_count,
+            )
+            if row.schedule_id
+            else None
+        ),
     )
 
 

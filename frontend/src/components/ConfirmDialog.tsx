@@ -16,6 +16,7 @@ type ConfirmDialogProps = {
   title: string
   description: string
   confirmLabel: string
+  cancelLabel?: string
   onConfirm: () => void
   pending?: boolean
 }
@@ -27,6 +28,7 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel,
+  cancelLabel = 'ביטול',
   onConfirm,
   pending = false,
 }: ConfirmDialogProps) {
@@ -38,7 +40,7 @@ export function ConfirmDialog({
           <AlertDialogDescription className="leading-relaxed">{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="-mx-5 -mb-5 rounded-b-2xl">
-          <AlertDialogCancel disabled={pending}>ביטול</AlertDialogCancel>
+          <AlertDialogCancel disabled={pending}>{cancelLabel}</AlertDialogCancel>
           <Button variant="destructive" onClick={onConfirm} disabled={pending}>
             {pending && <Loader2 className="animate-spin" aria-hidden />}
             {confirmLabel}

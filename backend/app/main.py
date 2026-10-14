@@ -13,6 +13,7 @@ from app.errors import AppError, app_error_handler
 from app.households.router import household_error_handler
 from app.households.router import router as households_router
 from app.households.service import HouseholdError
+from app.schedules.router import router as schedules_router
 from app.transactions.router import router as transactions_router
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,7 @@ app.add_exception_handler(HouseholdError, household_error_handler)
 app.add_exception_handler(AppError, app_error_handler)
 app.include_router(categories_router)
 app.include_router(transactions_router)
+app.include_router(schedules_router)
 
 
 @app.get("/api/health")

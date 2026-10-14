@@ -36,7 +36,13 @@ def get_household_scope(
     )
     if household_id is None:
         raise AppError("no_household")
-    return HouseholdScope(session=db, household_id=household_id, today=today)
+    scope = HouseholdScope(session=db, household_id=household_id, today=today)
+    # Imported here: the schedules module itself depends on HouseholdScope.
+    from app.schedules.service import record_due_occurrences
+
+    # Every request sees schedule occurrences up to today already in the ledger.
+    record_due_occurrences(scope)
+    return scope
 
 
 Scope = Annotated[HouseholdScope, Depends(get_household_scope)]

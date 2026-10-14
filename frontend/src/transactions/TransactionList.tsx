@@ -14,6 +14,8 @@ import { useSelectedPeriod } from '@/hooks/useSelectedPeriod'
 import { useDataPages } from '@/lib/data'
 import { formatDayHeading, periodRange } from '@/lib/dates'
 import { formatPeriod } from '@/lib/period'
+import { useOccurrences } from '@/schedules/api'
+import { OccurrenceRow } from '@/schedules/OccurrenceRow'
 import type { SortOrder, Transaction, TransactionStatus } from './api'
 import { PendingConfirmations } from './PendingConfirmations'
 import { useQuickAdd } from './quickAdd'
@@ -223,6 +225,8 @@ export function TransactionList({ members }: { members: Member[] }) {
         </section>
       )}
 
+      {!allTime && !narrowed && <UpcomingInPeriod {...periodRange(period)} members={members} />}
+
       <Sheet open={filtersOpen} onOpenChange={setFiltersOpen} title="סינון ומיון">
         <FilterForm
           filters={filters}
@@ -234,6 +238,29 @@ export function TransactionList({ members }: { members: Member[] }) {
         />
       </Sheet>
     </div>
+  )
+}
+
+/** Schedule occurrences still to come in the month: planned money, not in the ledger yet. */
+function UpcomingInPeriod({ from, to, members }: { from: string; to: string; members: Member[] }) {
+  const occurrences = useOccurrences(from, to)
+  if (!occurrences.data?.length) return null
+  return (
+    <section aria-labelledby="upcoming-period-title">
+      <h3
+        id="upcoming-period-title"
+        className="px-2 py-1.5 text-sm font-medium text-muted-foreground"
+      >
+        צפוי מהוראות קבע ותשלומים
+      </h3>
+      <ul className="rounded-2xl border border-dashed">
+        {occurrences.data.map((occurrence) => (
+          <li key={`${occurrence.schedule_id}-${occurrence.sequence_no}`}>
+            <OccurrenceRow occurrence={occurrence} members={members} />
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }
 
