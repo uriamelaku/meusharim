@@ -55,13 +55,43 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 - **Phase 4:** savings goals and optional AI insights, only if useful.
 
 ## Working rules for Claude
-- Follow this file as the project source of truth; propose edits when decisions change.
-- Work in small, verifiable steps. Do not implement future phases early.
-- Before a significant change, briefly state what will be changed. Afterward, summarize what changed, tests run, and next step in concise Hebrew.
-- Favor maintainable, simple code; no unnecessary abstractions, microservices, Redis, AWS, or speculative features.
-- Run relevant tests and lint checks after changes. Do not claim success without running them.
-- Commit after successful changes/tests and push to the current working branch (the dev environment is ephemeral; unpushed work is lost). **Never merge to `main` or open a pull request without explicit user approval.**
-- Do not deploy, provision paid services, or change external infrastructure without explicit approval.
+Follow this file as the project source of truth; propose edits when decisions change.
+
+**Workflow**
+- Work in small, verifiable steps; complete and verify each step before the next. Follow the phases above; do not implement unrequested features or future phases early.
+- Before a significant change, briefly state what will be changed.
+- Keep every change runnable and testable locally through Docker.
+
+**Code quality**
+- Clean, readable, maintainable code following Python/FastAPI and React/TypeScript best practices. Reuse existing components and functions.
+- No overengineering: no unnecessary abstractions, microservices, Redis, AWS, or speculative features.
+- Do not add frameworks, services or dependencies without a clear reason. Ask before major architectural changes.
+
+**Testing**
+- Run relevant tests and lint checks after changes, and fix errors before considering a task complete.
+- Never claim tests passed unless they were actually executed.
+
+**Security**
+- Never expose or commit API keys, passwords, secrets or `.env` files with real values.
+- Validate all input on the backend. Enforce authentication and authorization on every protected endpoint.
+
+**Database**
+- All schema changes go through Alembic migrations.
+- Explain significant schema changes before applying them.
+- Never drop tables or delete production data without explicit approval.
+
+**Git**
+- Do not create commits automatically. Recommend when a commit is appropriate, briefly list what it should include, and wait for approval.
+- **Never push to GitHub (any branch, including `main`) without explicit permission.** A local commit does not authorize a push.
+- The dev environment is ephemeral and unpushed commits can be lost: at the end of each task, mention any commits that are not yet pushed and ask whether to push.
+- Never merge to `main` or open a pull request without explicit approval.
+
+**Deployment**
+- Never deploy to production, activate paid services, or change external infrastructure without explicit approval.
+
+**Communication**
+- Communicate in Hebrew; keep explanations short, clear and practical.
+- After each task, summarize what changed, what was tested, remaining issues or risks, and the next step.
 
 ## First implementation task
 Create the minimal repository skeleton and working Docker Compose setup with a Vite React frontend, FastAPI backend, and local PostgreSQL. Add a basic health endpoint and a frontend screen that can call it. Provide .env.example and setup instructions. Do not implement authentication or financial features in this first task; those follow once the skeleton works.
