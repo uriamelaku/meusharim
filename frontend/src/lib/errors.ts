@@ -8,7 +8,8 @@ const messages: Record<string, string> = {
   transaction_not_found: 'התנועה לא נמצאה. ייתכן שהיא כבר נמחקה.',
   schedule_not_found: 'ההוראה לא נמצאה.',
   schedule_cancelled: 'ההוראה בוטלה ואי אפשר לשנות אותה.',
-  installments_started: 'אחרי שהתשלום הראשון נרשם אי אפשר לשנות סכום, מספר תשלומים או תאריך. בטלו וצרו חדש.',
+  installments_started:
+    'אחרי שהתשלום הראשון נרשם אי אפשר לשנות סכום, מספר תשלומים או תאריך. בטלו וצרו חדש.',
   start_before_last_occurrence: 'תאריך ההתחלה החדש חייב להיות אחרי המועד האחרון שכבר נרשם.',
   invalid_member: 'בן/בת הזוג שנבחר/ה לא שייך/ת למשק הבית.',
   no_previous_budget: 'לא הוגדר תקציב לחודש הקודם.',

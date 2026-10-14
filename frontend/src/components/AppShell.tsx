@@ -1,4 +1,4 @@
-import { ArrowLeftRight, LayoutDashboard, LogOut, Settings, Wallet } from 'lucide-react'
+import { ArrowLeftRight, LayoutDashboard, LogOut, Plus, Settings, Wallet } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router'
 import { signOut } from '@/auth/signOut'
 import { useCurrentUser } from '@/auth/useCurrentUser'
@@ -11,6 +11,8 @@ import { CreateHouseholdScreen } from '@/household/CreateHouseholdScreen'
 import { JoinScreen } from '@/household/JoinScreen'
 import { usePendingInvitation } from '@/household/pendingInvitation'
 import { cn } from '@/lib/utils'
+import { useQuickAdd } from '@/transactions/quickAdd'
+import { QuickAddProvider } from '@/transactions/QuickAddProvider'
 
 const NAV_ITEMS = [
   { to: '/', label: 'סקירה', icon: LayoutDashboard },
@@ -57,29 +59,52 @@ export function AppShell() {
 
   const context: ShellContext = { user: currentUser.data, household: household.data }
   return (
-    <div className="min-h-dvh">
-      <DesktopSidebar email={currentUser.data.email} />
+    <QuickAddProvider household={household.data} userId={currentUser.data.id}>
+      <div className="min-h-dvh">
+        <DesktopSidebar email={currentUser.data.email} />
 
-      <header className="sticky top-0 z-20 flex h-14 items-center border-b bg-background/85 px-4 backdrop-blur-md lg:hidden">
-        <Wordmark />
-      </header>
+        <header className="sticky top-0 z-20 flex h-14 items-center border-b bg-background/85 px-4 backdrop-blur-md lg:hidden">
+          <Wordmark />
+        </header>
 
-      <main className="lg:ps-64">
-        <div className="mx-auto max-w-3xl px-4 pt-6 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:px-10 lg:pt-12 lg:pb-12">
-          <Outlet context={context} />
-        </div>
-      </main>
+        <main className="lg:ps-64">
+          <div className="mx-auto max-w-3xl px-4 pt-6 pb-[calc(9.5rem+env(safe-area-inset-bottom))] lg:px-10 lg:pt-12 lg:pb-12">
+            <Outlet context={context} />
+          </div>
+        </main>
 
-      <MobileTabBar />
-    </div>
+        <AddButton />
+        <MobileTabBar />
+      </div>
+    </QuickAddProvider>
+  )
+}
+
+/** Floating add button on phones, above the tab bar. Desktop has it in the sidebar. */
+function AddButton() {
+  const { add } = useQuickAdd()
+  return (
+    <Button
+      size="icon"
+      aria-label="הוספת תנועה"
+      onClick={() => add()}
+      className="fixed end-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30 size-14 rounded-full shadow-lg shadow-primary/30 lg:hidden"
+    >
+      <Plus className="size-7" />
+    </Button>
   )
 }
 
 function DesktopSidebar({ email }: { email: string | null }) {
+  const { add } = useQuickAdd()
   return (
     <aside className="fixed inset-y-0 start-0 z-20 hidden w-64 flex-col border-e bg-card px-4 py-6 lg:flex">
       <Wordmark className="px-3" />
-      <nav aria-label="ניווט ראשי" className="mt-10 flex flex-col gap-1">
+      <Button className="mt-8" onClick={() => add()}>
+        <Plus aria-hidden />
+        הוספת תנועה
+      </Button>
+      <nav aria-label="ניווט ראשי" className="mt-6 flex flex-col gap-1">
         {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}

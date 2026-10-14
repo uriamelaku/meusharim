@@ -1,0 +1,61 @@
+import { describe, expect, it } from 'vitest'
+import { amountToInput, formatFlow, formatMoney, parseAmountInput } from './money'
+
+describe('parseAmountInput', () => {
+  it.each([
+    ['100', '100.00'],
+    ['0.1', '0.10'],
+    ['0.01', '0.01'],
+    ['1,234.5', '1234.50'],
+    [' 12 ', '12.00'],
+    ['007', '7.00'],
+    ['12.', '12.00'],
+    ['₪50', '50.00'],
+    ['9999999999.99', '9999999999.99'],
+  ])('accepts %j as %j', (input, expected) => {
+    expect(parseAmountInput(input)).toBe(expected)
+  })
+
+  it.each(['', '0', '0.00', '-5', '1.234', 'abc', '1e3', '.5', '10000000000', '1.2.3'])(
+    'rejects %j',
+    (input) => {
+      expect(parseAmountInput(input)).toBeNull()
+    },
+  )
+})
+
+describe('formatMoney', () => {
+  it('formats with shekel sign and thousands separators', () => {
+    expect(formatMoney('1234.5')).toMatch(/1,234\.50/)
+    expect(formatMoney('1234.50')).toContain('₪')
+  })
+
+  it('drops zero agorot', () => {
+    expect(formatMoney('80.00')).not.toContain('.')
+  })
+
+  it('formats negative balances', () => {
+    expect(formatMoney('-350.40')).toMatch(/-.*350\.40|350\.40.*-/)
+  })
+
+  it('keeps exact agorot for large amounts without float rounding', () => {
+    expect(formatMoney('9999999999.99')).toMatch(/9,999,999,999\.99/)
+  })
+})
+
+describe('amountToInput', () => {
+  it.each([
+    ['120.50', '120.5'],
+    ['80.00', '80'],
+    ['0.05', '0.05'],
+  ])('%s → %s', (amount, expected) => {
+    expect(amountToInput(amount)).toBe(expected)
+  })
+})
+
+describe('formatFlow', () => {
+  it('signs income and expense', () => {
+    expect(formatFlow('80.00', 'income')).toMatch(/\+.*80/)
+    expect(formatFlow('350.40', 'expense')).toMatch(/-.*350\.40/)
+  })
+})

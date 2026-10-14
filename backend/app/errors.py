@@ -19,3 +19,10 @@ class NotFoundError(AppError):
 async def app_error_handler(_request: Request, error: Exception) -> JSONResponse:
     assert isinstance(error, AppError)
     return JSONResponse(status_code=error.status_code, content={"detail": error.code})
+
+
+class InvalidError(AppError):
+    """The request is well formed but refers to something it may not use."""
+
+    def __init__(self, code: str):
+        super().__init__(code, status.HTTP_422_UNPROCESSABLE_CONTENT)

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from '@/auth/useAuth'
 import { apiRequest } from '@/lib/api'
 
@@ -29,6 +29,26 @@ export function useDataQuery<T>(path: string, params?: QueryParams, enabled = tr
     queryKey: [DATA_KEY, session.user.id, path, params ?? {}],
     queryFn: () => apiRequest<T>(withParams(path, params), session.access_token),
     enabled,
+    refetchInterval: PARTNER_SYNC_INTERVAL_MS,
+    refetchOnWindowFocus: true,
+  })
+}
+
+/** Offset-paged lists ({ items, total }) loaded page by page, e.g. with a "load more" button. */
+export function useDataPages<TItem>(path: string, params: QueryParams, pageSize: number) {
+  const session = useSession()
+  return useInfiniteQuery({
+    queryKey: [DATA_KEY, session.user.id, path, params, 'pages'],
+    queryFn: ({ pageParam }) =>
+      apiRequest<{ items: TItem[]; total: number }>(
+        withParams(path, { ...params, limit: pageSize, offset: pageParam }),
+        session.access_token,
+      ),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, pages) => {
+      const loaded = pages.length * pageSize
+      return loaded < lastPage.total ? loaded : undefined
+    },
     refetchInterval: PARTNER_SYNC_INTERVAL_MS,
     refetchOnWindowFocus: true,
   })

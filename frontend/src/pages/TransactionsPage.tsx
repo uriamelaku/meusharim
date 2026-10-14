@@ -1,16 +1,13 @@
-import { ArrowLeftRight } from 'lucide-react'
 import { PageHeader } from '@/components/PageHeader'
-import { EmptyState } from '@/components/states'
+import { useShellContext } from '@/components/shellContext'
+import { TransactionList } from '@/transactions/TransactionList'
 
 export function TransactionsPage() {
+  const { household } = useShellContext()
   return (
     <>
-      <PageHeader title="תנועות" description="כל ההכנסות וההוצאות של משק הבית." />
-      <EmptyState
-        icon={ArrowLeftRight}
-        title="עדיין אין תנועות"
-        description="כאן יופיעו ההכנסות וההוצאות שלכם, מהחדשה לישנה."
-      />
+      <PageHeader title="תנועות" />
+      <TransactionList members={household.members} />
     </>
   )
 }

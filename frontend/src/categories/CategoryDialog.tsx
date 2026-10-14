@@ -25,7 +25,13 @@ export function CategoryDialog({ open, onOpenChange, category, kind }: CategoryD
     <Sheet
       open={open}
       onOpenChange={onOpenChange}
-      title={category ? 'עריכת קטגוריה' : kind === 'expense' ? 'קטגוריית הוצאה חדשה' : 'קטגוריית הכנסה חדשה'}
+      title={
+        category
+          ? 'עריכת קטגוריה'
+          : kind === 'expense'
+            ? 'קטגוריית הוצאה חדשה'
+            : 'קטגוריית הכנסה חדשה'
+      }
     >
       {/* Remount per open so the form starts from the category's current values. */}
       {open && <CategoryForm category={category} kind={kind} onDone={() => onOpenChange(false)} />}
@@ -33,7 +39,15 @@ export function CategoryDialog({ open, onOpenChange, category, kind }: CategoryD
   )
 }
 
-function CategoryForm({ category, kind, onDone }: { category?: Category; kind: Kind; onDone: () => void }) {
+function CategoryForm({
+  category,
+  kind,
+  onDone,
+}: {
+  category?: Category
+  kind: Kind
+  onDone: () => void
+}) {
   const [name, setName] = useState(category?.name ?? '')
   const [color, setColor] = useState(category?.color ?? 'plum')
   const [icon, setIcon] = useState(category?.icon ?? 'ellipsis')
@@ -113,7 +127,14 @@ function CategoryForm({ category, kind, onDone }: { category?: Category; kind: K
                   'flex aspect-square items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted',
                   'peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50',
                 )}
-                style={icon === key ? { backgroundColor: categoryColor(color).tint, color: categoryColor(color).ink } : undefined}
+                style={
+                  icon === key
+                    ? {
+                        backgroundColor: categoryColor(color).tint,
+                        color: categoryColor(color).ink,
+                      }
+                    : undefined
+                }
               >
                 <Icon className="size-5" />
               </span>

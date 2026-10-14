@@ -107,7 +107,10 @@ export const ICON_LABELS: Record<string, string> = {
 }
 
 /** Muted tones that sit next to the plum/brass palette. `ink` passes 4.5:1 on `tint`. */
-export const CATEGORY_COLORS: Record<string, { tint: string; ink: string; solid: string; label: string }> = {
+export const CATEGORY_COLORS: Record<
+  string,
+  { tint: string; ink: string; solid: string; label: string }
+> = {
   plum: { tint: '#efe7f5', ink: '#5b3a7a', solid: '#7a539c', label: 'שזיף' },
   rose: { tint: '#f8e6ea', ink: '#8e3049', solid: '#c25570', label: 'ורד' },
   pink: { tint: '#f9e5f1', ink: '#8a2f66', solid: '#c0569a', label: 'ורוד' },

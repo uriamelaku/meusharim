@@ -28,16 +28,23 @@ export function Sheet({ open, onOpenChange, title, description, children, classN
             className,
           )}
         >
-          <div className="mx-auto mt-2.5 h-1.5 w-10 shrink-0 rounded-full bg-border sm:hidden" aria-hidden />
+          <div
+            className="mx-auto mt-2.5 h-1.5 w-10 shrink-0 rounded-full bg-border sm:hidden"
+            aria-hidden
+          />
           <div className="flex items-start justify-between gap-3 px-5 pt-3 sm:px-6 sm:pt-6">
             <div>
-              <DialogPrimitive.Title className="font-heading text-xl font-semibold">{title}</DialogPrimitive.Title>
+              <DialogPrimitive.Title className="font-heading text-xl font-semibold">
+                {title}
+              </DialogPrimitive.Title>
               {description ? (
                 <DialogPrimitive.Description className="mt-1 text-sm text-muted-foreground">
                   {description}
                 </DialogPrimitive.Description>
               ) : (
-                <DialogPrimitive.Description className="sr-only">{title}</DialogPrimitive.Description>
+                <DialogPrimitive.Description className="sr-only">
+                  {title}
+                </DialogPrimitive.Description>
               )}
             </div>
             <DialogPrimitive.Close asChild>

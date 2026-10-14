@@ -56,7 +56,10 @@ export function CategoriesCard() {
             onRetry={() => void categories.refetch()}
           />
         ) : (
-          <ul className="-mx-2 flex flex-col" aria-label={kind === 'expense' ? 'קטגוריות הוצאה' : 'קטגוריות הכנסה'}>
+          <ul
+            className="-mx-2 flex flex-col"
+            aria-label={kind === 'expense' ? 'קטגוריות הוצאה' : 'קטגוריות הכנסה'}
+          >
             {visible.map((category) => (
               <li key={category.id} className="flex items-center gap-3 rounded-xl px-2 py-1.5">
                 <CategoryIconBadge color={category.color} icon={category.icon} />
