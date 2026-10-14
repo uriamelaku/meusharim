@@ -6,7 +6,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field, model_validator
 
 from app.categories.schemas import Kind
-from app.money import Amount, LedgerDate
+from app.money import Amount, LedgerDate, Money
 from app.schedules.engine import Frequency
 from app.transactions.schemas import CategoryRef, Description
 
@@ -108,9 +108,9 @@ class Schedule(BaseModel):
     # Occurrences already written to transactions, and how many of them are completed.
     recorded_count: int
     completed_count: int
-    completed_amount: Decimal
+    completed_amount: Money
     # Total minus completed payments (installments only).
-    remaining_amount: Decimal | None
+    remaining_amount: Money | None
     next_occurrence: Occurrence | None
     # True when no more occurrences will ever be created (end date or last payment reached).
     finished: bool

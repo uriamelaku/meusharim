@@ -7,6 +7,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.auth import CurrentUser, get_current_user
+from app.budgets.router import router as budgets_router
 from app.categories.router import router as categories_router
 from app.db import engine
 from app.errors import AppError, app_error_handler
@@ -25,6 +26,7 @@ app.add_exception_handler(AppError, app_error_handler)
 app.include_router(categories_router)
 app.include_router(transactions_router)
 app.include_router(schedules_router)
+app.include_router(budgets_router)
 
 
 @app.get("/api/health")
