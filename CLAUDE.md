@@ -35,8 +35,9 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 - RLS must behave identically on local PostgreSQL and Supabase. Do not reference Supabase-only objects (`auth.uid()`, `auth.users`) in policies. Policies use our own `app.current_user_id()`, which reads the user id from `current_setting('request.jwt.claims', true)`. Migrations create the `authenticated` role if it does not exist. Per request, inside the transaction, the backend runs `SET LOCAL ROLE authenticated` and sets `request.jwt.claims` with `set_config(..., true)`.
 - Never expose database credentials or privileged Supabase keys in the frontend. Restrict CORS, validate input, and never commit secrets.
 - Keep database schema changes in Alembic migrations; avoid manual schema drift.
-- Store monetary values as `NUMERIC(12,2)` (Python `Decimal`), never floating point. The API sends amounts as decimal strings; the frontend never does arithmetic on money, all totals come from the server.
+- Store monetary values as `NUMERIC(12,2)` (Python `Decimal`), never floating point. The API sends amounts as decimal strings with two decimals; the frontend never does floating-point arithmetic on money and all totals come from the server. Exceptions: the installment split preview uses exact integer agorot (BigInt), and chart bar widths are visual ratios only.
 - Use Asia/Jerusalem for month/date interpretation; store transaction dates as DATE.
+- Schedules (recurring entries and installments) never store future occurrences. At the start of every household request, due occurrences are written to `transactions` once (unique `(schedule_id, sequence_no)` plus a forward-only `next_sequence`), as planned or, with auto-confirm, completed. Future occurrences are computed on read.
 - Scope household data with household_id. Prevent cross-household access with automated tests.
 
 ## MVP (Phase 1)

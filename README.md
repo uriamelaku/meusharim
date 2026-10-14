@@ -40,6 +40,24 @@ docker compose exec backend alembic upgrade head
 Row level security: every API request runs inside a transaction as the `authenticated`
 role with `request.jwt.claims` set from the verified JWT (see `backend/app/db.py`).
 
+## Features and API
+
+All household data goes through FastAPI (`/docs` lists every endpoint):
+
+| Area | Endpoints |
+|---|---|
+| Categories | `GET/POST /api/categories`, `PATCH/DELETE /api/categories/{id}` (delete archives a used category) |
+| Transactions | `GET/POST /api/transactions` (filters, search, sort, paging), `PATCH/DELETE /api/transactions/{id}`, `POST /api/transactions/confirm` |
+| Recurring and installments | `GET/POST /api/schedules`, `GET/PATCH /api/schedules/{id}`, `POST /api/schedules/{id}/pause|resume|cancel`, `GET /api/schedules/occurrences` |
+| Budgets | `GET/PUT /api/budgets?month=YYYY-MM`, `POST /api/budgets/copy-previous?month=` |
+| Dashboard | `GET /api/summary?month=YYYY-MM` |
+| Reports | `GET /api/reports?from=YYYY-MM&to=YYYY-MM` (up to 60 months) |
+
+Every transaction is either `planned` or `completed`; only completed ones count as actual
+money. Planned amounts (planned transactions and future schedule occurrences) are always
+reported separately. The plan and progress of phases 5–9 are in
+[docs/plan-phases-5-9.md](docs/plan-phases-5-9.md).
+
 ## Checks
 
 ```bash
