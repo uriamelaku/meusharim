@@ -190,6 +190,7 @@ export function ScheduleForm({
         error={submitted ? errors.amount : undefined}
         autoFocus={!schedule}
         tone={kind}
+        disabled={planLocked}
       />
 
       {isInstallments && (
