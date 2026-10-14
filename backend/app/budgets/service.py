@@ -32,6 +32,13 @@ def _category_refs(scope: HouseholdScope, ids: set[UUID]) -> dict[UUID, Category
     return {row.id: CategoryRef.model_validate(row, from_attributes=True) for row in rows}
 
 
+def effective_budget(scope: HouseholdScope, month: Month) -> Decimal | None:
+    """The overall budget of the month, or the sum of its category budgets."""
+    budgets = _budget_rows(scope, month)
+    total = budgets.pop(None, None)
+    return total if total is not None else (sum(budgets.values()) or None)
+
+
 def get_budget(scope: HouseholdScope, month: Month) -> BudgetMonth:
     budgets = _budget_rows(scope, month)
     total_budget = budgets.pop(None, None)
