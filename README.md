@@ -15,9 +15,12 @@ See [CLAUDE.md](CLAUDE.md) for the project plan, decisions and working rules.
 Requirements: Docker with Docker Compose.
 
 ```bash
-cp .env.example .env   # optional: defaults work without it
+cp .env.example .env   # then fill in SUPABASE_PUBLISHABLE_KEY
 docker compose up --build
 ```
+
+`SUPABASE_PUBLISHABLE_KEY` is in the Supabase dashboard of the `meusharim-dev` project
+(Project Settings → API Keys). Never use the secret key here.
 
 - Frontend: http://localhost:5173
 - Backend health check: http://localhost:8000/api/health

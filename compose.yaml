@@ -22,6 +22,9 @@ services:
         INSTALL_DEV: "true"
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-meusharim}:${POSTGRES_PASSWORD:-meusharim}@db:5432/${POSTGRES_DB:-meusharim}
+      SUPABASE_URL: ${SUPABASE_URL:?Set SUPABASE_URL in .env (see .env.example)}
+      # Docker on Windows/macOS does not forward file-change events; poll for --reload.
+      WATCHFILES_FORCE_POLLING: "true"
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     ports:
       - "8000:8000"
@@ -35,6 +38,9 @@ services:
     build: ./frontend
     environment:
       API_PROXY_TARGET: http://backend:8000
+      WATCH_POLLING: "true"
+      VITE_SUPABASE_URL: ${SUPABASE_URL:?Set SUPABASE_URL in .env (see .env.example)}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY:?Set SUPABASE_PUBLISHABLE_KEY in .env (see .env.example)}
     ports:
       - "5173:5173"
     volumes:

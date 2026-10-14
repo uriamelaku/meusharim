@@ -6,7 +6,7 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 ## Decisions (approved)
 - Manual entry only for now; **no bank or credit-card integration**.
 - Both partners can view and manage all household entries, including entries marked personal.
-- Google sign-in only via Supabase Auth.
+- Email + password sign-in only via Supabase Auth (sign up, sign in, sign out). No Google/OAuth for now.
 - Only our couple will use the app initially; **no SaaS/billing features**.
 - The user chooses the transaction date manually. Do not introduce separate purchase/charge-date logic yet.
 - Recurring expenses and installments are **phase 2**, not MVP.
@@ -16,9 +16,9 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 - Frontend: React, TypeScript, Vite, Tailwind CSS, shadcn/ui, React Router, TanStack Query.
 - Backend: Python, FastAPI, SQLAlchemy 2, Alembic, psycopg 3 (synchronous initially).
 - Database: PostgreSQL (Supabase in deployed environments; local PostgreSQL container for development/tests).
-- Authentication: Supabase Auth (Google OAuth), JWT validation in FastAPI.
+- Authentication: Supabase Auth (email + password), JWT validation in FastAPI.
   - Production/dev: verify tokens against the Supabase project's JWKS (check signature, `exp`, `aud`). Local development with real login uses a separate Supabase dev project.
-  - Automated tests never use Google or Supabase: the test suite signs its own JWTs with a test key, and the backend accepts that key only when configured for tests.
+  - Automated tests never call Supabase: the test suite signs its own JWTs with a test key and injects it through a FastAPI dependency override. No runtime setting makes the backend accept a test key.
 - Docker: Dockerfile per frontend/backend, Docker Compose for frontend + backend + local PostgreSQL.
 - PWA: add basic installability during MVP.
 - Repository: Git/GitHub; tests and GitHub Actions as the project matures.
@@ -37,7 +37,7 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 
 ## MVP (Phase 1)
 1. Project skeleton: repository structure, Dockerfiles, compose.yaml, environment examples, README.
-2. End-to-end Google login: React -> Supabase Auth -> FastAPI JWT validation.
+2. End-to-end email/password auth (sign up, sign in, sign out): React -> Supabase Auth -> FastAPI JWT validation.
 3. Create household and invite/join second partner securely.
 4. Default editable income/expense categories.
 5. Manual transactions: amount, type, category, date, optional note, `created_by`, `paid_by`, personal/shared flag; list, add, edit and delete.
