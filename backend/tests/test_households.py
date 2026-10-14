@@ -3,47 +3,12 @@ import threading
 from uuid import uuid4
 
 import pytest
-from fastapi.testclient import TestClient
 from sqlalchemy import text
 
 from app.db import engine, user_transaction
 from app.households import service
 from app.households.router import INVITATION_ATTEMPTS_PER_15_MINUTES
-from app.main import app
-from tests.tokens import auth_headers
-
-client = TestClient(app)
-
-
-class Partner:
-    """A signed-in user calling the API."""
-
-    def __init__(self):
-        self.id = uuid4()
-        self.headers = auth_headers(self.id)
-
-    def get(self, path: str):
-        return client.get(path, headers=self.headers)
-
-    def post(self, path: str, json: dict | None = None):
-        return client.post(path, json=json, headers=self.headers)
-
-    def delete(self, path: str):
-        return client.delete(path, headers=self.headers)
-
-    def create_household(self, name="הבית שלנו", display_name="אוריה"):
-        return self.post("/api/household", {"name": name, "display_name": display_name})
-
-    def invite(self) -> str:
-        response = self.post("/api/household/invitation")
-        assert response.status_code == 201
-        return response.json()["token"]
-
-    def preview(self, token: str):
-        return self.post("/api/invitations/preview", {"token": token})
-
-    def accept(self, token: str, display_name="נועה"):
-        return self.post("/api/invitations/accept", {"token": token, "display_name": display_name})
+from tests.partners import Partner, client
 
 
 @pytest.fixture

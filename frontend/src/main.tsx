@@ -3,6 +3,7 @@ import { Direction } from 'radix-ui'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
+import { Toaster } from '@/components/ui/sonner'
 import { AuthProvider } from '@/auth/AuthProvider'
 import { capturePendingInvitation } from '@/household/pendingInvitation'
 import { queryClient } from '@/lib/queryClient'
@@ -19,6 +20,7 @@ createRoot(document.getElementById('root')!).render(
         <BrowserRouter>
           <AuthProvider>
             <App />
+            <Toaster position="top-center" dir="rtl" richColors />
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>

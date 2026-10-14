@@ -1,6 +1,7 @@
 import { LogOut } from 'lucide-react'
 import { signOut } from '@/auth/signOut'
 import { PageHeader } from '@/components/PageHeader'
+import { CategoriesCard } from '@/categories/CategoriesCard'
 import { useShellContext } from '@/components/shellContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,6 +14,7 @@ export function SettingsPage() {
       <PageHeader title="הגדרות" />
       <div className="flex flex-col gap-4">
         <HouseholdCard household={household} userId={user.id} />
+        <CategoriesCard />
         <Card className="rounded-2xl">
           <CardHeader>
             <CardTitle className="text-lg">החשבון שלי</CardTitle>

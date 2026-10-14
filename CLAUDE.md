@@ -5,13 +5,15 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 
 ## Decisions (approved)
 - Manual entry only for now; **no bank or credit-card integration**.
-- Both partners can view and manage all household entries, including entries marked personal.
+- Both partners can view and manage all household entries.
 - Both partners have equal management rights in the household (no owner role). MVP: one household per user, at most two members, each with a personal display name.
 - Partners join via a single-use invitation link (7-day expiry, not bound to an email). Only the token's SHA-256 is stored; the token travels in the URL fragment and request bodies, never in URLs sent to the server or in logs. Invitation lookups are rate-limited per user.
 - Email + password sign-in only via Supabase Auth (sign up, sign in, sign out). No Google/OAuth for now.
 - Only our couple will use the app initially; **no SaaS/billing features**.
 - The user chooses the transaction date manually. Do not introduce separate purchase/charge-date logic yet.
-- Recurring expenses and installments are **phase 2**, not MVP.
+- Recurring income/expenses and installments are implemented together with transactions (phases 5–9 plan in `docs/plan-phases-5-9.md`), on one unified ledger.
+- Every transaction has an explicit status: `planned` or `completed`. A date passing never completes a transaction; only completed transactions count as actual in balances, budgets and reports. Planned amounts are always shown separately.
+- No personal/shared flag on transactions for now.
 - **No AWS.** Frontend deployment: Vercel. Backend Docker hosting: Railway (unless user changes this). Database/Auth: Supabase.
 
 ## Tech stack
@@ -33,7 +35,7 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 - RLS must behave identically on local PostgreSQL and Supabase. Do not reference Supabase-only objects (`auth.uid()`, `auth.users`) in policies. Policies use our own `app.current_user_id()`, which reads the user id from `current_setting('request.jwt.claims', true)`. Migrations create the `authenticated` role if it does not exist. Per request, inside the transaction, the backend runs `SET LOCAL ROLE authenticated` and sets `request.jwt.claims` with `set_config(..., true)`.
 - Never expose database credentials or privileged Supabase keys in the frontend. Restrict CORS, validate input, and never commit secrets.
 - Keep database schema changes in Alembic migrations; avoid manual schema drift.
-- Store monetary values as integer minor units (agorot), never floating point.
+- Store monetary values as `NUMERIC(12,2)` (Python `Decimal`), never floating point. The API sends amounts as decimal strings; the frontend never does arithmetic on money, all totals come from the server.
 - Use Asia/Jerusalem for month/date interpretation; store transaction dates as DATE.
 - Scope household data with household_id. Prevent cross-household access with automated tests.
 
@@ -43,8 +45,8 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 3. UI/UX foundation: design system (colors, typography, buttons, forms, cards) with Tailwind CSS + shadcn/ui; designed sign-up/sign-in screen; app shell with mobile bottom navigation and desktop sidebar; shared loading, error and empty states. Dashboard is a skeleton only: no fake data, no new features.
 4. Create household and invite/join second partner securely.
 5. Default editable income/expense categories.
-6. Manual transactions: amount, type, category, date, optional note, `created_by`, `paid_by`, personal/shared flag; list, add, edit and delete.
-   - `amount` is always a positive integer in agorot; `type` (`income` | `expense`) determines direction.
+6. Manual transactions: amount, type, category, date, optional note, status, `created_by`, `paid_by`; list, add, edit and delete.
+   - `amount` is always positive; `type` (`income` | `expense`) determines direction.
    - `created_by` is set automatically by the server to the authenticated user and is never accepted from the client.
    - `paid_by` is chosen by the user: one of the household members, or `joint` (shared account).
 7. Monthly budgets per category with sensible defaults.
@@ -53,8 +55,7 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 10. Automated tests for financial calculations and household authorization.
 
 ## Later phases
-- **Phase 2:** recurring expenses, installments and planned future transactions using a unified transaction ledger; prevent duplicates and double counting.
-- **Phase 3:** month comparisons, charts, search/filter, CSV import/export and monthly review.
+- **Phase 3:** CSV import/export and monthly review (charts, comparisons and search/filter are part of phases 5–9).
 - **Phase 4:** savings goals and optional AI insights, only if useful.
 
 ## Working rules for Claude

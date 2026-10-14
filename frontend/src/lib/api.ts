@@ -20,7 +20,7 @@ async function readErrorCode(response: Response): Promise<string | null> {
   }
 }
 
-type RequestOptions = { method?: 'GET' | 'POST' | 'DELETE'; body?: unknown }
+type RequestOptions = { method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'; body?: unknown }
 
 export async function apiRequest<T>(
   path: string,
