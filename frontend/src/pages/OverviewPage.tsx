@@ -1,40 +1,58 @@
-import { PieChart } from 'lucide-react'
-import { PageHeader } from '@/components/PageHeader'
+import { CalendarCheck, PieChart } from 'lucide-react'
+import { PeriodPicker } from '@/components/PeriodPicker'
 import { RingsMark } from '@/components/RingsMark'
+import { useShellContext } from '@/components/shellContext'
 import { EmptyState } from '@/components/states'
+import { Button } from '@/components/ui/button'
+import { useSelectedPeriod } from '@/hooks/useSelectedPeriod'
+import { formatPeriod, monthName } from '@/lib/period'
 
 const SUMMARY_LABELS = ['הכנסות', 'הוצאות', 'נשאר בתקציב']
 
-function currentMonthTitle(): string {
-  return new Intl.DateTimeFormat('he-IL', {
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'Asia/Jerusalem',
-  }).format(new Date())
-}
-
 export function OverviewPage() {
+  const { household } = useShellContext()
+  // Financial queries will be keyed by `period` once transactions exist.
+  const { period, today, setPeriod, isCurrent } = useSelectedPeriod()
+
   return (
     <>
-      <PageHeader eyebrow="החודש שלנו" title={currentMonthTitle()} />
+      <header className="mb-6 lg:mb-8">
+        <div className="flex min-h-9 items-center justify-between gap-3">
+          <p className="truncate text-sm font-medium text-brass-strong">{household.name}</p>
+          {!isCurrent && (
+            <Button
+              variant="ghost"
+              className="h-9 shrink-0 px-2.5 text-sm text-brass-strong"
+              onClick={() => setPeriod(today)}
+            >
+              <CalendarCheck aria-hidden />
+              לחודש הנוכחי
+            </Button>
+          )}
+        </div>
+        <div className="-ms-3 mt-1">
+          <PeriodPicker period={period} today={today} onChange={setPeriod} />
+        </div>
+      </header>
 
       <section
         aria-labelledby="balance-title"
+        aria-live="polite"
         className="relative overflow-hidden rounded-3xl bg-primary px-6 py-8 text-primary-foreground shadow-lg shadow-primary/20 lg:px-8"
       >
         <RingsMark
-          className="pointer-events-none absolute -end-16 -top-16 h-40 opacity-20 sm:-end-10 sm:-top-14 sm:h-52"
+          className="pointer-events-none absolute -end-14 -top-14 h-32 opacity-20 sm:-end-10 sm:-top-14 sm:h-52"
           firstRing="#ffffff"
           secondRing="var(--brass)"
         />
         <p id="balance-title" className="text-sm font-medium text-primary-foreground/75">
-          מאזן החודש
+          מאזן {monthName(period.month)}
         </p>
         <p className="relative mt-3 max-w-xs font-heading text-2xl leading-snug font-semibold">
-          עוד אין תנועות החודש
+          אין תנועות ב{formatPeriod(period)}
         </p>
         <p className="relative mt-2 max-w-64 text-sm leading-relaxed text-primary-foreground/75 sm:max-w-sm">
-          כשתוסיפו הכנסות והוצאות, כאן יופיע המאזן המשותף שלכם.
+          כשתוסיפו הכנסות והוצאות לחודש הזה, כאן יופיע המאזן המשותף שלכם.
         </p>
       </section>
 

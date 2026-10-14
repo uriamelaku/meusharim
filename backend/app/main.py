@@ -8,10 +8,15 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.auth import CurrentUser, get_current_user
 from app.db import engine
+from app.households.router import household_error_handler
+from app.households.router import router as households_router
+from app.households.service import HouseholdError
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Meusharim API")
+app.include_router(households_router)
+app.add_exception_handler(HouseholdError, household_error_handler)
 
 
 @app.get("/api/health")

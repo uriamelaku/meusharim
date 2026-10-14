@@ -6,6 +6,8 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 ## Decisions (approved)
 - Manual entry only for now; **no bank or credit-card integration**.
 - Both partners can view and manage all household entries, including entries marked personal.
+- Both partners have equal management rights in the household (no owner role). MVP: one household per user, at most two members, each with a personal display name.
+- Partners join via a single-use invitation link (7-day expiry, not bound to an email). Only the token's SHA-256 is stored; the token travels in the URL fragment and request bodies, never in URLs sent to the server or in logs. Invitation lookups are rate-limited per user.
 - Email + password sign-in only via Supabase Auth (sign up, sign in, sign out). No Google/OAuth for now.
 - Only our couple will use the app initially; **no SaaS/billing features**.
 - The user chooses the transaction date manually. Do not introduce separate purchase/charge-date logic yet.
@@ -101,6 +103,11 @@ Follow this file as the project source of truth; propose edits when decisions ch
 **Communication**
 - Communicate in Hebrew; keep explanations short, clear and practical.
 - After each task, summarize what changed, what was tested, remaining issues or risks, and the next step.
+
+**Progress tracking**
+- The active development plan and its progress tracker live in `docs/` (currently `docs/plan-phases-5-9.md`). Keep the tracker in that file up to date as work progresses.
+- In every significant update and every summary, show the tracker list with a status mark next to each item: ✅ done and verified, 🔄 in progress, ⬜ not started, ❌ failed or needs a fix.
+- Mark ✅ only after the item is implemented and its tests, lint and build actually passed.
 
 ## First implementation task
 Create the minimal repository skeleton and working Docker Compose setup with a Vite React frontend, FastAPI backend, and local PostgreSQL. Add a basic health endpoint and a frontend screen that can call it. Provide .env.example and setup instructions. Do not implement authentication or financial features in this first task; those follow once the skeleton works.

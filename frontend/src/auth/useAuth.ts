@@ -10,3 +10,10 @@ export function useAuth(): AuthState {
   if (!state) throw new Error('useAuth must be used inside AuthProvider')
   return state
 }
+
+/** The signed-in session. Only for components rendered behind the sign-in screen. */
+export function useSession(): Session {
+  const { session } = useAuth()
+  if (!session) throw new Error('useSession requires a signed-in user')
+  return session
+}

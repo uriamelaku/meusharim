@@ -1,5 +1,5 @@
 import type { AuthError } from '@supabase/supabase-js'
-import { AlertCircle, Eye, EyeOff, Loader2, MailCheck } from 'lucide-react'
+import { AlertCircle, Eye, EyeOff, Loader2, MailCheck, Users } from 'lucide-react'
 import { type FormEvent, useId, useState } from 'react'
 import { RingsMark, Wordmark } from '@/components/RingsMark'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { hasPendingInvitation } from '@/household/pendingInvitation'
 import { supabase } from '@/supabase'
 
 type Mode = 'signIn' | 'signUp'
@@ -29,6 +30,7 @@ function describeError(error: AuthError): string {
 }
 
 export function AuthPage() {
+  const invited = hasPendingInvitation()
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[1.1fr_1fr]">
       <BrandPanel />
@@ -38,7 +40,16 @@ export function AuthPage() {
           <p className="font-heading text-xl text-muted-foreground">{TAGLINE}</p>
         </div>
         <div className="w-full max-w-sm rounded-3xl border bg-card p-6 shadow-xl shadow-primary/5 sm:p-8">
-          <Tabs defaultValue="signIn">
+          {invited && (
+            <Alert className="mb-5 border-brass/40 bg-accent text-accent-foreground">
+              <Users aria-hidden />
+              <AlertDescription className="text-accent-foreground">
+                הוזמנת להצטרף למשק בית. הירשמו או התחברו כדי להמשיך.
+              </AlertDescription>
+            </Alert>
+          )}
+          {/* Someone opening an invitation link most likely has no account yet. */}
+          <Tabs defaultValue={invited ? 'signUp' : 'signIn'}>
             <TabsList className="h-11 w-full rounded-xl">
               <TabsTrigger value="signIn" className="rounded-lg text-base">
                 התחברות

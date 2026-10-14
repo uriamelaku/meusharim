@@ -6,33 +6,13 @@ import pytest
 from cryptography.hazmat.primitives.asymmetric import ec
 from fastapi.testclient import TestClient
 
-from app.auth import TOKEN_AUDIENCE, TOKEN_ISSUER, get_key_resolver
+from app.auth import get_key_resolver
 from app.main import app
+from tests.tokens import make_token
 
-TEST_PRIVATE_KEY = ec.generate_private_key(ec.SECP256R1())
 OTHER_PRIVATE_KEY = ec.generate_private_key(ec.SECP256R1())
 
 client = TestClient(app)
-
-
-@pytest.fixture(autouse=True)
-def use_test_signing_key():
-    public_key = TEST_PRIVATE_KEY.public_key()
-    app.dependency_overrides[get_key_resolver] = lambda: lambda token: public_key
-    yield
-    app.dependency_overrides.clear()
-
-
-def make_token(private_key=TEST_PRIVATE_KEY, algorithm="ES256", **overrides) -> str:
-    claims = {
-        "sub": str(uuid4()),
-        "email": "partner@example.com",
-        "aud": TOKEN_AUDIENCE,
-        "iss": TOKEN_ISSUER,
-        "exp": datetime.now(UTC) + timedelta(minutes=5),
-        **overrides,
-    }
-    return jwt.encode(claims, private_key, algorithm=algorithm)
 
 
 def get_me(token: str):

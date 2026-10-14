@@ -28,15 +28,28 @@ docker compose up --build
 
 The frontend dev server proxies `/api/*` to the backend. Code changes in `frontend/` and `backend/` reload automatically.
 
+## Database migrations
+
+Alembic migrations live in `backend/migrations/`. The backend container runs
+`alembic upgrade head` on startup. To run them manually:
+
+```bash
+docker compose exec backend alembic upgrade head
+```
+
+Row level security: every API request runs inside a transaction as the `authenticated`
+role with `request.jwt.claims` set from the verified JWT (see `backend/app/db.py`).
+
 ## Checks
 
 ```bash
-# Backend tests and lint (stack must be running)
+# Backend tests and lint (stack must be running; tests use a separate *_test database)
 docker compose exec backend pytest -p no:cacheprovider
 docker compose exec backend ruff check --no-cache .
 docker compose exec backend ruff format --check --no-cache .
 
 # Frontend lint and type-check/build
+docker compose exec frontend npm test
 docker compose exec frontend npm run lint
 docker compose exec frontend npm run build
 ```

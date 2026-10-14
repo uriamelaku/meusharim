@@ -3,8 +3,13 @@ import { NavLink, Outlet } from 'react-router'
 import { signOut } from '@/auth/signOut'
 import { useCurrentUser } from '@/auth/useCurrentUser'
 import { Wordmark } from '@/components/RingsMark'
+import type { ShellContext } from '@/components/shellContext'
 import { ErrorState, LoadingState } from '@/components/states'
 import { Button } from '@/components/ui/button'
+import { useHousehold } from '@/household/api'
+import { CreateHouseholdScreen } from '@/household/CreateHouseholdScreen'
+import { JoinScreen } from '@/household/JoinScreen'
+import { usePendingInvitation } from '@/household/pendingInvitation'
 import { cn } from '@/lib/utils'
 
 const NAV_ITEMS = [
@@ -14,19 +19,28 @@ const NAV_ITEMS = [
   { to: '/settings', label: 'הגדרות', icon: Settings },
 ]
 
+/**
+ * Gate for the signed-in app: verifies the user with the backend, then sends them to
+ * a pending invitation, to household setup, or into the app itself.
+ */
 export function AppShell() {
   const currentUser = useCurrentUser()
+  const household = useHousehold()
+  const pendingInvitation = usePendingInvitation()
 
-  if (currentUser.status === 'loading') {
+  if (currentUser.isPending || household.isPending) {
     return <LoadingState className="min-h-dvh" />
   }
-  if (currentUser.status === 'error') {
+  if (currentUser.isError || household.isError) {
     return (
       <ErrorState
         className="min-h-dvh justify-center"
-        title="לא הצלחנו לאמת את החשבון"
-        description="השרת לא אישר את ההתחברות. בדקו את החיבור ונסו שוב, או התחברו מחדש."
-        onRetry={currentUser.retry}
+        title="לא הצלחנו לטעון את החשבון"
+        description="השרת לא זמין או לא אישר את ההתחברות. בדקו את החיבור ונסו שוב, או התחברו מחדש."
+        onRetry={() => {
+          void currentUser.refetch()
+          void household.refetch()
+        }}
       >
         <Button variant="outline" onClick={signOut}>
           התחברות מחדש
@@ -34,10 +48,17 @@ export function AppShell() {
       </ErrorState>
     )
   }
+  if (pendingInvitation.token) {
+    return <JoinScreen token={pendingInvitation.token} onDone={pendingInvitation.clear} />
+  }
+  if (!household.data) {
+    return <CreateHouseholdScreen />
+  }
 
+  const context: ShellContext = { user: currentUser.data, household: household.data }
   return (
     <div className="min-h-dvh">
-      <DesktopSidebar email={currentUser.user.email} />
+      <DesktopSidebar email={currentUser.data.email} />
 
       <header className="sticky top-0 z-20 flex h-14 items-center border-b bg-background/85 px-4 backdrop-blur-md lg:hidden">
         <Wordmark />
@@ -45,7 +66,7 @@ export function AppShell() {
 
       <main className="lg:ps-64">
         <div className="mx-auto max-w-3xl px-4 pt-6 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:px-10 lg:pt-12 lg:pb-12">
-          <Outlet context={currentUser.user} />
+          <Outlet context={context} />
         </div>
       </main>
 
