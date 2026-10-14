@@ -1,6 +1,104 @@
-body {
-  margin: 0;
-  font-family: system-ui, sans-serif;
-  background: #f5f7f5;
-  color: #17211c;
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/frank-ruhl-libre";
+@import "@fontsource/ibm-plex-sans-hebrew/400.css";
+@import "@fontsource/ibm-plex-sans-hebrew/500.css";
+@import "@fontsource/ibm-plex-sans-hebrew/600.css";
+
+/* Light theme only for now: dark: utilities apply only under an explicit .dark class. */
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: "IBM Plex Sans Hebrew", system-ui, sans-serif;
+  --font-heading: "Frank Ruhl Libre Variable", "IBM Plex Sans Hebrew", serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-brass: var(--brass);
+  --color-brass-strong: var(--brass-strong);
+  --color-income: var(--income);
+  --color-expense: var(--expense);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/*
+ * Meusharim palette: deep plum and brass on a cool mist background.
+ * Brass is decorative (rings, small marks); use brass-strong for brass-colored text.
+ */
+:root {
+  --background: #f3f4f8;
+  --foreground: #2a1e36;
+  --card: #ffffff;
+  --card-foreground: #2a1e36;
+  --popover: #ffffff;
+  --popover-foreground: #2a1e36;
+  --primary: #5b3a7a;
+  --primary-foreground: #ffffff;
+  --secondary: #ece7f2;
+  --secondary-foreground: #3e2a52;
+  --muted: #eceaf1;
+  --muted-foreground: #5e5670;
+  --accent: #f4ecdd;
+  --accent-foreground: #6e4f1c;
+  --destructive: #b3364a;
+  --border: #e2e0ea;
+  --input: #d6d2e0;
+  --ring: #5b3a7a;
+  --brass: #b8893a;
+  --brass-strong: #8a6424;
+  --income: #3f6b3a;
+  --expense: #a8475a;
+  --radius: 0.875rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    color-scheme: light;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

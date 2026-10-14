@@ -1,70 +1,29 @@
-import type { Session } from '@supabase/supabase-js'
-import { useEffect, useState } from 'react'
-import AuthForm from './AuthForm'
-import { supabase } from './supabase'
-
-type HealthState = 'loading' | 'ok' | 'error'
-
-type CurrentUser = { id: string; email: string | null }
-
-const statusText: Record<HealthState, string> = {
-  loading: 'בודק חיבור לשרת…',
-  ok: 'השרת ומסד הנתונים פעילים',
-  error: 'אין חיבור לשרת או למסד הנתונים',
-}
+import { Navigate, Route, Routes } from 'react-router'
+import { useAuth } from '@/auth/useAuth'
+import { AppShell } from '@/components/AppShell'
+import { LoadingState } from '@/components/states'
+import { AuthPage } from '@/pages/AuthPage'
+import { BudgetPage } from '@/pages/BudgetPage'
+import { OverviewPage } from '@/pages/OverviewPage'
+import { SettingsPage } from '@/pages/SettingsPage'
+import { TransactionsPage } from '@/pages/TransactionsPage'
 
 function App() {
-  const [health, setHealth] = useState<HealthState>('loading')
-  const [session, setSession] = useState<Session | null>(null)
-  const [user, setUser] = useState<CurrentUser | null>(null)
-  const [authError, setAuthError] = useState<string | null>(null)
+  const { session, isLoading } = useAuth()
 
-  useEffect(() => {
-    fetch('/api/health')
-      .then((response) => setHealth(response.ok ? 'ok' : 'error'))
-      .catch(() => setHealth('error'))
-  }, [])
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session))
-    const { data } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession)
-      if (!newSession) {
-        setUser(null)
-        setAuthError(null)
-      }
-    })
-    return () => data.subscription.unsubscribe()
-  }, [])
-
-  useEffect(() => {
-    if (!session) return
-    fetch('/api/me', { headers: { Authorization: `Bearer ${session.access_token}` } })
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
-        return response.json() as Promise<CurrentUser>
-      })
-      .then((currentUser) => {
-        setUser(currentUser)
-        setAuthError(null)
-      })
-      .catch(() => setAuthError('השרת לא אישר את ההתחברות'))
-  }, [session])
+  if (isLoading) return <LoadingState className="min-h-dvh" />
+  if (!session) return <AuthPage />
 
   return (
-    <main style={{ padding: 24 }}>
-      <h1>מאושרים</h1>
-      <p role="status">{statusText[health]}</p>
-      {session ? (
-        <>
-          <p>{user ? `מחובר/ת כ-${user.email}` : 'מאמת התחברות מול השרת…'}</p>
-          <button onClick={() => supabase.auth.signOut()}>התנתקות</button>
-        </>
-      ) : (
-        <AuthForm />
-      )}
-      {authError && <p role="alert">{authError}</p>}
-    </main>
+    <Routes>
+      <Route element={<AppShell />}>
+        <Route index element={<OverviewPage />} />
+        <Route path="transactions" element={<TransactionsPage />} />
+        <Route path="budget" element={<BudgetPage />} />
+        <Route path="settings" element={<SettingsPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
   )
 }
 

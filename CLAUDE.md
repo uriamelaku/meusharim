@@ -38,16 +38,17 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 ## MVP (Phase 1)
 1. Project skeleton: repository structure, Dockerfiles, compose.yaml, environment examples, README.
 2. End-to-end email/password auth (sign up, sign in, sign out): React -> Supabase Auth -> FastAPI JWT validation.
-3. Create household and invite/join second partner securely.
-4. Default editable income/expense categories.
-5. Manual transactions: amount, type, category, date, optional note, `created_by`, `paid_by`, personal/shared flag; list, add, edit and delete.
+3. UI/UX foundation: design system (colors, typography, buttons, forms, cards) with Tailwind CSS + shadcn/ui; designed sign-up/sign-in screen; app shell with mobile bottom navigation and desktop sidebar; shared loading, error and empty states. Dashboard is a skeleton only: no fake data, no new features.
+4. Create household and invite/join second partner securely.
+5. Default editable income/expense categories.
+6. Manual transactions: amount, type, category, date, optional note, `created_by`, `paid_by`, personal/shared flag; list, add, edit and delete.
    - `amount` is always a positive integer in agorot; `type` (`income` | `expense`) determines direction.
    - `created_by` is set automatically by the server to the authenticated user and is never accepted from the client.
    - `paid_by` is chosen by the user: one of the household members, or `joint` (shared account).
-6. Monthly budgets per category with sensible defaults.
-7. Dashboard: monthly income, expenses, net difference, remaining budget, category breakdown.
-8. Mobile-first RTL interface with fast entry flow; basic PWA.
-9. Automated tests for financial calculations and household authorization.
+7. Monthly budgets per category with sensible defaults.
+8. Dashboard: monthly income, expenses, net difference, remaining budget, category breakdown.
+9. Mobile-first RTL interface with fast entry flow; basic PWA.
+10. Automated tests for financial calculations and household authorization.
 
 ## Later phases
 - **Phase 2:** recurring expenses, installments and planned future transactions using a unified transaction ledger; prevent duplicates and double counting.
