@@ -14,7 +14,7 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 - Recurring income/expenses and installments are implemented together with transactions (phases 5–9 plan in `docs/plan-phases-5-9.md`), on one unified ledger.
 - Every transaction has an explicit status: `planned` or `completed`. A date passing never completes a transaction; only completed transactions count as actual in balances, budgets and reports. Planned amounts are always shown separately.
 - No personal/shared flag on transactions for now.
-- **No AWS.** Frontend deployment: Vercel. Backend Docker hosting: Railway (unless user changes this). Database/Auth: Supabase.
+- **No AWS.** Deployment: Render (backend Web Service + frontend Static Site, free tier) with Supabase for PostgreSQL/Auth; see `docs/deployment.md`. Keep the code platform-neutral: environment differences go through environment variables only, never platform-specific code.
 
 ## Tech stack
 - Frontend: React, TypeScript, Vite, Tailwind CSS, shadcn/ui, React Router, TanStack Query.

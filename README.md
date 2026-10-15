@@ -72,6 +72,10 @@ docker compose exec frontend npm run lint
 docker compose exec frontend npm run build
 ```
 
+## Deployment
+
+See [docs/deployment.md](docs/deployment.md) for build/start commands and environment variables.
+
 ## Reset the local database
 
 ```bash

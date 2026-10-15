@@ -20,6 +20,13 @@ async function readErrorCode(response: Response): Promise<string | null> {
   }
 }
 
+/**
+ * Where the backend lives. Empty (the default) means the same origin as the app, which
+ * is how local development works through the Vite proxy. Set VITE_API_BASE_URL when the
+ * API is on its own domain, e.g. "https://api.example.com".
+ */
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '')
+
 type RequestOptions = { method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'; body?: unknown }
 
 export async function apiRequest<T>(
@@ -27,7 +34,7 @@ export async function apiRequest<T>(
   accessToken: string,
   { method = 'GET', body }: RequestOptions = {},
 ): Promise<T> {
-  const response = await fetch(path, {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
     method,
     headers: {
       Authorization: `Bearer ${accessToken}`,

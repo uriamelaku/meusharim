@@ -1,4 +1,5 @@
-# Development image only. In production the frontend is built and served by Vercel.
+# Development image only. In production the frontend is built (npm run build) and
+# served as static files from dist/.
 FROM node:22-alpine
 
 WORKDIR /app

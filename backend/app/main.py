@@ -2,6 +2,7 @@ import logging
 from typing import Annotated
 
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -9,6 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.auth import CurrentUser, get_current_user
 from app.budgets.router import router as budgets_router
 from app.categories.router import router as categories_router
+from app.config import settings
 from app.db import engine
 from app.errors import AppError, app_error_handler
 from app.households.router import household_error_handler
@@ -22,6 +24,15 @@ from app.transactions.router import router as transactions_router
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Meusharim API")
+if settings.cors_allowed_origins:
+    # Bearer tokens only, no cookies, so credentials stay off.
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_allowed_origins,
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+        allow_headers=["Authorization", "Content-Type"],
+        max_age=600,
+    )
 app.include_router(households_router)
 app.add_exception_handler(HouseholdError, household_error_handler)
 app.add_exception_handler(AppError, app_error_handler)
