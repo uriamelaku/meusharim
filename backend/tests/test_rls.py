@@ -84,3 +84,51 @@ def test_cannot_delete_other_households_invitation(two_households):
 def test_direct_writes_and_internals_are_not_granted(two_households, sql):
     user_a, _ = two_households
     assert_permission_denied(user_a, sql)
+
+
+APP_TABLES = [
+    "households",
+    "household_members",
+    "household_invitations",
+    "categories",
+    "transactions",
+    "schedules",
+    "budgets",
+]
+
+
+@pytest.mark.parametrize("api_role", ["authenticated", "anon"])
+@pytest.mark.parametrize("table", APP_TABLES)
+def test_supabase_api_roles_cannot_touch_app_data(two_households, api_role, table):
+    """Supabase's Data API runs as these roles; even a valid user JWT must not reach the
+    tables there, so all data access goes through the backend."""
+    user_a, _ = two_households
+    claims = f'{{"sub": "{user_a}", "role": "{api_role}"}}'
+    with pytest.raises(DBAPIError) as error, Session(engine) as session, session.begin():
+        session.execute(text(f"SET LOCAL ROLE {api_role}"))
+        session.execute(text("SELECT set_config('request.jwt.claims', :c, true)"), {"c": claims})
+        session.execute(text(f"SELECT 1 FROM public.{table} LIMIT 1"))
+    assert isinstance(error.value.orig, pg_errors.InsufficientPrivilege)
+
+
+@pytest.mark.parametrize("api_role", ["authenticated", "anon"])
+def test_supabase_api_roles_have_no_privileges_left(api_role):
+    with Session(engine) as session:
+        tables = session.scalars(
+            text(
+                "SELECT table_name FROM information_schema.role_table_grants"
+                " WHERE grantee = :role AND table_schema = 'public'"
+                " UNION SELECT table_name FROM information_schema.column_privileges"
+                " WHERE grantee = :role AND table_schema = 'public'"
+            ),
+            {"role": api_role},
+        ).all()
+        functions = session.scalar(
+            text(
+                "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace"
+                " WHERE n.nspname = 'app' AND has_function_privilege(:role, p.oid, 'EXECUTE')"
+            ),
+            {"role": api_role},
+        )
+    assert tables == []
+    assert functions == 0

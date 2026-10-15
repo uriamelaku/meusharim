@@ -29,6 +29,16 @@ Never set the Supabase secret / service-role key: the backend does not need it.
 Migrations run on every start. They are idempotent; with a single instance this is safe.
 On a platform with a pre-deploy step, `alembic upgrade head` can move there instead.
 
+The previous backend version keeps serving while the new one migrates and starts, so a
+migration must not break the running version (add first, remove in a later deploy, as
+0006 → 0008 do). All pending migrations run in one transaction: if one fails, none
+apply and the new version does not start.
+
+Rolling back code to a version that predates the database's revision fails at start
+("Can't locate revision"). Downgrade first, with the newer code:
+`alembic downgrade <revision>`, run with the production `DATABASE_URL` in the environment
+(never on the command line), then roll back.
+
 ## Frontend (static site)
 
 | Setting | Value |
