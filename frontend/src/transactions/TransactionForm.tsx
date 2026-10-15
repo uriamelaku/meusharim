@@ -52,6 +52,7 @@ export function TransactionForm({
   const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   const create = useCreateTransaction()
+  const [requestId, setRequestId] = useState(() => crypto.randomUUID())
   const update = useUpdateTransaction()
   const remove = useDeleteTransaction()
   const mutation = transaction ? update : create
@@ -92,7 +93,16 @@ export function TransactionForm({
       onDone()
     }
     if (transaction) update.mutate({ id: transaction.id, ...body }, { onSuccess })
-    else create.mutate(body, { onSuccess })
+    else
+      create.mutate(
+        { ...body, request_id: requestId },
+        {
+          onSuccess: () => {
+            setRequestId(crypto.randomUUID())
+            onSuccess()
+          },
+        },
+      )
   }
 
   function confirmDelete() {

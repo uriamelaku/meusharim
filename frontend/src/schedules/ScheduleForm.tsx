@@ -69,6 +69,7 @@ export function ScheduleForm({
   const [submitted, setSubmitted] = useState(false)
 
   const create = useCreateSchedule()
+  const [requestId, setRequestId] = useState(() => crypto.randomUUID())
   const update = useUpdateSchedule()
   const mutation = schedule ? update : create
 
@@ -163,12 +164,16 @@ export function ScheduleForm({
         },
       )
     } else {
-      create.mutate(input, {
-        onSuccess: () => {
-          toast.success(isInstallments ? 'התשלומים נוספו' : 'הוראת הקבע נוספה')
-          onDone()
+      create.mutate(
+        { ...input, request_id: requestId },
+        {
+          onSuccess: () => {
+            setRequestId(crypto.randomUUID())
+            toast.success(isInstallments ? 'התשלומים נוספו' : 'הוראת הקבע נוספה')
+            onDone()
+          },
         },
-      })
+      )
     }
   }
 

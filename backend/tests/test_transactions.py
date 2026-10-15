@@ -1,9 +1,16 @@
+import threading
+from datetime import date
+from uuid import UUID, uuid4
+
 import pytest
 from psycopg import errors as pg_errors
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 
 from app.db import user_transaction
+from app.scope import HouseholdScope
+from app.transactions import service
+from app.transactions.schemas import TransactionCreate
 from tests.partners import Partner, make_couple
 
 
@@ -51,7 +58,7 @@ def test_joint_account_is_null_party(couple):
     assert add(owner)["party_user_id"] is None
 
 
-@pytest.mark.parametrize("amount", ["0.01", "0.1", "9999999999.99", 12.5])
+@pytest.mark.parametrize("amount", ["0.01", "0.1", "9999999999.99", 12.5, "1e3"])
 def test_valid_amounts_are_stored_exactly(couple, amount):
     owner, _ = couple
     created = add(owner, amount=amount)
@@ -59,7 +66,9 @@ def test_valid_amounts_are_stored_exactly(couple, amount):
     assert created["amount"].count(".") == 1 and len(created["amount"].split(".")[1]) == 2
 
 
-@pytest.mark.parametrize("amount", ["0", "-5", "0.001", "10000000000.00", "abc", None])
+@pytest.mark.parametrize(
+    "amount", ["0", "-5", "0.001", "10000000000.00", "abc", None, 0.1 + 0.2, "NaN", "Infinity"]
+)
 def test_invalid_amounts_are_rejected(couple, amount):
     owner, _ = couple
     body = {
@@ -373,3 +382,70 @@ def test_rls_hides_other_households_transactions(couple):
         assert session.scalar(text("SELECT count(*) FROM transactions")) == 0
         updated = session.execute(text("UPDATE transactions SET amount = 1 RETURNING id")).all()
         assert updated == []
+
+
+# --- Repeated create requests -------------------------------------------------
+
+
+def test_repeated_request_id_creates_one_transaction(couple):
+    owner, partner = couple
+    request_id = str(uuid4())
+    first = add(owner, request_id=request_id)
+    again = add(owner, request_id=request_id)
+    by_partner = add(partner, request_id=request_id)  # same household, same request
+
+    assert again["id"] == first["id"] == by_partner["id"]
+    assert listing(owner)["total"] == 1
+
+
+def test_without_or_with_new_request_ids_each_create_adds_a_row(couple):
+    owner, _ = couple
+    add(owner)
+    add(owner)
+    add(owner, request_id=str(uuid4()))
+    add(owner, request_id=str(uuid4()))
+    assert listing(owner)["total"] == 4
+
+
+def test_request_id_never_returns_another_households_transaction(couple):
+    owner, _ = couple
+    request_id = str(uuid4())
+    mine = add(owner, request_id=request_id)
+    stranger = Partner()
+    stranger.create_household()
+
+    theirs = add(stranger, request_id=request_id)
+
+    assert theirs["id"] != mine["id"]
+    assert listing(owner)["total"] == 1
+    assert listing(stranger)["total"] == 1
+
+
+def test_parallel_requests_with_same_request_id_create_one_row(couple):
+    owner, partner = couple
+    household_id = UUID(owner.ok("get", "/api/household")["household"]["id"])
+    body = TransactionCreate(
+        kind="expense",
+        amount="7.77",
+        occurred_on="2026-10-10",
+        category_id=owner.category_id("מזון"),
+        status="planned",
+        request_id=uuid4(),
+    )
+    barrier = threading.Barrier(4)
+    created: list[UUID] = []
+
+    def create(user_id):
+        with user_transaction(user_id) as session:
+            scope = HouseholdScope(session=session, household_id=household_id, today=date.today())
+            barrier.wait()
+            created.append(service.create_transaction(scope, body).id)
+
+    threads = [threading.Thread(target=create, args=(u,)) for u in [owner.id, partner.id] * 2]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert len(created) == 4 and len(set(created)) == 1
+    assert listing(owner)["total"] == 1

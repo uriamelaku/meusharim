@@ -1,6 +1,7 @@
 import threading
 from datetime import date
 from decimal import Decimal
+from uuid import uuid4
 
 import pytest
 
@@ -411,3 +412,31 @@ def test_category_used_only_by_schedule_is_archived_not_deleted(couple):
     )
     create(owner, category_id=category["id"], start_date="2027-01-01")
     assert owner.ok("delete", f"/api/categories/{category['id']}") == {"result": "archived"}
+
+
+def test_repeated_request_id_creates_one_schedule(couple):
+    owner, _ = couple
+    request_id = str(uuid4())
+    first = create(owner, request_id=request_id)
+    again = create(owner, request_id=request_id)
+    plan_request = str(uuid4())
+    plan = installments(owner, request_id=str(uuid4()))
+    plan_again = installments(owner, request_id=plan_request)
+    plan_repeat = installments(owner, request_id=plan_request)
+
+    assert again["id"] == first["id"]
+    assert plan_again["id"] == plan_repeat["id"] != plan["id"]
+    assert len(owner.ok("get", "/api/schedules")) == 3
+    assert len(recorded(owner, first["id"])) == 2  # Aug 31 and Sep 30, each once
+
+
+def test_schedule_request_id_is_scoped_to_household(couple):
+    owner, _ = couple
+    request_id = str(uuid4())
+    mine = create(owner, request_id=request_id)
+    stranger = Partner()
+    stranger.create_household()
+    theirs = create(stranger, request_id=request_id)
+
+    assert theirs["id"] != mine["id"]
+    assert [s["id"] for s in owner.ok("get", "/api/schedules")] == [mine["id"]]

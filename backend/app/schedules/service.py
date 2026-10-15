@@ -219,15 +219,24 @@ def get_schedule(scope: HouseholdScope, schedule_id: UUID) -> ScheduleDetail:
 
 
 def _insert(scope: HouseholdScope, values: dict[str, Any]) -> UUID:
+    """Inserts a schedule. When `request_id` repeats an earlier create request, returns
+    the schedule that request created instead (also when both run in parallel)."""
     columns = ", ".join(values)
     placeholders = ", ".join(f":{column}" for column in values)
-    return scope.session.execute(
+    schedule_id = scope.session.execute(
         text(
             f"INSERT INTO schedules (household_id, {columns})"
-            f" VALUES (:household_id, {placeholders}) RETURNING id"
+            f" VALUES (:household_id, {placeholders})"
+            " ON CONFLICT (household_id, request_id) DO NOTHING RETURNING id"
         ),
         {"household_id": scope.household_id, **values},
-    ).scalar_one()
+    ).scalar_one_or_none()
+    if schedule_id is None:
+        schedule_id = scope.session.scalar(
+            text("SELECT id FROM schedules WHERE request_id = :request_id"),
+            {"request_id": values["request_id"]},
+        )
+    return schedule_id
 
 
 def create_schedule(

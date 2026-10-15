@@ -37,12 +37,14 @@ Alembic migrations live in `backend/migrations/`. The backend container runs
 docker compose exec backend alembic upgrade head
 ```
 
-Row level security: every API request runs inside a transaction as the `authenticated`
+Row level security: every API request runs inside a transaction as the `meusharim_app`
 role with `request.jwt.claims` set from the verified JWT (see `backend/app/db.py`).
+Supabase's own API roles (`anon`, `authenticated`) have no access to app tables.
 
 ## Features and API
 
-All household data goes through FastAPI (`/docs` lists every endpoint):
+All household data goes through FastAPI (locally, `/docs` lists every endpoint; it is off
+unless `API_DOCS_ENABLED=true`):
 
 | Area | Endpoints |
 |---|---|

@@ -19,6 +19,34 @@ from app.main import app  # noqa: E402
 from tests.tokens import TEST_PRIVATE_KEY  # noqa: E402
 
 
+def _simulate_supabase_api_roles() -> None:
+    """Like Supabase: the Data API roles exist before any migration, and new tables in
+    `public` are granted to them by default. Migrations must take all of that away."""
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                """
+                DO $$
+                BEGIN
+                  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'anon') THEN
+                    CREATE ROLE anon NOLOGIN;
+                  END IF;
+                  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'authenticated') THEN
+                    CREATE ROLE authenticated NOLOGIN;
+                  END IF;
+                END
+                $$;
+                GRANT anon, authenticated TO current_user;
+                GRANT USAGE ON SCHEMA public TO anon, authenticated;
+                ALTER DEFAULT PRIVILEGES IN SCHEMA public
+                  GRANT ALL ON TABLES TO anon, authenticated;
+                ALTER DEFAULT PRIVILEGES IN SCHEMA public
+                  GRANT EXECUTE ON FUNCTIONS TO anon, authenticated;
+                """
+            )
+        )
+
+
 @pytest.fixture(scope="session", autouse=True)
 def test_database():
     admin_engine = create_engine(_dev_url.set(database="postgres"), isolation_level="AUTOCOMMIT")
@@ -29,6 +57,8 @@ def test_database():
         if not exists:
             connection.execute(text(f'CREATE DATABASE "{_test_url.database}"'))
     admin_engine.dispose()
+    if not exists:
+        _simulate_supabase_api_roles()
     command.upgrade(Config("alembic.ini"), "head")
     yield
 

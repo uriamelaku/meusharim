@@ -83,8 +83,9 @@ export function useOccurrences(from: string, to: string, kind?: Kind) {
   return useDataQuery<Occurrence[]>('/api/schedules/occurrences', { from, to, kind })
 }
 
+/** `request_id`: see useCreateTransaction. */
 export function useCreateSchedule() {
-  return useDataMutation<ScheduleDetail, ScheduleInput>((body) => ({
+  return useDataMutation<ScheduleDetail, ScheduleInput & { request_id: string }>((body) => ({
     path: '/api/schedules',
     method: 'POST',
     body,

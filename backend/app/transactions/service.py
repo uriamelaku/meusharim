@@ -180,12 +180,19 @@ def create_transaction(scope: HouseholdScope, body: TransactionCreate) -> Transa
     transaction_id = scope.session.execute(
         text(
             "INSERT INTO transactions (household_id, kind, amount, occurred_on, category_id,"
-            " description, status, party_user_id)"
+            " description, status, party_user_id, request_id)"
             " VALUES (:household_id, :kind, :amount, :occurred_on, :category_id,"
-            " :description, :status, :party_user_id) RETURNING id"
+            " :description, :status, :party_user_id, :request_id)"
+            " ON CONFLICT (household_id, request_id) DO NOTHING RETURNING id"
         ),
         {"household_id": scope.household_id, **body.model_dump()},
-    ).scalar_one()
+    ).scalar_one_or_none()
+    if transaction_id is None:
+        # A repeat of a request that already created its row (in parallel or earlier).
+        transaction_id = scope.session.scalar(
+            text("SELECT id FROM transactions WHERE request_id = :request_id"),
+            {"request_id": body.request_id},
+        )
     return get_transaction(scope, transaction_id)
 
 

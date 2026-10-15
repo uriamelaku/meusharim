@@ -23,7 +23,9 @@ from app.transactions.router import router as transactions_router
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Meusharim API")
+NO_DOCS = {"docs_url": None, "redoc_url": None, "openapi_url": None}
+
+app = FastAPI(title="Meusharim API", **({} if settings.api_docs_enabled else NO_DOCS))
 if settings.cors_allowed_origins:
     # Bearer tokens only, no cookies, so credentials stay off.
     app.add_middleware(

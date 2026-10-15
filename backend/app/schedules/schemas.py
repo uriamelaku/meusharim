@@ -26,6 +26,8 @@ class RecurringCreate(BaseModel):
     end_date: LedgerDate | None = None
     amount: Amount
     auto_confirm: bool = False
+    # New per create attempt; a repeat with the same id returns the schedule it created.
+    request_id: UUID | None = None
 
     @model_validator(mode="after")
     def end_after_start(self) -> "RecurringCreate":
@@ -45,6 +47,7 @@ class InstallmentsCreate(BaseModel):
     installments_count: InstallmentsCount
     # Card installments are charged for sure, so they complete on their date by default.
     auto_confirm: bool = True
+    request_id: UUID | None = None
 
     @model_validator(mode="after")
     def at_least_an_agora_per_payment(self) -> "InstallmentsCreate":

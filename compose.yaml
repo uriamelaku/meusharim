@@ -23,6 +23,7 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-meusharim}:${POSTGRES_PASSWORD:-meusharim}@db:5432/${POSTGRES_DB:-meusharim}
       SUPABASE_URL: ${SUPABASE_URL:?Set SUPABASE_URL in .env (see .env.example)}
+      API_DOCS_ENABLED: "true"
       # Docker on Windows/macOS does not forward file-change events; poll for --reload.
       WATCHFILES_FORCE_POLLING: "true"
     command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"

@@ -1,4 +1,4 @@
-"""Row level security, checked directly in PostgreSQL as the `authenticated` role."""
+"""Row level security, checked directly in PostgreSQL as the backend's request role."""
 
 from uuid import uuid4
 
@@ -8,7 +8,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
-from app.db import engine, user_transaction
+from app.db import APP_ROLE, engine, user_transaction
 from app.households import service
 
 
@@ -33,9 +33,9 @@ def assert_permission_denied(user_id, sql: str) -> None:
     assert isinstance(error.value.orig, pg_errors.InsufficientPrivilege)
 
 
-def test_requests_run_as_authenticated_role():
+def test_requests_run_as_app_role():
     with user_transaction(uuid4()) as session:
-        assert session.scalar(text("SELECT current_user")) == "authenticated"
+        assert session.scalar(text("SELECT current_user")) == APP_ROLE
 
 
 def test_user_sees_only_own_household(two_households):
@@ -48,7 +48,7 @@ def test_user_sees_only_own_household(two_households):
 
 def test_without_claims_no_rows_are_visible(two_households):
     with Session(engine) as session, session.begin():
-        session.execute(text("SET LOCAL ROLE authenticated"))
+        session.execute(text(f"SET LOCAL ROLE {APP_ROLE}"))
         assert session.scalar(text("SELECT count(*) FROM households")) == 0
         assert session.scalar(text("SELECT count(*) FROM household_members")) == 0
 

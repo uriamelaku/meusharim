@@ -21,6 +21,8 @@ class TransactionCreate(BaseModel):
     description: Description = ""
     status: Status
     party_user_id: UUID | None = None
+    # New per create attempt; a repeat with the same id returns the row it created.
+    request_id: UUID | None = None
 
 
 class TransactionUpdate(BaseModel):

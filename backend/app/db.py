@@ -22,16 +22,21 @@ engine = create_engine(
 )
 
 
+# The role every user request runs as. Only the backend's connection can switch to it;
+# Supabase's `authenticated` role (its Data API) has no access to app data.
+APP_ROLE = "meusharim_app"
+
+
 @contextmanager
 def user_transaction(user_id: UUID) -> Iterator[Session]:
-    """A transaction that runs as the `authenticated` role, so RLS applies to `user_id`.
+    """A transaction that runs as APP_ROLE, so RLS applies to `user_id`.
 
     SET LOCAL and set_config(..., true) last only until the transaction ends,
     so pooled connections never leak one user's context to another request.
     """
-    claims = json.dumps({"sub": str(user_id), "role": "authenticated"})
+    claims = json.dumps({"sub": str(user_id)})
     with Session(engine) as session, session.begin():
-        session.execute(text("SET LOCAL ROLE authenticated"))
+        session.execute(text(f"SET LOCAL ROLE {APP_ROLE}"))
         session.execute(
             text("SELECT set_config('request.jwt.claims', :claims, true)"), {"claims": claims}
         )

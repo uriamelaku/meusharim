@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     # (e.g. "https://app.example.com"). Empty: no cross-origin access, as when the
     # frontend is served from the same domain or through a dev proxy.
     cors_allowed_origins: Annotated[list[str], NoDecode] = []
+    # Interactive API docs (/docs, /redoc, /openapi.json). Off unless enabled, so a
+    # deployment never exposes them by accident; local development turns them on.
+    api_docs_enabled: bool = False
 
     @field_validator("database_url")
     @classmethod

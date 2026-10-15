@@ -53,8 +53,12 @@ export function useTransactions(query: TransactionQuery) {
   return useDataQuery<TransactionPage>('/api/transactions', query)
 }
 
+/**
+ * `request_id` is new for each entry; a repeated request with the same id (double click,
+ * retry) returns the row the first one created instead of adding another.
+ */
 export function useCreateTransaction() {
-  return useDataMutation<Transaction, TransactionInput>((body) => ({
+  return useDataMutation<Transaction, TransactionInput & { request_id: string }>((body) => ({
     path: '/api/transactions',
     method: 'POST',
     body,
