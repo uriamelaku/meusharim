@@ -14,6 +14,10 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 - Recurring income/expenses and installments are implemented together with transactions (phases 5–9 plan in `docs/plan-phases-5-9.md`), on one unified ledger.
 - Every transaction has an explicit status: `planned` or `completed`. A date passing never completes a transaction; only completed transactions count as actual in balances, budgets and reports. Planned amounts are always shown separately.
 - No personal/shared flag on transactions for now.
+- Budgets: the overall monthly amount is a ceiling; category budgets may not add up to more than it (checked on the server). Budget alerts are in-app only (80% and over, once per category and month on a device).
+- Savings goals: a deposit is a completed expense in the goal's savings category, linked by `transactions.goal_id`; progress counts completed deposits only.
+- Account deletion: requires two confirmations plus email and password re-checked on the server. A remaining partner keeps the household and its data; a last member's household is deleted. The backend holds the Supabase secret key for this single call only.
+- Theme (light/dark) is a per-device setting. The app is installable (PWA); the service worker caches no data.
 - **No AWS.** Deployment: Render (backend Web Service + frontend Static Site, free tier) with Supabase for PostgreSQL/Auth; see `docs/deployment.md`. Keep the code platform-neutral: environment differences go through environment variables only, never platform-specific code.
 
 ## Tech stack
@@ -35,7 +39,7 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 - RLS must behave identically on local PostgreSQL and Supabase. Do not reference Supabase-only objects (`auth.uid()`, `auth.users`) in policies. Policies use our own `app.current_user_id()`, which reads the user id from `current_setting('request.jwt.claims', true)`. Requests run as our own `meusharim_app` role (created by migrations; only the backend's connection can switch to it). Per request, inside the transaction, the backend runs `SET LOCAL ROLE meusharim_app` and sets `request.jwt.claims` with `set_config(..., true)`. Grants and policies on app tables go to `meusharim_app` only; Supabase's `anon`/`authenticated` roles (its Data API) get no privileges on app data, and every new table must revoke them.
 - Never expose database credentials or privileged Supabase keys in the frontend. Restrict CORS, validate input, and never commit secrets.
 - Keep database schema changes in Alembic migrations; avoid manual schema drift.
-- Store monetary values as `NUMERIC(12,2)` (Python `Decimal`), never floating point. The API sends amounts as decimal strings with two decimals; the frontend never does floating-point arithmetic on money and all totals come from the server. Exceptions: the installment split preview uses exact integer agorot (BigInt), and chart bar widths are visual ratios only.
+- Store monetary values as `NUMERIC(12,2)` (Python `Decimal`), never floating point. The API sends amounts as decimal strings with two decimals; the frontend never does floating-point arithmetic on money and all totals come from the server. Exceptions: live form previews (installment split, budget allocation) use exact integer agorot (BigInt), and chart/ring sizes are visual ratios only.
 - Use Asia/Jerusalem for month/date interpretation; store transaction dates as DATE.
 - Schedules (recurring entries and installments) never store future occurrences. At the start of every household request, due occurrences are written to `transactions` once (unique `(schedule_id, sequence_no)` plus a forward-only `next_sequence`), as planned or, with auto-confirm, completed. Future occurrences are computed on read.
 - Scope household data with household_id. Prevent cross-household access with automated tests.
@@ -56,8 +60,8 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 10. Automated tests for financial calculations and household authorization.
 
 ## Later phases
-- **Phase 3:** CSV import/export and monthly review (charts, comparisons and search/filter are part of phases 5–9).
-- **Phase 4:** savings goals and optional AI insights, only if useful.
+- **Phase 3:** statement import: the backend core (normalized rows → preview with category suggestion and duplicate flags → commit) is done; per-provider file parsers (Cal, Max, Isracard, bank) wait for sample files, and the UI shows a disabled "coming soon" button. CSV export later. Monthly review, insights and the monthly summary are done.
+- **Phase 4:** savings goals are done; optional AI insights only if useful.
 
 ## Working rules for Claude
 Follow this file as the project source of truth; propose edits when decisions change.
@@ -94,9 +98,9 @@ Follow this file as the project source of truth; propose edits when decisions ch
 - Never drop tables or delete production data without explicit approval.
 
 **Git**
-- Do not create commits automatically. Recommend when a commit is appropriate, briefly list what it should include, and wait for approval.
-- **Never push to GitHub (any branch, including `main`) without explicit permission.** A local commit does not authorize a push.
-- The dev environment is ephemeral and unpushed commits can be lost: at the end of each task, mention any commits that are not yet pushed and ask whether to push.
+- Commits: the user approved local commits after each verified step (see push rule below).
+- **Never push to GitHub (any branch, including `main`) without explicit permission.** A local commit does not authorize a push. Current instruction from the user: commit locally after each verified step, never push.
+- The dev environment is ephemeral and unpushed commits can be lost: at the end of each task, mention any commits that are not yet pushed (without asking to push while the instruction above stands).
 - Never merge to `main` or open a pull request without explicit approval.
 
 **Deployment**
