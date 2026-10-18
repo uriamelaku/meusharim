@@ -51,6 +51,7 @@ Rolling back code to a version that predates the database's revision fails at st
 | Build command | `npm ci && npm run build` |
 | Publish directory | `dist` |
 | Rewrite | `/*` → `/index.html` (client-side routing) |
+| Header | `/sw.js` → `Cache-Control: no-cache` (so a new service worker is picked up) |
 
 Build-time environment variables (public, embedded in the bundle). The build fails if
 either `VITE_SUPABASE_*` variable is missing; changing them requires a new build.
@@ -62,6 +63,11 @@ either `VITE_SUPABASE_*` variable is missing; changing them requires a new build
 | `VITE_API_BASE_URL` | Backend origin, e.g. `https://meusharim-api.onrender.com`. Empty means same origin. |
 
 Node version comes from `engines` in `frontend/package.json`.
+
+Installing as an app (PWA): `manifest.webmanifest`, the icons and `sw.js` are served
+from `public/`. Browsers only offer installation over HTTPS (or `localhost`), so a phone
+on the local network (`http://10.x.x.x:5173`) cannot install the development server; the
+deployed site can. The service worker caches nothing; it only shows an offline page.
 
 ## Supabase
 

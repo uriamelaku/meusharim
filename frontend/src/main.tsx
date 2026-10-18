@@ -17,6 +17,16 @@ applyTheme(storedTheme())
 // Before the router renders, so the token leaves the address bar immediately.
 capturePendingInvitation()
 
+// Makes the app installable on phones. Only in builds: in development it would get in
+// the way of hot reload.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch((error: unknown) => {
+      console.error('Service worker registration failed', error)
+    })
+  })
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Direction.Provider dir="rtl">
