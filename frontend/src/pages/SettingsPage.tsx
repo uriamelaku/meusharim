@@ -1,4 +1,5 @@
 import { LogOut } from 'lucide-react'
+import { DeleteAccountCard } from '@/account/DeleteAccountCard'
 import { signOut } from '@/auth/signOut'
 import { PageHeader } from '@/components/PageHeader'
 import { CategoriesCard } from '@/categories/CategoriesCard'
@@ -30,6 +31,7 @@ export function SettingsPage() {
             </Button>
           </CardContent>
         </Card>
+        <DeleteAccountCard hasPartner={household.members.length > 1} />
       </div>
     </>
   )

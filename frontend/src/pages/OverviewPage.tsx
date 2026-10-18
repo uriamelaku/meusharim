@@ -1,18 +1,10 @@
-import {
-  ArrowLeft,
-  CalendarCheck,
-  CalendarClock,
-  Minus,
-  PieChart,
-  Plus,
-  Receipt,
-} from 'lucide-react'
+import { ArrowLeft, CalendarCheck, CalendarClock, PieChart, Receipt } from 'lucide-react'
 import { Link } from 'react-router'
+import { useBudget } from '@/budgets/api'
 import { toneOf } from '@/budgets/usage'
-import { BarList } from '@/components/BarList'
+import { useCategories } from '@/categories/api'
 import { PeriodPicker } from '@/components/PeriodPicker'
 import { ProgressBar } from '@/components/ProgressBar'
-import { RingsMark } from '@/components/RingsMark'
 import { useShellContext } from '@/components/shellContext'
 import { EmptyState, ErrorState, LoadingState } from '@/components/states'
 import { Button } from '@/components/ui/button'
@@ -21,6 +13,8 @@ import { formatMoney } from '@/lib/money'
 import { formatPeriod, monthName, toPeriodParam } from '@/lib/period'
 import { cn } from '@/lib/utils'
 import { type MonthSummary, useMonthSummary } from '@/summary/api'
+import { CategoryRing } from '@/summary/CategoryRing'
+import { ringItems } from '@/summary/ringItems'
 import { UpcomingRow } from '@/summary/UpcomingRow'
 import { PendingConfirmations } from '@/transactions/PendingConfirmations'
 import { useQuickAdd } from '@/transactions/quickAdd'
@@ -29,14 +23,17 @@ import { TransactionRow } from '@/transactions/TransactionRow'
 export function OverviewPage() {
   const { household } = useShellContext()
   const { period, today, setPeriod, isCurrent } = useSelectedPeriod()
-  const summary = useMonthSummary(toPeriodParam(period))
-  const { add, edit } = useQuickAdd()
+  const month = toPeriodParam(period)
+  const summary = useMonthSummary(month)
+  const budget = useBudget(month)
+  const categories = useCategories()
+  const { edit } = useQuickAdd()
 
   return (
     <>
-      <header className="mb-6 lg:mb-8">
+      <header className="mb-5 lg:mb-8">
         <div className="flex min-h-9 items-center justify-between gap-3">
-          <p className="truncate text-sm font-medium text-brass-strong">{household.name}</p>
+          <p className="truncate text-sm font-semibold text-muted-foreground">{household.name}</p>
           {!isCurrent && (
             <Button
               variant="ghost"
@@ -56,45 +53,27 @@ export function OverviewPage() {
       <div className="flex flex-col gap-6">
         <PendingConfirmations members={household.members} />
 
-        {summary.isPending ? (
+        {summary.isPending || budget.isPending || categories.isPending ? (
           <LoadingState />
-        ) : summary.isError ? (
+        ) : summary.isError || budget.isError || categories.isError ? (
           <ErrorState
-            title="לא הצלחנו לטעון את הסקירה"
+            title="לא הצלחנו לטעון את המסך הראשי"
             description="בדקו את החיבור ונסו שוב."
-            onRetry={() => void summary.refetch()}
+            onRetry={() => {
+              void summary.refetch()
+              void budget.refetch()
+              void categories.refetch()
+            }}
           />
         ) : (
           <>
             <BalanceCard summary={summary.data} monthLabel={monthName(period.month)} />
-
-            <div className="grid grid-cols-2 gap-2">
-              <Button size="lg" variant="outline" onClick={() => add('expense')}>
-                <Minus aria-hidden />
-                הוצאה
-              </Button>
-              <Button size="lg" variant="outline" onClick={() => add('income')}>
-                <Plus aria-hidden />
-                הכנסה
-              </Button>
-            </div>
-
+            <SpendingRing
+              summary={summary.data}
+              items={ringItems(categories.data, budget.data.categories)}
+              emptyTitle={`אין הוצאות ב${formatPeriod(period)}`}
+            />
             <BudgetCard summary={summary.data} />
-
-            <section aria-labelledby="categories-title">
-              <h2 id="categories-title" className="mb-4 font-heading text-xl font-semibold">
-                הוצאות לפי קטגוריה
-              </h2>
-              {summary.data.expense_by_category.length ? (
-                <BarList items={summary.data.expense_by_category} label="הוצאות לפי קטגוריה" />
-              ) : (
-                <EmptyState
-                  icon={PieChart}
-                  title={`אין הוצאות ב${formatPeriod(period)}`}
-                  description="כשתוסיפו הוצאות לחודש הזה, תראו כאן לאן הכסף הולך."
-                />
-              )}
-            </section>
 
             {summary.data.upcoming.length > 0 && (
               <section aria-labelledby="upcoming-title">
@@ -121,7 +100,7 @@ export function OverviewPage() {
                   תנועות אחרונות
                 </h2>
                 <Button asChild variant="ghost" size="sm" className="h-9">
-                  <Link to={`/transactions?month=${toPeriodParam(period)}`}>
+                  <Link to={`/transactions?month=${month}`}>
                     לכל התנועות
                     <ArrowLeft aria-hidden />
                   </Link>
@@ -155,35 +134,61 @@ export function OverviewPage() {
   )
 }
 
+function SpendingRing({
+  summary,
+  items,
+  emptyTitle,
+}: {
+  summary: MonthSummary
+  items: ReturnType<typeof ringItems>
+  emptyTitle: string
+}) {
+  if (!items.length) {
+    return (
+      <EmptyState
+        icon={PieChart}
+        title={emptyTitle}
+        description="כשתוסיפו הוצאות לחודש הזה, תראו כאן לאן הכסף הולך."
+      />
+    )
+  }
+  return (
+    <CategoryRing
+      items={items}
+      total={summary.expense.actual}
+      remaining={summary.budget?.remaining ?? null}
+      budgetLink={`/budget?month=${summary.month}`}
+    />
+  )
+}
+
 function BalanceCard({ summary, monthLabel }: { summary: MonthSummary; monthLabel: string }) {
   const { balance, projected_balance, income, expense } = summary
   const hasPlanned = income.planned !== '0.00' || expense.planned !== '0.00'
   return (
     <section
       aria-labelledby="balance-title"
-      className="relative overflow-hidden rounded-3xl bg-primary px-6 py-7 text-primary-foreground shadow-lg shadow-primary/20 lg:px-8"
+      className="rounded-[1.75rem] bg-primary px-5 py-5 text-primary-foreground lg:px-8 lg:py-7"
     >
-      <RingsMark
-        className="pointer-events-none absolute -end-14 -top-14 h-32 opacity-20 sm:-end-10 sm:-top-14 sm:h-52"
-        firstRing="#ffffff"
-        secondRing="var(--brass)"
-      />
-      <p id="balance-title" className="text-sm font-medium text-primary-foreground/75">
-        מאזן {monthLabel} · בפועל
-      </p>
-      <p className="relative mt-2 font-heading text-4xl font-semibold tabular-nums sm:text-5xl">
-        {formatMoney(balance)}
-      </p>
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+        <div>
+          <p id="balance-title" className="text-sm font-semibold text-primary-foreground/80">
+            מאזן {monthLabel} · בפועל
+          </p>
+          <p className="mt-0.5 font-heading text-4xl font-semibold tabular-nums sm:text-5xl">
+            {formatMoney(balance)}
+          </p>
+        </div>
+        <dl className="flex gap-6">
+          <FlowStat label="הכנסות" actual={income.actual} planned={income.planned} />
+          <FlowStat label="הוצאות" actual={expense.actual} planned={expense.planned} />
+        </dl>
+      </div>
       {hasPlanned && (
-        <p className="relative mt-3 inline-flex rounded-full border border-dashed border-primary-foreground/40 px-3 py-1 text-sm text-primary-foreground/85">
+        <p className="mt-4 inline-flex rounded-full bg-primary-foreground/12 px-3 py-1 text-sm text-primary-foreground/90">
           אם כל המתוכנן יבוצע: {formatMoney(projected_balance)}
         </p>
       )}
-
-      <dl className="relative mt-6 grid grid-cols-2 gap-4 border-t border-primary-foreground/20 pt-5">
-        <FlowStat label="הכנסות" actual={income.actual} planned={income.planned} />
-        <FlowStat label="הוצאות" actual={expense.actual} planned={expense.planned} />
-      </dl>
     </section>
   )
 }
@@ -191,10 +196,10 @@ function BalanceCard({ summary, monthLabel }: { summary: MonthSummary; monthLabe
 function FlowStat({ label, actual, planned }: { label: string; actual: string; planned: string }) {
   return (
     <div>
-      <dt className="text-sm text-primary-foreground/75">{label}</dt>
-      <dd className="mt-0.5 text-xl font-semibold tabular-nums">{formatMoney(actual)}</dd>
+      <dt className="text-sm text-primary-foreground/80">{label}</dt>
+      <dd className="font-heading text-lg font-semibold tabular-nums">{formatMoney(actual)}</dd>
       {planned !== '0.00' && (
-        <dd className="text-xs text-primary-foreground/70">+ {formatMoney(planned)} מתוכנן</dd>
+        <dd className="text-xs text-primary-foreground/80">+ {formatMoney(planned)} מתוכנן</dd>
       )}
     </div>
   )
@@ -205,7 +210,7 @@ function BudgetCard({ summary }: { summary: MonthSummary }) {
   return (
     <Link
       to={`/budget?month=${summary.month}`}
-      className="flex flex-col gap-3 rounded-2xl border bg-card p-4 transition-colors hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+      className="flex flex-col gap-3 rounded-[1.75rem] bg-card p-5 transition-colors hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
     >
       <span className="flex items-center justify-between gap-2">
         <span className="font-medium">נשאר בתקציב</span>

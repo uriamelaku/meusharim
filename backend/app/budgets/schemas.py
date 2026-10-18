@@ -13,7 +13,10 @@ class CategoryBudgetInput(BaseModel):
 
 
 class BudgetInput(BaseModel):
-    """The whole budget of a month. Categories left out have no budget."""
+    """The whole budget of a month. Categories left out have no budget.
+
+    `total` is a ceiling: the category budgets may not add up to more than it.
+    """
 
     total: Amount | None = None
     categories: list[CategoryBudgetInput] = Field(default_factory=list, max_length=200)
@@ -36,6 +39,10 @@ class BudgetMonth(BaseModel):
     total_budget: Money | None
     # The overall budget used for the summary: total_budget, or the sum of category budgets.
     effective_budget: Money | None
+    # Sum of the category budgets.
+    allocated: Money
+    # The part of total_budget not split into categories; None without a total.
+    unallocated: Money | None
     actual: Money
     planned: Money
     remaining: Money | None

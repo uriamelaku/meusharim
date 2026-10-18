@@ -6,12 +6,22 @@ import { CategoryIconBadge } from '@/categories/CategoryBadge'
 import { TextField } from '@/components/TextField'
 import { Button } from '@/components/ui/button'
 import { describeError } from '@/lib/errors'
-import { amountToInput, parseAmountInput } from '@/lib/money'
+import {
+  amountToInput,
+  formatMoney,
+  parseAmountInput,
+  subtractAmounts,
+  sumAmounts,
+} from '@/lib/money'
+import { cn } from '@/lib/utils'
 import { type BudgetMonth, useSaveBudget } from './api'
 
 type BudgetEditorProps = { budget: BudgetMonth; periodLabel: string; onDone: () => void }
 
-/** Amounts for the month: an optional overall budget and one per expense category. */
+/**
+ * Amounts for the month: one per expense category and an optional overall ceiling.
+ * The categories may not add up to more than the ceiling; the rest stays unallocated.
+ */
 export function BudgetEditor({ budget, periodLabel, onDone }: BudgetEditorProps) {
   const categories = useCategories()
   const save = useSaveBudget(budget.month)
@@ -30,7 +40,15 @@ export function BudgetEditor({ budget, periodLabel, onDone }: BudgetEditorProps)
     (c) => c.kind === 'expense' && (!c.archived || amounts[c.id] !== undefined),
   )
   const invalid = (text: string) => text.trim() !== '' && parseAmountInput(text) === null
-  const hasErrors = invalid(total) || Object.values(amounts).some(invalid)
+  const allocated = sumAmounts(
+    Object.values(amounts)
+      .map(parseAmountInput)
+      .filter((amount): amount is string => amount !== null),
+  )
+  const ceiling = parseAmountInput(total)
+  const unallocated = ceiling === null ? null : subtractAmounts(ceiling, allocated)
+  const overCeiling = unallocated !== null && unallocated.startsWith('-')
+  const hasErrors = invalid(total) || Object.values(amounts).some(invalid) || overCeiling
 
   function submit(event: FormEvent) {
     event.preventDefault()
@@ -53,14 +71,16 @@ export function BudgetEditor({ budget, periodLabel, onDone }: BudgetEditorProps)
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-6">
       <TextField
-        label="תקציב כולל לחודש (לא חובה)"
+        label="תקרה לחודש (לא חובה)"
         inputMode="decimal"
-        placeholder="סכום התקציבים לפי קטגוריה"
+        placeholder="ללא תקרה"
         value={total}
         onChange={(event) => setTotal(event.target.value)}
-        aria-invalid={submitted && invalid(total)}
-        hint="אם לא תמלאו, התקציב הכולל יהיה סכום התקציבים של הקטגוריות."
+        aria-invalid={(submitted && invalid(total)) || overCeiling}
+        hint="כמה מותר להוציא החודש בסך הכול. בלי תקרה, התקציב הוא סכום הקטגוריות."
       />
+
+      <AllocationSummary allocated={allocated} unallocated={unallocated} />
 
       <fieldset className="flex flex-col gap-1">
         <legend className="mb-2 text-sm font-medium">תקציב לפי קטגוריה</legend>
@@ -96,7 +116,7 @@ export function BudgetEditor({ budget, periodLabel, onDone }: BudgetEditorProps)
         })}
       </fieldset>
 
-      {submitted && hasErrors && (
+      {submitted && hasErrors && !overCeiling && (
         <p role="alert" className="text-sm text-destructive">
           יש סכום לא תקין. הזינו מספר חיובי עד שתי ספרות אחרי הנקודה, או השאירו ריק.
         </p>
@@ -112,5 +132,41 @@ export function BudgetEditor({ budget, periodLabel, onDone }: BudgetEditorProps)
         שמירת התקציב
       </Button>
     </form>
+  )
+}
+
+/** Live split of the month: how much went to categories and what is left of the ceiling. */
+function AllocationSummary({
+  allocated,
+  unallocated,
+}: {
+  allocated: string
+  unallocated: string | null
+}) {
+  const over = unallocated?.startsWith('-') ?? false
+  return (
+    <div
+      aria-live="polite"
+      className={cn(
+        'flex flex-col gap-1.5 rounded-2xl bg-muted px-4 py-3 text-sm',
+        over && 'bg-destructive/10',
+      )}
+    >
+      <p className="flex justify-between gap-2">
+        <span className="text-muted-foreground">חולק לקטגוריות</span>
+        <span className="font-semibold tabular-nums">{formatMoney(allocated)}</span>
+      </p>
+      {unallocated !== null && (
+        <p
+          role={over ? 'alert' : undefined}
+          className={cn('flex justify-between gap-2', over && 'font-medium text-destructive')}
+        >
+          <span>{over ? 'חריגה מהתקרה' : 'לא מחולק (נשאר מהתקרה)'}</span>
+          <span className="font-semibold tabular-nums">
+            {formatMoney(over ? unallocated.slice(1) : unallocated)}
+          </span>
+        </p>
+      )}
+    </div>
   )
 }

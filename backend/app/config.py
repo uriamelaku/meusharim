@@ -12,6 +12,11 @@ _DRIVER_SCHEME = "postgresql+psycopg://"
 class Settings(BaseSettings):
     database_url: str
     supabase_url: str
+    # Only for account deletion: re-checking the password (publishable key) and deleting
+    # the Supabase user (secret key). Without both, account deletion answers 503.
+    # The secret key bypasses RLS: backend environment only, never VITE_*.
+    supabase_publishable_key: str = ""
+    supabase_secret_key: str = ""
     # Browser origins allowed to call the API from another domain, comma-separated
     # (e.g. "https://app.example.com"). Empty: no cross-origin access, as when the
     # frontend is served from the same domain or through a dev proxy.

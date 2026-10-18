@@ -1,6 +1,7 @@
 /**
  * Money arrives from the API as decimal strings ("1234.50"). The frontend only parses
- * user input and formats for display; all arithmetic happens on the server.
+ * user input and formats for display; stored totals come from the server. The only
+ * client-side arithmetic is live form previews, done in exact integer agorot (BigInt).
  */
 
 const MAX_INTEGER_DIGITS = 10
@@ -74,7 +75,19 @@ function toAgorot(amount: string): bigint {
 }
 
 function fromAgorot(agorot: bigint): string {
-  return `${agorot / 100n}.${String(agorot % 100n).padStart(2, '0')}`
+  const sign = agorot < 0n ? '-' : ''
+  const absolute = agorot < 0n ? -agorot : agorot
+  return `${sign}${absolute / 100n}.${String(absolute % 100n).padStart(2, '0')}`
+}
+
+/** Exact sum of API amounts, for live form previews: ["10.50", "0.75"] → "11.25". */
+export function sumAmounts(amounts: string[]): string {
+  return fromAgorot(amounts.reduce((total, amount) => total + toAgorot(amount), 0n))
+}
+
+/** Exact `a − b` of API amounts, for live form previews; may be negative ("-0.01"). */
+export function subtractAmounts(a: string, b: string): string {
+  return fromAgorot(toAgorot(a) - toAgorot(b))
 }
 
 /**

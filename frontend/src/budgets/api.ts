@@ -17,6 +17,8 @@ export type BudgetMonth = {
   month: string
   total_budget: string | null
   effective_budget: string | null
+  allocated: string
+  unallocated: string | null
   actual: string
   planned: string
   remaining: string | null

@@ -106,25 +106,25 @@ export const ICON_LABELS: Record<string, string> = {
   wrench: 'תיקונים',
 }
 
-/** Muted tones that sit next to the plum/brass palette. `ink` passes 4.5:1 on `tint`. */
+/** Bright citrus-friendly tones. `ink` passes 4.5:1 on `tint`; `solid` is for charts. */
 export const CATEGORY_COLORS: Record<
   string,
   { tint: string; ink: string; solid: string; label: string }
 > = {
-  plum: { tint: '#efe7f5', ink: '#5b3a7a', solid: '#7a539c', label: 'שזיף' },
-  rose: { tint: '#f8e6ea', ink: '#8e3049', solid: '#c25570', label: 'ורד' },
-  pink: { tint: '#f9e5f1', ink: '#8a2f66', solid: '#c0569a', label: 'ורוד' },
-  red: { tint: '#f9e4e1', ink: '#93302a', solid: '#c8524a', label: 'אדום' },
-  orange: { tint: '#fbe9dc', ink: '#8c4317', solid: '#d0773e', label: 'כתום' },
-  amber: { tint: '#f8eed6', ink: '#7a5512', solid: '#c4952f', label: 'ענבר' },
-  green: { tint: '#e3f0df', ink: '#355f2f', solid: '#5b9152', label: 'ירוק' },
-  teal: { tint: '#dcefec', ink: '#22605a', solid: '#3f8f86', label: 'טורקיז' },
-  cyan: { tint: '#ddeff4', ink: '#1f5d6e', solid: '#3e8ea3', label: 'תכלת' },
-  sky: { tint: '#e1ecf8', ink: '#2a5486', solid: '#4f81bd', label: 'שמיים' },
-  blue: { tint: '#e3e7f8', ink: '#2f4389', solid: '#5468bf', label: 'כחול' },
-  indigo: { tint: '#e9e5f8', ink: '#463a8c', solid: '#6d5fc0', label: 'אינדיגו' },
-  slate: { tint: '#e6e9ee', ink: '#3c4656', solid: '#6b778a', label: 'אפור כחלחל' },
-  stone: { tint: '#ece9e5', ink: '#4f4740', solid: '#867b70', label: 'אבן' },
+  plum: { tint: '#e6e0fa', ink: '#4b3a99', solid: '#7b67e0', label: 'שזיף' },
+  rose: { tint: '#ffe0e6', ink: '#9a2846', solid: '#e0577a', label: 'ורד' },
+  pink: { tint: '#fbddec', ink: '#8f2a5e', solid: '#e5649f', label: 'ורוד' },
+  red: { tint: '#fcdcdc', ink: '#9b2525', solid: '#e05252', label: 'אדום' },
+  orange: { tint: '#ffe0cc', ink: '#9c3d0a', solid: '#ff7a33', label: 'כתום' },
+  amber: { tint: '#fcebc4', ink: '#714d00', solid: '#f2b33d', label: 'ענבר' },
+  green: { tint: '#ddf0d0', ink: '#2f6b1f', solid: '#67b04a', label: 'ירוק' },
+  teal: { tint: '#cff1e6', ink: '#12634e', solid: '#2fb58e', label: 'טורקיז' },
+  cyan: { tint: '#d3f0f0', ink: '#16615f', solid: '#2aa7a3', label: 'תכלת' },
+  sky: { tint: '#d9eafb', ink: '#1f5487', solid: '#4d93d9', label: 'שמיים' },
+  blue: { tint: '#dde3fb', ink: '#2c3f94', solid: '#5b74e0', label: 'כחול' },
+  indigo: { tint: '#e4e0fa', ink: '#3e338c', solid: '#6a5ad6', label: 'אינדיגו' },
+  slate: { tint: '#e3e8ee', ink: '#3a4757', solid: '#6e7d90', label: 'אפור כחלחל' },
+  stone: { tint: '#ede5da', ink: '#5e5145', solid: '#a89379', label: 'אבן' },
 }
 
 const FALLBACK_COLOR = CATEGORY_COLORS.stone

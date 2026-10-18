@@ -221,3 +221,41 @@ def test_budgets_are_isolated_between_households(couple):
     # The stranger's save of their own (empty) budget leaves the owner's untouched.
     stranger.put("/api/budgets", {"total": "1"}, params=OCTOBER)
     assert owner.ok("get", "/api/budgets", params=OCTOBER)["total_budget"] == "5000.00"
+
+
+def test_total_is_a_ceiling_with_unallocated_part(couple):
+    owner, partner = couple
+    save(owner, total="9000", מזון="1000", ביטוחים="650.50")
+
+    budget = partner.ok("get", "/api/budgets", params=OCTOBER)
+
+    assert budget["total_budget"] == budget["effective_budget"] == "9000.00"
+    assert budget["allocated"] == "1650.50"
+    assert budget["unallocated"] == "7349.50"
+
+
+def test_categories_may_fill_the_total_exactly(couple):
+    owner, _ = couple
+    assert save(owner, total="1500", מזון="1000", ביטוחים="500").status_code == 200
+    budget = owner.ok("get", "/api/budgets", params=OCTOBER)
+    assert budget["unallocated"] == "0.00"
+
+
+def test_categories_above_total_are_rejected(couple):
+    owner, _ = couple
+    save(owner, total="5000", מזון="900")
+
+    response = save(owner, total="1000", מזון="900", ביטוחים="100.01")
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "categories_exceed_total"
+    budget = owner.ok("get", "/api/budgets", params=OCTOBER)
+    assert budget["total_budget"] == "5000.00"  # the rejected save changed nothing
+
+
+def test_without_total_allocated_is_the_budget(couple):
+    owner, _ = couple
+    save(owner, מזון="1000", ביטוחים="200")
+    budget = owner.ok("get", "/api/budgets", params=OCTOBER)
+    assert budget["allocated"] == budget["effective_budget"] == "1200.00"
+    assert budget["unallocated"] is None

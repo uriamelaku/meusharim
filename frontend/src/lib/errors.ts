@@ -14,7 +14,12 @@ const messages: Record<string, string> = {
   invalid_member: 'בן/בת הזוג שנבחר/ה לא שייך/ת למשק הבית.',
   installments_too_small: 'הסכום קטן מדי למספר התשלומים.',
   end_before_start: 'תאריך הסיום לפני תאריך ההתחלה.',
+  categories_exceed_total: 'סכום התקציבים של הקטגוריות גבוה מהתקרה הכוללת.',
   no_previous_budget: 'לא הוגדר תקציב לחודש הקודם.',
+  email_mismatch: 'המייל לא תואם לחשבון המחובר.',
+  wrong_password: 'הסיסמה שגויה.',
+  auth_service_unavailable: 'שירות ההתחברות לא זמין כרגע. נסו שוב בעוד כמה דקות.',
+  account_deletion_not_configured: 'מחיקת חשבון עדיין לא הוגדרה בשרת.',
   no_household: 'צריך קודם להקים משק בית.',
 }
 

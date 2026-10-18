@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.account.router import router as account_router
 from app.auth import CurrentUser, get_current_user
 from app.budgets.router import router as budgets_router
 from app.categories.router import router as categories_router
@@ -44,6 +45,7 @@ app.include_router(schedules_router)
 app.include_router(budgets_router)
 app.include_router(summary_router)
 app.include_router(reports_router)
+app.include_router(account_router)
 
 
 @app.get("/api/health")

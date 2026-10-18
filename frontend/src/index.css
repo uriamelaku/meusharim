@@ -1,17 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/frank-ruhl-libre";
-@import "@fontsource/ibm-plex-sans-hebrew/400.css";
-@import "@fontsource/ibm-plex-sans-hebrew/500.css";
-@import "@fontsource/ibm-plex-sans-hebrew/600.css";
+@import "@fontsource-variable/fredoka";
+@import "@fontsource-variable/assistant";
 
 /* Light theme only for now: dark: utilities apply only under an explicit .dark class. */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "IBM Plex Sans Hebrew", system-ui, sans-serif;
-  --font-heading: "Frank Ruhl Libre Variable", "IBM Plex Sans Hebrew", serif;
+  --font-sans: "Assistant Variable", system-ui, sans-serif;
+  --font-heading: "Fredoka Variable", "Assistant Variable", sans-serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -46,33 +44,34 @@
 }
 
 /*
- * Meusharim palette: deep plum and brass on a cool mist background.
- * Brass is decorative (rings, small marks); use brass-strong for brass-colored text.
+ * "Hadar" palette: forest green and tangerine on a warm citrus cream.
+ * `brass` is the tangerine accent (marks, the add button); use brass-strong for
+ * accent-colored text. Every text/background pair here passes WCAG AA.
  */
 :root {
-  --background: #f3f4f8;
-  --foreground: #2a1e36;
+  --background: #fff6ea;
+  --foreground: #1e2a23;
   --card: #ffffff;
-  --card-foreground: #2a1e36;
+  --card-foreground: #1e2a23;
   --popover: #ffffff;
-  --popover-foreground: #2a1e36;
-  --primary: #5b3a7a;
+  --popover-foreground: #1e2a23;
+  --primary: #1f5c45;
   --primary-foreground: #ffffff;
-  --secondary: #ece7f2;
-  --secondary-foreground: #3e2a52;
-  --muted: #eceaf1;
-  --muted-foreground: #5e5670;
-  --accent: #f4ecdd;
-  --accent-foreground: #6e4f1c;
-  --destructive: #b3364a;
-  --border: #e2e0ea;
-  --input: #d6d2e0;
-  --ring: #5b3a7a;
-  --brass: #b8893a;
-  --brass-strong: #8a6424;
-  --income: #3f6b3a;
-  --expense: #a8475a;
-  --radius: 0.875rem;
+  --secondary: #e3f0e8;
+  --secondary-foreground: #174634;
+  --muted: #f4ecdf;
+  --muted-foreground: #5d655f;
+  --accent: #ffe6d6;
+  --accent-foreground: #8f3510;
+  --destructive: #c2322a;
+  --border: #eee3d2;
+  --input: #ddd1bd;
+  --ring: #1f5c45;
+  --brass: #ff6b2c;
+  --brass-strong: #b2440f;
+  --income: #2f6b1f;
+  --expense: #b23b26;
+  --radius: 1rem;
 }
 
 @layer base {

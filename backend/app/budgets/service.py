@@ -68,7 +68,8 @@ def get_budget(scope: HouseholdScope, month: Month) -> BudgetMonth:
     # Budgeted categories first (largest first), then unbudgeted spending.
     categories.sort(key=lambda c: (c.budget is None, -(c.budget or c.actual), c.category.name))
 
-    effective = total_budget if total_budget is not None else (sum(budgets.values()) or None)
+    allocated = sum(budgets.values(), ZERO)
+    effective = total_budget if total_budget is not None else (allocated or None)
     actual = totals.completed_total("expense")
     percent, status = usage(actual, effective)
     previous = scope.session.scalar(
@@ -79,6 +80,8 @@ def get_budget(scope: HouseholdScope, month: Month) -> BudgetMonth:
         month=str(month),
         total_budget=total_budget,
         effective_budget=effective,
+        allocated=allocated,
+        unallocated=None if total_budget is None else total_budget - allocated,
         actual=actual,
         planned=totals.planned_total("expense"),
         remaining=None if effective is None else effective - actual,
@@ -145,6 +148,8 @@ def save_budget(scope: HouseholdScope, month: Month, body: BudgetInput) -> Budge
     _check_categories(scope, [c.category_id for c in body.categories], existing)
     rows: dict[UUID | None, Decimal] = {c.category_id: c.amount for c in body.categories}
     if body.total is not None:
+        if sum(rows.values(), ZERO) > body.total:
+            raise InvalidError("categories_exceed_total")
         rows[None] = body.total
     _replace(scope, month, rows)
     return get_budget(scope, month)

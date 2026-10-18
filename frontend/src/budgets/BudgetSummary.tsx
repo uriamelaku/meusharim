@@ -8,6 +8,7 @@ import { remainingText, STATUS_TEXT, toneOf } from './usage'
 /** The month's overall budget: spent, left, a bar, and planned spending kept apart. */
 export function BudgetSummary({ budget }: { budget: BudgetMonth }) {
   const { effective_budget, actual, planned, remaining, percent, status } = budget
+  const { total_budget, allocated, unallocated } = budget
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
@@ -45,6 +46,12 @@ export function BudgetSummary({ budget }: { budget: BudgetMonth }) {
             <span className="text-muted-foreground tabular-nums">{percent}%</span>
           </div>
         </>
+      )}
+      {total_budget && unallocated && (
+        <p className="text-sm text-muted-foreground">
+          מתוך התקרה: <span className="tabular-nums">{formatMoney(allocated)}</span> מחולק
+          לקטגוריות · <span className="tabular-nums">{formatMoney(unallocated)}</span> לא מחולק
+        </p>
       )}
       {planned !== '0.00' && (
         <p className="rounded-xl border border-dashed border-brass/60 px-3 py-2 text-sm text-accent-foreground">

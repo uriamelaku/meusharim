@@ -20,11 +20,15 @@ Environment variables:
 |---|---|---|
 | `DATABASE_URL` | yes | Secret. Supabase **session pooler** URL (IPv4, port 5432), e.g. `postgresql://postgres.<ref>:<password>@aws-<n>-<region>.pooler.supabase.com:5432/postgres?sslmode=require`. A plain `postgresql://` URL is accepted; the app adds the psycopg driver. |
 | `SUPABASE_URL` | yes | `https://<ref>.supabase.co`. Used to verify JWTs against the project's JWKS. |
+| `SUPABASE_PUBLISHABLE_KEY` | for account deletion | Same public key as the frontend. Used to re-check the password before deleting an account. |
+| `SUPABASE_SECRET_KEY` | for account deletion | **Secret** (`sb_secret_...`). Used only to delete the user in Supabase Auth after the password check. Without it (or the publishable key) account deletion answers 503. |
 | `CORS_ALLOWED_ORIGINS` | when the frontend is on another domain | Comma-separated origins, e.g. `https://meusharim.onrender.com`. No trailing slash. |
 | `PYTHON_VERSION` | recommended | e.g. `3.13.5`, to match local development. |
 | `API_DOCS_ENABLED` | no | Leave unset in production: `/docs`, `/redoc` and `/openapi.json` are then off. Docker Compose sets it to `true` locally. |
 
-Never set the Supabase secret / service-role key: the backend does not need it.
+The Supabase secret key is used for one call only (deleting the signed-in user's own
+Auth account after a password check). It never reaches the database connection, so RLS
+still applies to all app data. Never put it in a `VITE_*` variable or the frontend.
 
 Migrations run on every start. They are idempotent; with a single instance this is safe.
 On a platform with a pre-deploy step, `alembic upgrade head` can move there instead.

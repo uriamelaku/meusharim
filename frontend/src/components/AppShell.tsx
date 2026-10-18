@@ -23,12 +23,15 @@ import { useQuickAdd } from '@/transactions/quickAdd'
 import { QuickAddProvider } from '@/transactions/QuickAddProvider'
 
 const NAV_ITEMS = [
-  { to: '/', label: 'סקירה', icon: LayoutDashboard },
+  { to: '/', label: 'ראשי', icon: LayoutDashboard },
   { to: '/transactions', label: 'תנועות', icon: ArrowLeftRight },
   { to: '/budget', label: 'תקציב', icon: Wallet },
   { to: '/reports', label: 'דוחות', icon: BarChart3 },
   { to: '/settings', label: 'הגדרות', icon: Settings },
 ]
+
+// On phones settings move to the header, leaving room for the add button in the middle.
+const MOBILE_TABS = NAV_ITEMS.filter((item) => item.to !== '/settings')
 
 /**
  * Gate for the signed-in app: verifies the user with the backend, then sends them to
@@ -72,35 +75,31 @@ export function AppShell() {
       <div className="min-h-dvh">
         <DesktopSidebar email={currentUser.data.email} />
 
-        <header className="sticky top-0 z-20 flex h-14 items-center border-b bg-background/85 px-4 backdrop-blur-md lg:hidden">
+        <header className="sticky top-0 z-20 flex h-14 items-center justify-between bg-background/85 px-4 backdrop-blur-md lg:hidden">
           <Wordmark />
+          <NavLink
+            to="/settings"
+            aria-label="הגדרות"
+            className={({ isActive }) =>
+              cn(
+                'flex size-11 items-center justify-center rounded-full transition-colors',
+                isActive ? 'bg-secondary text-primary' : 'bg-card text-muted-foreground',
+              )
+            }
+          >
+            <Settings className="size-5" aria-hidden />
+          </NavLink>
         </header>
 
         <main className="lg:ps-64">
-          <div className="mx-auto max-w-3xl px-4 pt-6 pb-[calc(9.5rem+env(safe-area-inset-bottom))] lg:px-10 lg:pt-12 lg:pb-12">
+          <div className="mx-auto max-w-3xl px-4 pt-6 pb-[calc(7rem+env(safe-area-inset-bottom))] lg:px-10 lg:pt-12 lg:pb-12">
             <Outlet context={context} />
           </div>
         </main>
 
-        <AddButton />
         <MobileTabBar />
       </div>
     </QuickAddProvider>
-  )
-}
-
-/** Floating add button on phones, above the tab bar. Desktop has it in the sidebar. */
-function AddButton() {
-  const { add } = useQuickAdd()
-  return (
-    <Button
-      size="icon"
-      aria-label="הוספת תנועה"
-      onClick={() => add()}
-      className="fixed end-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30 size-14 rounded-full shadow-lg shadow-primary/30 lg:hidden"
-    >
-      <Plus className="size-7" />
-    </Button>
   )
 }
 
@@ -147,36 +146,43 @@ function DesktopSidebar({ email }: { email: string | null }) {
 }
 
 function MobileTabBar() {
+  const { add } = useQuickAdd()
+  const half = MOBILE_TABS.length / 2
+  const tab = ({ to, label, icon: Icon }: (typeof NAV_ITEMS)[number]) => (
+    <li key={to}>
+      <NavLink
+        to={to}
+        end={to === '/'}
+        className={({ isActive }) =>
+          cn(
+            'mx-auto flex h-14 w-full max-w-20 flex-col items-center justify-center gap-0.5 rounded-2xl text-xs font-semibold transition-colors',
+            isActive ? 'bg-secondary text-primary' : 'text-muted-foreground hover:text-foreground',
+          )
+        }
+      >
+        <Icon className="size-6" aria-hidden />
+        {label}
+      </NavLink>
+    </li>
+  )
   return (
     <nav
       aria-label="ניווט ראשי"
-      className="fixed inset-x-0 bottom-0 z-30 border-t bg-card/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 rounded-t-3xl bg-card px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-[0_-6px_20px_rgb(31_92_69/0.08)] lg:hidden"
     >
-      <ul className="grid grid-cols-5">
-        {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
-          <li key={to}>
-            <NavLink
-              to={to}
-              end={to === '/'}
-              className={({ isActive }) =>
-                cn(
-                  'relative flex h-16 flex-col items-center justify-center gap-1 text-xs font-medium transition-colors',
-                  isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
-                )
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
-                    <span className="absolute top-0 h-0.5 w-8 rounded-full bg-brass" aria-hidden />
-                  )}
-                  <Icon className="size-6" aria-hidden />
-                  {label}
-                </>
-              )}
-            </NavLink>
-          </li>
-        ))}
+      <ul className="grid grid-cols-5 items-center">
+        {MOBILE_TABS.slice(0, half).map(tab)}
+        <li className="flex justify-center">
+          <Button
+            size="icon"
+            aria-label="הוספת תנועה"
+            onClick={() => add()}
+            className="size-14 rounded-2xl bg-brass text-foreground shadow-lg shadow-brass/35 hover:bg-brass/90"
+          >
+            <Plus className="size-7" strokeWidth={2.6} />
+          </Button>
+        </li>
+        {MOBILE_TABS.slice(half).map(tab)}
       </ul>
     </nav>
   )

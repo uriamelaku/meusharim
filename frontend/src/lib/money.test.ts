@@ -5,6 +5,8 @@ import {
   formatMoney,
   parseAmountInput,
   previewInstallments,
+  subtractAmounts,
+  sumAmounts,
 } from './money'
 
 describe('parseAmountInput', () => {
@@ -80,5 +82,19 @@ describe('previewInstallments', () => {
   it('rejects splits below one agora per payment', () => {
     expect(previewInstallments('0.05', 6)).toBeNull()
     expect(previewInstallments('100.00', 1)).toBeNull()
+  })
+})
+
+describe('sumAmounts / subtractAmounts', () => {
+  it('adds exactly, without floating point drift', () => {
+    expect(sumAmounts(['0.10', '0.20'])).toBe('0.30')
+    expect(sumAmounts(['1000.00', '650.50', '0.01'])).toBe('1650.51')
+    expect(sumAmounts([])).toBe('0.00')
+  })
+
+  it('subtracts and keeps the sign', () => {
+    expect(subtractAmounts('9000.00', '1650.50')).toBe('7349.50')
+    expect(subtractAmounts('1000.00', '1000.01')).toBe('-0.01')
+    expect(subtractAmounts('100.00', '250.25')).toBe('-150.25')
   })
 })
