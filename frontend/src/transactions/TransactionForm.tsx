@@ -2,6 +2,7 @@ import { ChevronDown, Loader2, Trash2 } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import { toast } from 'sonner'
 import { type Kind, useCategories } from '@/categories/api'
+import { useBudgetAlert } from '@/budgets/budgetAlert'
 import { CategoryIconBadge } from '@/categories/CategoryBadge'
 import { CategoryPicker } from '@/categories/CategoryPicker'
 import { AmountField } from '@/components/AmountField'
@@ -68,6 +69,7 @@ export function TransactionForm({
   const [requestId, setRequestId] = useState(() => crypto.randomUUID())
   const update = useUpdateTransaction()
   const remove = useDeleteTransaction()
+  const checkBudget = useBudgetAlert()
   const mutation = transaction ? update : create
 
   const amount = parseAmountInput(amountText)
@@ -106,6 +108,8 @@ export function TransactionForm({
       toast.success(
         transaction ? 'התנועה עודכנה' : kind === 'expense' ? 'ההוצאה נוספה' : 'ההכנסה נוספה',
       )
+      // Only completed expenses count against the budget.
+      if (kind === 'expense' && status === 'completed') void checkBudget(date, categoryId)
       onDone()
     }
     if (transaction) update.mutate({ id: transaction.id, ...body }, { onSuccess })
