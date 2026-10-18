@@ -1,5 +1,4 @@
 import { createElement } from 'react'
-import { Link } from 'react-router'
 import { categoryColor, categoryIcon } from '@/categories/appearance'
 import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
@@ -10,7 +9,8 @@ type CategoryRingProps = {
   total: string
   /** The month's remaining budget, if a budget is set. */
   remaining: string | null
-  budgetLink: string
+  /** Opens a new expense in this category. */
+  onAdd: (categoryId: string) => void
 }
 
 /**
@@ -18,7 +18,7 @@ type CategoryRingProps = {
  * two on each side, the rest below). Arc lengths are visual ratios only; every amount
  * shown as text comes from the server.
  */
-export function CategoryRing({ items, total, remaining, budgetLink }: CategoryRingProps) {
+export function CategoryRing({ items, total, remaining, onAdd }: CategoryRingProps) {
   return (
     <section
       aria-label="הוצאות החודש לפי קטגוריה"
@@ -28,7 +28,7 @@ export function CategoryRing({ items, total, remaining, budgetLink }: CategoryRi
         <Donut items={items} total={total} remaining={remaining} />
       </div>
       {items.map((item) => (
-        <Bubble key={item.category.id} item={item} to={budgetLink} />
+        <Bubble key={item.category.id} item={item} onAdd={onAdd} />
       ))}
     </section>
   )
@@ -39,7 +39,7 @@ const STROKE = 18
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 const GAP = 3
 
-function Donut({ items, total, remaining }: Omit<CategoryRingProps, 'budgetLink'>) {
+function Donut({ items, total, remaining }: Omit<CategoryRingProps, 'onAdd'>) {
   const sum = items.reduce((acc, item) => acc + Number(item.actual), 0)
   let offset = 0
   const arcs = sum
@@ -85,22 +85,22 @@ function Donut({ items, total, remaining }: Omit<CategoryRingProps, 'budgetLink'
   )
 }
 
-function Bubble({ item, to }: { item: RingItem; to: string }) {
+function Bubble({ item, onAdd }: { item: RingItem; onAdd: (categoryId: string) => void }) {
   const { category, actual, percent, over } = item
   const color = categoryColor(category.color)
-  const idle = actual === '0.00'
   const ring = over
     ? 'var(--destructive)'
     : percent === null
-      ? 'var(--muted)'
-      : `conic-gradient(${color.ink} ${Math.min(percent, 100)}%, var(--muted) 0)`
+      ? color.tint
+      : `conic-gradient(${color.ink} ${Math.min(percent, 100)}%, ${color.tint} 0)`
   const usage = over ? 'חריגה מהתקציב' : percent === null ? 'ללא תקציב' : `נוצלו ${percent}% מהתקציב`
 
   return (
-    <Link
-      to={to}
-      aria-label={`${category.name}: ${formatMoney(actual)}, ${usage}`}
-      className="flex min-w-0 flex-col items-center gap-1 rounded-2xl py-1 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+    <button
+      type="button"
+      onClick={() => onAdd(category.id)}
+      aria-label={`הוספת הוצאה ב${category.name} (עד עכשיו ${formatMoney(actual)}, ${usage})`}
+      className="flex min-w-0 flex-col items-center gap-1 rounded-2xl py-1 transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:scale-95"
     >
       <span className="max-w-full truncate text-xs font-semibold text-muted-foreground">
         {category.name}
@@ -108,10 +108,7 @@ function Bubble({ item, to }: { item: RingItem; to: string }) {
       <span className="flex size-14 rounded-full p-[3px]" style={{ background: ring }} aria-hidden>
         <span
           className="flex size-full items-center justify-center rounded-full border-2 border-card"
-          style={{
-            backgroundColor: idle ? 'var(--muted)' : color.tint,
-            color: idle ? 'var(--muted-foreground)' : color.ink,
-          }}
+          style={{ backgroundColor: color.tint, color: color.ink }}
         >
           {createElement(categoryIcon(category.icon), { className: 'size-[22px]' })}
         </span>
@@ -119,12 +116,11 @@ function Bubble({ item, to }: { item: RingItem; to: string }) {
       <span
         className={cn(
           'font-heading text-sm font-semibold tabular-nums',
-          idle && 'text-muted-foreground',
           over && 'text-destructive',
         )}
       >
         {formatMoney(actual)}
       </span>
-    </Link>
+    </button>
   )
 }

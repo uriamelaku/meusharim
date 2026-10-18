@@ -31,6 +31,8 @@ type ScheduleFormProps = {
   type: ScheduleType
   schedule?: Schedule
   initialKind: Kind
+  /** Preselected category for a new entry. */
+  initialCategoryId?: string
   members: Member[]
   userId: string
   onDone: () => void
@@ -41,6 +43,7 @@ export function ScheduleForm({
   type,
   schedule,
   initialKind,
+  initialCategoryId,
   members,
   userId,
   onDone,
@@ -59,7 +62,9 @@ export function ScheduleForm({
     return amount ? amountToInput(amount) : ''
   })
   const [countText, setCountText] = useState(String(schedule?.installments_count ?? 12))
-  const [categoryId, setCategoryId] = useState<string | null>(schedule?.category.id ?? null)
+  const [categoryId, setCategoryId] = useState<string | null>(
+    schedule?.category.id ?? initialCategoryId ?? null,
+  )
   const [frequency, setFrequency] = useState<Frequency>(schedule?.frequency ?? 'monthly')
   const [startDate, setStartDate] = useState(schedule?.start_date ?? todayIso())
   const [endDate, setEndDate] = useState(schedule?.end_date ?? '')

@@ -25,6 +25,8 @@ import { defaultStatusFor, STATUS_OPTIONS, TRANSACTION_KIND_OPTIONS } from './la
 type TransactionFormProps = {
   transaction?: Transaction
   initialKind: Kind
+  /** Preselected category for a new transaction, e.g. from the main screen. */
+  initialCategoryId?: string
   members: Member[]
   userId: string
   onDone: () => void
@@ -33,6 +35,7 @@ type TransactionFormProps = {
 export function TransactionForm({
   transaction,
   initialKind,
+  initialCategoryId,
   members,
   userId,
   onDone,
@@ -40,7 +43,9 @@ export function TransactionForm({
   const categories = useCategories()
   const [kind, setKind] = useState<Kind>(transaction?.kind ?? initialKind)
   const [amountText, setAmountText] = useState(transaction ? amountToInput(transaction.amount) : '')
-  const [categoryId, setCategoryId] = useState<string | null>(transaction?.category.id ?? null)
+  const [categoryId, setCategoryId] = useState<string | null>(
+    transaction?.category.id ?? initialCategoryId ?? null,
+  )
   const [date, setDate] = useState(transaction?.occurred_on ?? todayIso())
   const [status, setStatus] = useState<TransactionStatus>(transaction?.status ?? 'completed')
   const [statusTouched, setStatusTouched] = useState(Boolean(transaction))

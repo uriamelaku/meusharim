@@ -27,7 +27,7 @@ export function OverviewPage() {
   const summary = useMonthSummary(month)
   const budget = useBudget(month)
   const categories = useCategories()
-  const { edit } = useQuickAdd()
+  const { add, edit } = useQuickAdd()
 
   return (
     <>
@@ -72,6 +72,7 @@ export function OverviewPage() {
               summary={summary.data}
               items={ringItems(categories.data, budget.data.categories)}
               emptyTitle={`אין הוצאות ב${formatPeriod(period)}`}
+              onAdd={(categoryId) => add('expense', 'once', categoryId)}
             />
             <BudgetCard summary={summary.data} />
 
@@ -138,10 +139,12 @@ function SpendingRing({
   summary,
   items,
   emptyTitle,
+  onAdd,
 }: {
   summary: MonthSummary
   items: ReturnType<typeof ringItems>
   emptyTitle: string
+  onAdd: (categoryId: string) => void
 }) {
   if (!items.length) {
     return (
@@ -157,7 +160,7 @@ function SpendingRing({
       items={items}
       total={summary.expense.actual}
       remaining={summary.budget?.remaining ?? null}
-      budgetLink={`/budget?month=${summary.month}`}
+      onAdd={onAdd}
     />
   )
 }

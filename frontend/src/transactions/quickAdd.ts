@@ -7,8 +7,8 @@ import type { Transaction } from './api'
 export type EntryType = 'once' | 'recurring' | 'installments'
 
 export type QuickAdd = {
-  /** Opens the add form, e.g. from the dashboard or the floating button. */
-  add: (kind?: Kind, entry?: EntryType) => void
+  /** Opens the add form, e.g. from the add button or a category on the main screen. */
+  add: (kind?: Kind, entry?: EntryType, categoryId?: string) => void
   edit: (transaction: Transaction) => void
   editSchedule: (schedule: Schedule) => void
 }

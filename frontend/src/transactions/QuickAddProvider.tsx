@@ -11,7 +11,7 @@ import { type EntryType, type QuickAdd, QuickAddContext } from './quickAdd'
 import { TransactionForm } from './TransactionForm'
 
 type OpenSheet =
-  | { mode: 'add'; kind: Kind; entry: EntryType }
+  | { mode: 'add'; kind: Kind; entry: EntryType; categoryId?: string }
   | { mode: 'transaction'; transaction: Transaction }
   | { mode: 'schedule'; schedule: Schedule }
 
@@ -48,7 +48,8 @@ export function QuickAddProvider({ household, userId, children }: QuickAddProvid
       setLastSheet(next)
     }
     return {
-      add: (kind = 'expense', entry = 'once') => open({ mode: 'add', kind, entry }),
+      add: (kind = 'expense', entry = 'once', categoryId) =>
+        open({ mode: 'add', kind, entry, categoryId }),
       edit: (transaction) => open({ mode: 'transaction', transaction }),
       editSchedule: (schedule) => open({ mode: 'schedule', schedule }),
     }
@@ -74,12 +75,17 @@ export function QuickAddProvider({ household, userId, children }: QuickAddProvid
               onChange={(entry) => setSheet({ ...sheet, entry })}
             />
             {sheet.entry === 'once' ? (
-              <TransactionForm initialKind={sheet.kind} {...common} />
+              <TransactionForm
+                initialKind={sheet.kind}
+                initialCategoryId={sheet.categoryId}
+                {...common}
+              />
             ) : (
               <ScheduleForm
                 key={sheet.entry}
                 type={sheet.entry}
                 initialKind={sheet.kind}
+                initialCategoryId={sheet.categoryId}
                 {...common}
               />
             )}
