@@ -1,6 +1,8 @@
+import { Upload } from 'lucide-react'
 import { useSearchParams } from 'react-router'
 import { PageHeader } from '@/components/PageHeader'
 import { useShellContext } from '@/components/shellContext'
+import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScheduleList } from '@/schedules/ScheduleList'
 import { TransactionList } from '@/transactions/TransactionList'
@@ -30,7 +32,15 @@ export function TransactionsPage() {
 
   return (
     <>
-      <PageHeader title="תנועות" />
+      <div className="flex items-start justify-between gap-3">
+        <PageHeader title="תנועות" />
+        {/* Reminder of a planned feature: the server side exists, file reading does not yet. */}
+        <Button variant="outline" size="sm" className="mt-1 h-9 shrink-0" disabled>
+          <Upload aria-hidden />
+          ייבוא מהאשראי
+          <span className="rounded-full bg-accent px-1.5 text-[11px] text-accent-foreground">בקרוב</span>
+        </Button>
+      </div>
       <Tabs value={tab} onValueChange={changeTab}>
         <TabsList className="mb-4 h-11 w-full rounded-xl">
           {TABS.map(({ value, label }) => (

@@ -18,6 +18,7 @@ from app.goals.router import router as goals_router
 from app.households.router import household_error_handler
 from app.households.router import router as households_router
 from app.households.service import HouseholdError
+from app.imports.router import router as imports_router
 from app.reports.router import router as reports_router
 from app.schedules.router import router as schedules_router
 from app.summary.router import router as summary_router
@@ -48,6 +49,7 @@ app.include_router(summary_router)
 app.include_router(reports_router)
 app.include_router(account_router)
 app.include_router(goals_router)
+app.include_router(imports_router)
 
 
 @app.get("/api/health")
