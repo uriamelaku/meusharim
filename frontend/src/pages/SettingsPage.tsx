@@ -1,4 +1,5 @@
-import { LogOut, Moon, Sun } from 'lucide-react'
+import { ChevronLeft, CircleHelp, LogOut, Moon, Sun } from 'lucide-react'
+import { Link } from 'react-router'
 import { toast } from 'sonner'
 import { DeleteAccountCard } from '@/account/DeleteAccountCard'
 import { signOut } from '@/auth/signOut'
@@ -20,6 +21,7 @@ export function SettingsPage() {
     <>
       <PageHeader title="הגדרות" />
       <div className="flex flex-col gap-4">
+        <HelpLink />
         <AppearanceCard />
         <HouseholdCard household={household} userId={user.id} />
         <CategoriesCard />
@@ -88,5 +90,25 @@ function GenderSetting({ gender }: { gender: Gender | null }) {
         })
       }
     />
+  )
+}
+
+function HelpLink() {
+  return (
+    <Link
+      to="/help"
+      className="flex items-center gap-3 rounded-2xl bg-secondary p-4 text-secondary-foreground transition-colors hover:bg-secondary/80 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+    >
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-card text-primary">
+        <CircleHelp className="size-5" aria-hidden />
+      </span>
+      <span className="flex-1">
+        <span className="block font-heading text-lg font-semibold">איך זה עובד?</span>
+        <span className="block text-sm text-muted-foreground">
+          הסברים קצרים על כל מה שיש באפליקציה
+        </span>
+      </span>
+      <ChevronLeft className="size-5 text-muted-foreground" aria-hidden />
+    </Link>
   )
 }

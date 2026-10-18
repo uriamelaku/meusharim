@@ -6,6 +6,7 @@ import { AuthPage } from '@/pages/AuthPage'
 import { BudgetPage } from '@/pages/BudgetPage'
 import { OverviewPage } from '@/pages/OverviewPage'
 import { ReportsPage } from '@/pages/ReportsPage'
+import { HelpPage } from '@/pages/HelpPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { TransactionsPage } from '@/pages/TransactionsPage'
 
@@ -23,6 +24,7 @@ function App() {
         <Route path="budget" element={<BudgetPage />} />
         <Route path="reports" element={<ReportsPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="help" element={<HelpPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
