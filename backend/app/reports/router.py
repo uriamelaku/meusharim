@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Query
 
@@ -21,6 +21,12 @@ def get_report(
 
 
 @router.get("/insights")
-def get_insights(month: MonthParam, scope: Scope) -> MonthInsights:
-    """A month against the previous one, the month-end forecast and the year's savings."""
-    return service.month_insights(scope, parse_month(month))
+def get_insights(
+    month: MonthParam,
+    scope: Scope,
+    compare: Literal["previous_month", "last_year"] = "previous_month",
+) -> MonthInsights:
+    """A month against the previous one (or the same month a year earlier), the month-end
+    forecast and the year's savings."""
+    months_back = 12 if compare == "last_year" else 1
+    return service.month_insights(scope, parse_month(month), months_back)

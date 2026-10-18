@@ -85,6 +85,7 @@ class YearSavings(BaseModel):
 
 class MonthInsights(BaseModel):
     month: str
+    # The month compared against: the one before, or the same month a year earlier.
     previous_month: str
     income: Money
     expense: Money

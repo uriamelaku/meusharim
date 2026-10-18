@@ -17,6 +17,7 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 - Budgets: the overall monthly amount is a ceiling; category budgets may not add up to more than it (checked on the server). Budget alerts are in-app only (80% and over, once per category and month on a device).
 - Savings goals: a deposit is a completed expense in the goal's savings category, linked by `transactions.goal_id`; progress counts completed deposits only.
 - Account deletion: requires two confirmations plus email and password re-checked on the server. A remaining partner keeps the household and its data; a last member's household is deleted. The backend holds the Supabase secret key for this single call only.
+- Wording: personal sentences follow the reader's chosen gender (`household_members.gender`, chosen at join, editable in settings, asked once of existing members); general instructions stay neutral; the partner is named. Onboarding (guided tour, one-time tips) is remembered per device.
 - Theme (light/dark) is a per-device setting. The app is installable (PWA); the service worker caches no data.
 - **No AWS.** Deployment: Render (backend Docker Web Service + frontend Static Site, free tier) with Supabase for PostgreSQL/Auth; see `docs/deployment.md`. Keep the code platform-neutral: environment differences go through environment variables only, never platform-specific code.
 

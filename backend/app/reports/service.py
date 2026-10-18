@@ -214,10 +214,10 @@ def _year_savings(scope: HouseholdScope, month: Month) -> YearSavings:
     )
 
 
-def month_insights(scope: HouseholdScope, month: Month) -> MonthInsights:
-    """One month against the one before, the forecast for the current month and the
-    year's savings so far."""
-    previous = month.shift(-1)
+def month_insights(scope: HouseholdScope, month: Month, months_back: int = 1) -> MonthInsights:
+    """One month against an earlier one (by default the one before), the forecast for the
+    current month and the year's savings so far."""
+    previous = month.shift(-months_back)
     current = ledger_totals(scope, month.first_day, month.last_day)
     before = ledger_totals(scope, previous.first_day, previous.last_day)
     spent, spent_before = current.completed["expense"], before.completed["expense"]

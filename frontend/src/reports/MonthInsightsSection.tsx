@@ -1,12 +1,14 @@
 import { ArrowDown, ArrowUp, Minus, PiggyBank, Telescope } from 'lucide-react'
+import { useState } from 'react'
 import { CategoryIconBadge } from '@/categories/CategoryBadge'
 import { PeriodPicker } from '@/components/PeriodPicker'
+import { Segmented } from '@/components/Segmented'
 import { ErrorState, LoadingState } from '@/components/states'
 import { useSelectedPeriod } from '@/hooks/useSelectedPeriod'
 import { formatMoney } from '@/lib/money'
-import { monthName, parsePeriodParam, toPeriodParam } from '@/lib/period'
+import { formatPeriod, monthName, parsePeriodParam, toPeriodParam } from '@/lib/period'
 import { cn } from '@/lib/utils'
-import { type CategoryChange, type MonthInsights, useInsights } from './api'
+import { type CategoryChange, type Comparison, type MonthInsights, useInsights } from './api'
 
 const TOP_CHANGES = 6
 
@@ -34,7 +36,7 @@ export function MonthInsightsSection() {
       ) : (
         <>
           {insights.data.forecast && <ForecastCard forecast={insights.data.forecast} />}
-          <CompareCard insights={insights.data} />
+          <CompareCard month={toPeriodParam(period)} previousMonth={insights.data} />
           <YearCard year={insights.data.year} />
         </>
       )}
@@ -72,18 +74,57 @@ function ForecastCard({ forecast }: { forecast: NonNullable<MonthInsights['forec
   )
 }
 
-function CompareCard({ insights }: { insights: MonthInsights }) {
-  const previousName = monthName(parsePeriodParam(insights.previous_month)!.month)
-  const changes = insights.categories.filter((c) => c.difference !== '0.00').slice(0, TOP_CHANGES)
+const COMPARISONS: { value: Comparison; label: string }[] = [
+  { value: 'previous_month', label: 'לחודש הקודם' },
+  { value: 'last_year', label: 'לשנה שעברה' },
+]
+
+/** Against last month (already loaded with the section) or the same month last year. */
+function CompareCard({ month, previousMonth }: { month: string; previousMonth: MonthInsights }) {
+  const [compare, setCompare] = useState<Comparison>('previous_month')
+  const lastYear = useInsights(month, compare === 'last_year', 'last_year')
+  const insights = compare === 'last_year' ? lastYear.data : previousMonth
   return (
     <div className="rounded-2xl bg-card p-4">
+      <Segmented
+        label="השוואה"
+        options={COMPARISONS}
+        value={compare}
+        onChange={setCompare}
+        className="mb-3"
+      />
+      {insights ? (
+        <CompareBody insights={insights} />
+      ) : lastYear.isError ? (
+        <ErrorState
+          title="לא הצלחנו לטעון את ההשוואה"
+          description="בדקו את החיבור ונסו שוב."
+          onRetry={() => void lastYear.refetch()}
+        />
+      ) : (
+        <LoadingState />
+      )}
+    </div>
+  )
+}
+
+function CompareBody({ insights }: { insights: MonthInsights }) {
+  const compared = parsePeriodParam(insights.previous_month)!
+  const sameYear = insights.previous_month.slice(0, 4) === insights.month.slice(0, 4)
+  const comparedName = sameYear ? monthName(compared.month) : formatPeriod(compared)
+  const changes = insights.categories.filter((c) => c.difference !== '0.00').slice(0, TOP_CHANGES)
+  return (
+    <>
       <div className="flex items-baseline justify-between gap-2">
-        <p className="text-sm font-semibold text-muted-foreground">לעומת {previousName}</p>
+        <p className="text-sm font-semibold text-muted-foreground">לעומת {comparedName}</p>
         <ChangeBadge percent={insights.expense_change_percent} />
       </div>
       <p className="mt-1 text-sm">
         הוצאות <b className="font-heading tabular-nums">{formatMoney(insights.expense)}</b>
-        <span className="text-muted-foreground"> · ב{previousName} {formatMoney(insights.previous_expense)}</span>
+        <span className="text-muted-foreground">
+          {' '}
+          · ב{comparedName} {formatMoney(insights.previous_expense)}
+        </span>
       </p>
       {changes.length > 0 ? (
         <ul className="mt-3 flex flex-col divide-y">
@@ -94,7 +135,7 @@ function CompareCard({ insights }: { insights: MonthInsights }) {
       ) : (
         <p className="mt-3 text-sm text-muted-foreground">אין שינויים בין החודשים.</p>
       )}
-    </div>
+    </>
   )
 }
 

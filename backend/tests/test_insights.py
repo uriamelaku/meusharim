@@ -124,3 +124,25 @@ def test_insights_are_per_household(couple):
 def test_invalid_month(couple):
     owner, _ = couple
     assert owner.get("/api/reports/insights", params={"month": "2026-13"}).status_code == 422
+
+
+def test_compare_with_same_month_last_year(couple):
+    owner, _ = couple
+    add(owner, "מזון", "200", "2025-10-07")
+    add(owner, "מזון", "999", "2026-09-07")
+    add(owner, "מזון", "300", "2026-10-07")
+
+    result = owner.ok(
+        "get", "/api/reports/insights", params={"month": "2026-10", "compare": "last_year"}
+    )
+
+    assert result["previous_month"] == "2025-10"
+    assert (result["expense"], result["previous_expense"]) == ("300.00", "200.00")
+    assert result["expense_change_percent"] == 50
+    assert [(c["actual"], c["previous"]) for c in result["categories"]] == [("300.00", "200.00")]
+
+
+def test_unknown_comparison(couple):
+    owner, _ = couple
+    response = owner.get("/api/reports/insights", params={"month": "2026-10", "compare": "week"})
+    assert response.status_code == 422

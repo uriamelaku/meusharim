@@ -81,6 +81,9 @@ export type MonthInsights = {
   }
 }
 
-export function useInsights(month: string, enabled = true) {
-  return useDataQuery<MonthInsights>('/api/reports/insights', { month }, enabled)
+/** What the month is compared with: the month before, or the same month a year earlier. */
+export type Comparison = 'previous_month' | 'last_year'
+
+export function useInsights(month: string, enabled = true, compare: Comparison = 'previous_month') {
+  return useDataQuery<MonthInsights>('/api/reports/insights', { month, compare }, enabled)
 }
