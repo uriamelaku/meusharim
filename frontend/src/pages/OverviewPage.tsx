@@ -12,6 +12,7 @@ import { useSelectedPeriod } from '@/hooks/useSelectedPeriod'
 import { formatMoney, isNegative } from '@/lib/money'
 import { formatPeriod, monthName, toPeriodParam } from '@/lib/period'
 import { cn } from '@/lib/utils'
+import { RingTip } from '@/onboarding/RingTip'
 import { type MonthSummary, useMonthSummary } from '@/summary/api'
 import { CategoryRing } from '@/summary/CategoryRing'
 import { MonthlySummaryCard } from '@/summary/MonthlySummaryCard'
@@ -83,7 +84,9 @@ export function OverviewPage() {
               items={ringItems(categories.data, budget.data.categories)}
               emptyTitle={`אין הוצאות ב${formatPeriod(period)}`}
               onAdd={(categoryId) => add('expense', 'once', categoryId)}
-              onOpen={(categoryId) => navigate(`/transactions?month=${month}&category=${categoryId}`)}
+              onOpen={(categoryId) =>
+                navigate(`/transactions?month=${month}&category=${categoryId}`)
+              }
             />
 
             {summary.data.upcoming.length > 0 && (
@@ -160,19 +163,21 @@ function SpendingRing({
 }) {
   if (!items.length) {
     return (
-      <EmptyState
-        icon={PieChart}
-        title={emptyTitle}
-        description="כשיירשמו הוצאות לחודש הזה, יופיע כאן לאן הכסף הולך."
-      />
+      <div data-tour="ring">
+        <EmptyState
+          icon={PieChart}
+          title={emptyTitle}
+          description="כשיירשמו הוצאות לחודש הזה, יופיע כאן לאן הכסף הולך."
+        />
+      </div>
     )
   }
   return (
     <>
-      <CategoryRing items={items} total={total} onAdd={onAdd} onOpen={onOpen} />
-      <p className="text-center text-xs text-muted-foreground">
-        לחיצה על עיגול: הוצאה חדשה · לחיצה ארוכה: מה נרשם בקטגוריה
-      </p>
+      <div data-tour="ring">
+        <CategoryRing items={items} total={total} onAdd={onAdd} onOpen={onOpen} />
+      </div>
+      <RingTip />
     </>
   )
 }
@@ -183,6 +188,7 @@ function BalanceCard({ summary, monthLabel }: { summary: MonthSummary; monthLabe
   const hasPlanned = income.planned !== '0.00' || expense.planned !== '0.00'
   return (
     <section
+      data-tour="balance"
       aria-labelledby="balance-title"
       className="rounded-3xl bg-hero px-4.5 pt-3.5 pb-4 text-hero-foreground lg:px-7 lg:py-6"
     >

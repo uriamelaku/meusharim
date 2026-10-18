@@ -55,7 +55,11 @@ function AppearanceCard() {
     <Card className="rounded-2xl">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
-          {theme === 'dark' ? <Moon className="size-5" aria-hidden /> : <Sun className="size-5" aria-hidden />}
+          {theme === 'dark' ? (
+            <Moon className="size-5" aria-hidden />
+          ) : (
+            <Sun className="size-5" aria-hidden />
+          )}
           תצוגה
         </CardTitle>
         <CardDescription>נשמר במכשיר הזה בלבד.</CardDescription>
@@ -97,6 +101,7 @@ function HelpLink() {
   return (
     <Link
       to="/help"
+      data-tour="help"
       className="flex items-center gap-3 rounded-2xl bg-secondary p-4 text-secondary-foreground transition-colors hover:bg-secondary/80 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
     >
       <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-card text-primary">

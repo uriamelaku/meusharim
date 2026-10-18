@@ -52,14 +52,16 @@ function useHouseholdMutation<TVariables>(
 }
 
 export function useCreateHousehold() {
-  return useHouseholdMutation((token, body: { name: string; display_name: string; gender: Gender }) =>
-    apiRequest<MyHousehold>('/api/household', token, { method: 'POST', body }),
+  return useHouseholdMutation(
+    (token, body: { name: string; display_name: string; gender: Gender }) =>
+      apiRequest<MyHousehold>('/api/household', token, { method: 'POST', body }),
   )
 }
 
 export function useAcceptInvitation() {
-  return useHouseholdMutation((token, body: { token: string; display_name: string; gender: Gender }) =>
-    apiRequest<MyHousehold>('/api/invitations/accept', token, { method: 'POST', body }),
+  return useHouseholdMutation(
+    (token, body: { token: string; display_name: string; gender: Gender }) =>
+      apiRequest<MyHousehold>('/api/invitations/accept', token, { method: 'POST', body }),
   )
 }
 

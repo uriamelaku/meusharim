@@ -7,11 +7,12 @@ import {
   Settings,
   Wallet,
 } from 'lucide-react'
+import { type ReactNode, useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { signOut } from '@/auth/signOut'
 import { useCurrentUser } from '@/auth/useCurrentUser'
 import { Wordmark } from '@/components/RingsMark'
-import { myGender, type ShellContext } from '@/components/shellContext'
+import { myGender, partnerName, type ShellContext } from '@/components/shellContext'
 import { ErrorState, LoadingState } from '@/components/states'
 import { Button } from '@/components/ui/button'
 import { useHousehold } from '@/household/api'
@@ -20,6 +21,10 @@ import { GenderPrompt } from '@/household/GenderPrompt'
 import { JoinScreen } from '@/household/JoinScreen'
 import { usePendingInvitation } from '@/household/pendingInvitation'
 import { cn } from '@/lib/utils'
+import { FLAGS, hasFlag } from '@/onboarding/storage'
+import { tourSteps } from '@/onboarding/steps'
+import { TourProvider } from '@/onboarding/TourProvider'
+import { useTour } from '@/onboarding/tourContext'
 import { useQuickAdd } from '@/transactions/quickAdd'
 import { QuickAddProvider } from '@/transactions/QuickAddProvider'
 
@@ -72,48 +77,80 @@ export function AppShell() {
     return <CreateHouseholdScreen />
   }
 
-  const context: ShellContext = { user: currentUser.data, household: household.data }
+  const context: ShellContext = {
+    user: currentUser.data,
+    household: household.data,
+  }
   return (
     <QuickAddProvider household={household.data} userId={currentUser.data.id}>
-      <div className="min-h-dvh">
-        <DesktopSidebar email={currentUser.data.email} />
+      <Onboarding context={context}>
+        <div className="min-h-dvh">
+          <DesktopSidebar email={currentUser.data.email} />
 
-        <header
-          className={cn(
-            'sticky top-0 z-20 flex h-14 items-center justify-between bg-background/85 px-4 backdrop-blur-md lg:hidden',
-            isMain && 'hidden',
-          )}
-        >
-          <Wordmark />
-          <NavLink
-            to="/settings"
-            aria-label="הגדרות"
-            className={({ isActive }) =>
-              cn(
-                'flex size-11 items-center justify-center rounded-full transition-colors',
-                isActive ? 'bg-secondary text-primary' : 'bg-card text-muted-foreground',
-              )
-            }
-          >
-            <Settings className="size-5" aria-hidden />
-          </NavLink>
-        </header>
-
-        <main className="lg:ps-64">
-          <div
+          <header
             className={cn(
-              'mx-auto max-w-3xl px-4 pt-6 pb-[calc(7rem+env(safe-area-inset-bottom))] lg:px-10 lg:pt-12 lg:pb-12',
-              isMain && 'pt-2.5',
+              'sticky top-0 z-20 flex h-14 items-center justify-between bg-background/85 px-4 backdrop-blur-md lg:hidden',
+              isMain && 'hidden',
             )}
           >
-            <Outlet context={context} />
-          </div>
-        </main>
+            <Wordmark />
+            <NavLink
+              to="/settings"
+              aria-label="הגדרות"
+              className={({ isActive }) =>
+                cn(
+                  'flex size-11 items-center justify-center rounded-full transition-colors',
+                  isActive ? 'bg-secondary text-primary' : 'bg-card text-muted-foreground',
+                )
+              }
+            >
+              <Settings className="size-5" aria-hidden />
+            </NavLink>
+          </header>
 
-        <MobileTabBar />
-        <GenderPrompt gender={myGender(context)} />
-      </div>
+          <main className="lg:ps-64">
+            <div
+              className={cn(
+                'mx-auto max-w-3xl px-4 pt-6 pb-[calc(7rem+env(safe-area-inset-bottom))] lg:px-10 lg:pt-12 lg:pb-12',
+                isMain && 'pt-2.5',
+              )}
+            >
+              <Outlet context={context} />
+            </div>
+          </main>
+
+          <MobileTabBar />
+        </div>
+      </Onboarding>
     </QuickAddProvider>
+  )
+}
+
+/** First steps: how to address the member (asked once), then the guided tour. */
+function Onboarding({ context, children }: { context: ShellContext; children: ReactNode }) {
+  const gender = myGender(context)
+  const partner = partnerName(context)
+  const [askGender, setAskGender] = useState(() => gender === null && !hasFlag(FLAGS.genderSkipped))
+  const steps = useMemo(() => tourSteps(gender, partner), [gender, partner])
+  return (
+    <TourProvider steps={steps} autoStart={!askGender}>
+      {children}
+      <GenderStep open={askGender} onClose={() => setAskGender(false)} />
+    </TourProvider>
+  )
+}
+
+/** After the gender question, the tour continues from there. */
+function GenderStep({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const tour = useTour()
+  return (
+    <GenderPrompt
+      open={open}
+      onClose={() => {
+        onClose()
+        tour.startOnce()
+      }}
+    />
   )
 }
 
@@ -122,7 +159,7 @@ function DesktopSidebar({ email }: { email: string | null }) {
   return (
     <aside className="fixed inset-y-0 start-0 z-20 hidden w-64 flex-col border-e bg-card px-4 py-6 lg:flex">
       <Wordmark className="px-3" />
-      <Button className="mt-8" onClick={() => add()}>
+      <Button className="mt-8" data-tour="add" onClick={() => add()}>
         <Plus aria-hidden />
         הוספת הוצאה או הכנסה
       </Button>
@@ -132,6 +169,7 @@ function DesktopSidebar({ email }: { email: string | null }) {
             key={to}
             to={to}
             end={to === '/'}
+            data-tour={`nav-${to}`}
             className={({ isActive }) =>
               cn(
                 'flex h-11 items-center gap-3 rounded-xl px-3 font-medium transition-colors',
@@ -167,6 +205,7 @@ function MobileTabBar() {
       <NavLink
         to={to}
         end={to === '/'}
+        data-tour={`nav-${to}`}
         className={({ isActive }) =>
           cn(
             'mx-auto flex h-14 w-full max-w-20 flex-col items-center justify-center gap-0.5 rounded-2xl text-xs font-semibold transition-colors',
@@ -190,6 +229,7 @@ function MobileTabBar() {
           <Button
             size="icon"
             aria-label="הוספת הוצאה או הכנסה"
+            data-tour="add"
             onClick={() => add()}
             className="size-14 rounded-2xl bg-brass text-foreground shadow-lg shadow-brass/35 hover:bg-brass/90"
           >

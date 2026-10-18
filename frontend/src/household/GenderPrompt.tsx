@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -10,41 +9,23 @@ import {
 } from '@/components/ui/dialog'
 import { describeError } from '@/lib/errors'
 import { GENDER_OPTIONS } from '@/lib/gender'
+import { FLAGS, setFlag } from '@/onboarding/storage'
 import { type Gender, useUpdateMyGender } from './api'
 
-const SKIPPED_KEY = 'meusharim-gender-prompt-skipped'
-
-function wasSkipped(): boolean {
-  try {
-    return localStorage.getItem(SKIPPED_KEY) === '1'
-  } catch {
-    return false
-  }
-}
-
-function rememberSkip() {
-  try {
-    localStorage.setItem(SKIPPED_KEY, '1')
-  } catch {
-    // Not remembered on this device; the question may show again next visit.
-  }
-}
-
 /** Asks members who joined before gender existed, once, how to address them. */
-export function GenderPrompt({ gender }: { gender: Gender | null }) {
-  const [open, setOpen] = useState(() => gender === null && !wasSkipped())
+export function GenderPrompt({ open, onClose }: { open: boolean; onClose: () => void }) {
   const update = useUpdateMyGender()
 
   function choose(value: Gender) {
     update.mutate(value, {
-      onSuccess: () => setOpen(false),
+      onSuccess: onClose,
       onError: (error) => toast.error(describeError(error)),
     })
   }
 
   function skip() {
-    rememberSkip()
-    setOpen(false)
+    setFlag(FLAGS.genderSkipped)
+    onClose()
   }
 
   return (
