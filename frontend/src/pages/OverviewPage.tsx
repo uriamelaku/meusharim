@@ -2,6 +2,7 @@ import { ArrowLeft, CalendarCheck, CalendarClock, PieChart, Receipt, Settings } 
 import { Link, useNavigate } from 'react-router'
 import { useBudget } from '@/budgets/api'
 import { NewMonthBudgetPrompt } from '@/budgets/NewMonthBudgetPrompt'
+import { GoalPaceNotice } from '@/goals/GoalPaceNotice'
 import { useCategories } from '@/categories/api'
 import { PeriodPicker } from '@/components/PeriodPicker'
 import { useShellContext } from '@/components/shellContext'
@@ -74,6 +75,7 @@ export function OverviewPage() {
           <>
             <NewMonthBudgetPrompt budget={budget.data} period={period} isCurrent={isCurrent} />
             <BalanceCard summary={summary.data} monthLabel={monthName(period.month)} />
+            <GoalPaceNotice />
             <SpendingRing
               total={summary.data.expense.actual}
               items={ringItems(categories.data, budget.data.categories)}

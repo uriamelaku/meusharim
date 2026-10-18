@@ -174,18 +174,21 @@ def check_party(scope: HouseholdScope, party_user_id: UUID | None) -> None:
         raise InvalidError("invalid_member")
 
 
-def create_transaction(scope: HouseholdScope, body: TransactionCreate) -> Transaction:
+def create_transaction(
+    scope: HouseholdScope, body: TransactionCreate, goal_id: UUID | None = None
+) -> Transaction:
+    """`goal_id` links a savings deposit to its goal; only the goals module sets it."""
     check_category(scope, body.category_id, body.kind)
     check_party(scope, body.party_user_id)
     transaction_id = scope.session.execute(
         text(
             "INSERT INTO transactions (household_id, kind, amount, occurred_on, category_id,"
-            " description, status, party_user_id, request_id)"
+            " description, status, party_user_id, request_id, goal_id)"
             " VALUES (:household_id, :kind, :amount, :occurred_on, :category_id,"
-            " :description, :status, :party_user_id, :request_id)"
+            " :description, :status, :party_user_id, :request_id, :goal_id)"
             " ON CONFLICT (household_id, request_id) DO NOTHING RETURNING id"
         ),
-        {"household_id": scope.household_id, **body.model_dump()},
+        {"household_id": scope.household_id, "goal_id": goal_id, **body.model_dump()},
     ).scalar_one_or_none()
     if transaction_id is None:
         # A repeat of a request that already created its row (in parallel or earlier).

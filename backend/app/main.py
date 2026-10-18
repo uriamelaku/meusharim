@@ -14,6 +14,7 @@ from app.categories.router import router as categories_router
 from app.config import settings
 from app.db import engine
 from app.errors import AppError, app_error_handler
+from app.goals.router import router as goals_router
 from app.households.router import household_error_handler
 from app.households.router import router as households_router
 from app.households.service import HouseholdError
@@ -46,6 +47,7 @@ app.include_router(budgets_router)
 app.include_router(summary_router)
 app.include_router(reports_router)
 app.include_router(account_router)
+app.include_router(goals_router)
 
 
 @app.get("/api/health")

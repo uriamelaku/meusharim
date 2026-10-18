@@ -11,6 +11,7 @@ import { PeriodPicker } from '@/components/PeriodPicker'
 import { Sheet } from '@/components/Sheet'
 import { EmptyState, ErrorState, LoadingState } from '@/components/states'
 import { Button } from '@/components/ui/button'
+import { GoalsSection } from '@/goals/GoalsSection'
 import { useSelectedPeriod } from '@/hooks/useSelectedPeriod'
 import { describeError } from '@/lib/errors'
 import { formatPeriod, toPeriodParam } from '@/lib/period'
@@ -117,6 +118,8 @@ export function BudgetPage() {
               </ul>
             </section>
           )}
+
+          <GoalsSection />
 
           {unbudgeted.length > 0 && (
             <section aria-labelledby="unbudgeted-title">

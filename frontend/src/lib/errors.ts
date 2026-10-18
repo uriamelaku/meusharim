@@ -20,6 +20,8 @@ const messages: Record<string, string> = {
   wrong_password: 'הסיסמה שגויה.',
   auth_service_unavailable: 'שירות ההתחברות לא זמין כרגע. נסו שוב בעוד כמה דקות.',
   account_deletion_not_configured: 'מחיקת חשבון עדיין לא הוגדרה בשרת.',
+  goal_exists: 'כבר יש יעד בשם הזה.',
+  goal_not_found: 'היעד לא נמצא. ייתכן שבן/בת הזוג מחק/ה אותו.',
   no_household: 'צריך קודם להקים משק בית.',
 }
 

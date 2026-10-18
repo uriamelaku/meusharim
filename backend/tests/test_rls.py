@@ -94,6 +94,7 @@ APP_TABLES = [
     "transactions",
     "schedules",
     "budgets",
+    "savings_goals",
 ]
 
 
