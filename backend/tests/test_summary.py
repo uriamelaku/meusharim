@@ -111,8 +111,9 @@ def test_recent_transactions_of_the_month(october):
     ]
 
 
-def test_upcoming_lists_planned_items_from_today(october):
+def test_upcoming_lists_planned_items_after_today(october):
     owner, _ = october
+    add(owner, "חשבונות", "60", "2026-10-14", status="planned")  # due today: pending, not upcoming
     upcoming = owner.ok("get", "/api/summary", params=OCTOBER)["upcoming"]
     assert [(u["occurred_on"], u["source"], u["amount"]) for u in upcoming] == [
         ("2026-10-20", "transaction", "400.00"),

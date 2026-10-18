@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from sqlalchemy import text
 
 from app.budgets.service import effective_budget
@@ -19,8 +21,9 @@ UPCOMING_COUNT = 8
 
 
 def _upcoming(scope: HouseholdScope, month: Month) -> list[UpcomingItem]:
-    """Planned items of the month from today on, soonest first."""
-    start = max(month.first_day, scope.today)
+    """Planned items of the month after today, soonest first. Today's and earlier planned
+    items are due and already listed as pending confirmation."""
+    start = max(month.first_day, scope.today + timedelta(days=1))
     if start > month.last_day:
         return []
     rows = scope.session.execute(
