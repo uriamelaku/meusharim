@@ -113,3 +113,15 @@ def test_cannot_use_other_households_category(couple):
         {"source": "cal", "rows": [{**row(), "category_id": owner.category_id("מזון")}]},
     )
     assert response.status_code == 422
+
+
+def test_preview_ignores_other_households_history(couple):
+    owner, _ = couple
+    commit(owner, {**row(), "category_id": owner.category_id("מזון")})
+    stranger = Partner()
+    stranger.create_household()
+
+    [result] = preview(stranger, row())
+
+    assert result["suggested_category_id"] is None
+    assert result["possible_duplicate"] is False
