@@ -57,8 +57,8 @@ export function TransactionForm({
   const [party, setParty] = useState<string | null>(() =>
     transaction ? transaction.party_user_id : lastParty(members, userId),
   )
-  // New entries show only amount and category; the rest has sensible defaults.
-  const [showDetails, setShowDetails] = useState(Boolean(transaction))
+  // Details (date, status, payer, description) start open; they can be collapsed.
+  const [showDetails, setShowDetails] = useState(true)
   // Opened from a category on the main screen: the category is known, so the form
   // starts at the amount. "שינוי" brings back the full picker.
   const [pickingCategory, setPickingCategory] = useState(!initialCategoryId || Boolean(transaction))
