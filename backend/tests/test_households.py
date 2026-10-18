@@ -168,6 +168,7 @@ def test_invitation_attempts_are_rate_limited(owner):
         ("DELETE", "/api/household/invitation"),
         ("POST", "/api/invitations/preview"),
         ("POST", "/api/invitations/accept"),
+        ("PATCH", "/api/household/me"),
     ],
 )
 def test_endpoints_require_authentication(method, path):
@@ -255,3 +256,46 @@ def test_concurrent_invitations_leave_one_pending(owner):
             text("SELECT count(*) FROM household_invitations WHERE accepted_at IS NULL")
         )
     assert pending == 1
+
+
+def test_gender_is_set_on_create_and_join(owner):
+    assert owner.ok("get", "/api/household")["household"]["members"][0]["gender"] is None
+    founder = Partner()
+    created = founder.post(
+        "/api/household", {"name": "בית", "display_name": "דנה", "gender": "female"}
+    )
+    assert created.json()["household"]["members"][0]["gender"] == "female"
+
+    joined = Partner().post(
+        "/api/invitations/accept",
+        {"token": founder.invite(), "display_name": "יואב", "gender": "male"},
+    )
+    assert [m["gender"] for m in joined.json()["household"]["members"]] == ["female", "male"]
+
+
+def test_member_changes_only_own_gender(owner):
+    partner = Partner()
+    partner.accept(owner.invite())
+
+    household = partner.ok("patch", "/api/household/me", {"gender": "female"})["household"]
+
+    by_user = {m["user_id"]: m["gender"] for m in household["members"]}
+    assert by_user == {str(owner.id): None, str(partner.id): "female"}
+    # The database itself refuses another member's row, whatever the SQL.
+    with user_transaction(partner.id) as session:
+        updated = session.execute(
+            text("UPDATE household_members SET gender = 'male' WHERE user_id = :id"),
+            {"id": owner.id},
+        ).rowcount
+    assert updated == 0
+
+
+@pytest.mark.parametrize("body", [{"gender": "other"}, {"gender": None}, {}])
+def test_gender_validation(owner, body):
+    assert owner.patch("/api/household/me", body).status_code == 422
+
+
+def test_gender_requires_household():
+    response = Partner().patch("/api/household/me", {"gender": "male"})
+    assert response.status_code == 409
+    assert response.json() == {"detail": "no_household"}

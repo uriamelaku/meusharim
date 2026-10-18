@@ -12,6 +12,7 @@ from app.households.schemas import (
     InvitationCreated,
     InvitationLookup,
     InvitationPreview,
+    MemberUpdate,
     MyHousehold,
 )
 
@@ -57,6 +58,17 @@ def get_household(db: DbSession) -> MyHousehold:
 @router.post("/household", status_code=status.HTTP_201_CREATED)
 def create_household(body: HouseholdCreate, db: DbSession) -> MyHousehold:
     service.create_household(db, body.name, body.display_name)
+    if body.gender:
+        service.set_my_gender(db, body.gender)
+    return MyHousehold(household=service.get_my_household(db))
+
+
+@router.patch("/household/me")
+def update_me(body: MemberUpdate, db: DbSession) -> MyHousehold:
+    household = service.get_my_household(db)
+    if household is None:
+        raise service.HouseholdError("no_household")
+    service.set_my_gender(db, body.gender)
     return MyHousehold(household=service.get_my_household(db))
 
 
@@ -78,4 +90,6 @@ def preview_invitation(body: InvitationLookup, db: DbSession) -> InvitationPrevi
 @router.post("/invitations/accept", dependencies=[InvitationRateLimit])
 def accept_invitation(body: InvitationAccept, db: DbSession) -> MyHousehold:
     service.accept_invitation(db, body.token, body.display_name)
+    if body.gender:
+        service.set_my_gender(db, body.gender)
     return MyHousehold(household=service.get_my_household(db))

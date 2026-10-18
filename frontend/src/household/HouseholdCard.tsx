@@ -4,6 +4,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { byGender } from '@/lib/gender'
 import {
   type Household,
   type InvitationCreated,
@@ -47,7 +48,7 @@ export function HouseholdCard({ household, userId }: { household: Household; use
               <span className="font-medium">{member.display_name}</span>
               {member.user_id === userId && (
                 <span className="rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground">
-                  את/ה
+                  {byGender(member.gender, { female: 'את', male: 'אתה', neutral: 'החשבון שלך' })}
                 </span>
               )}
             </li>

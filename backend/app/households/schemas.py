@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, StringConstraints
@@ -9,17 +9,20 @@ HouseholdName = Annotated[
 ]
 DisplayName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=40)]
 # secrets.token_urlsafe(32) produces 43 URL-safe characters.
+Gender = Literal["female", "male"]
 InvitationToken = Annotated[str, StringConstraints(pattern=r"^[A-Za-z0-9_-]{43}$")]
 
 
 class HouseholdCreate(BaseModel):
     name: HouseholdName
     display_name: DisplayName
+    gender: Gender | None = None
 
 
 class Member(BaseModel):
     user_id: UUID
     display_name: str
+    gender: Gender | None
     joined_at: datetime
 
 
@@ -57,3 +60,8 @@ class InvitationPreview(BaseModel):
 class InvitationAccept(BaseModel):
     token: InvitationToken
     display_name: DisplayName
+    gender: Gender | None = None
+
+
+class MemberUpdate(BaseModel):
+    gender: Gender

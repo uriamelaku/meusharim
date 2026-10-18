@@ -1,6 +1,6 @@
 import { useOutletContext } from 'react-router'
 import type { CurrentUser } from '@/auth/useCurrentUser'
-import type { Household, Member } from '@/household/api'
+import type { Gender, Household, Member } from '@/household/api'
 
 /** What every page inside the app shell can rely on: a verified user with a household. */
 export type ShellContext = { user: CurrentUser; household: Household }
@@ -17,4 +17,14 @@ export function partnerOf({ user, household }: ShellContext): Member | null {
 /** The partner's name, or a neutral description before they joined. */
 export function partnerName(context: ShellContext): string {
   return partnerOf(context)?.display_name ?? 'בן או בת הזוג'
+}
+
+/** The signed-in member's own row. */
+export function meOf({ user, household }: ShellContext): Member | undefined {
+  return household.members.find((member) => member.user_id === user.id)
+}
+
+/** How the app addresses the signed-in member. */
+export function myGender(context: ShellContext): Gender | null {
+  return meOf(context)?.gender ?? null
 }

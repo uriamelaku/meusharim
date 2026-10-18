@@ -5,17 +5,22 @@ import { FocusLayout } from '@/components/FocusLayout'
 import { TextField } from '@/components/TextField'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { useCreateHousehold } from './api'
+import { type Gender, useCreateHousehold } from './api'
 import { describeHouseholdError } from './errors'
+import { GenderField } from './GenderField'
 
 export function CreateHouseholdScreen() {
   const [name, setName] = useState('')
   const [displayName, setDisplayName] = useState('')
+  const [gender, setGender] = useState<Gender | null>(null)
+  const [submitted, setSubmitted] = useState(false)
   const createHousehold = useCreateHousehold()
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    createHousehold.mutate({ name, display_name: displayName })
+    setSubmitted(true)
+    if (!gender) return
+    createHousehold.mutate({ name, display_name: displayName, gender })
   }
 
   return (
@@ -55,6 +60,7 @@ export function CreateHouseholdScreen() {
           value={displayName}
           onChange={(event) => setDisplayName(event.target.value)}
         />
+        <GenderField value={gender} onChange={setGender} showError={submitted} />
         {createHousehold.isError && (
           <Alert variant="destructive">
             <AlertCircle aria-hidden />

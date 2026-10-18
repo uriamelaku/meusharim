@@ -18,7 +18,7 @@ describe('defaultStatusFor', () => {
 })
 
 describe('partyName', () => {
-  const members = [{ user_id: 'a', display_name: 'אורי', joined_at: '' }]
+  const members = [{ user_id: 'a', display_name: 'אורי', gender: null, joined_at: '' }]
   it('names members and the joint account', () => {
     expect(partyName('a', members)).toBe('אורי')
     expect(partyName(null, members)).toBe('משותף')

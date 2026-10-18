@@ -11,11 +11,12 @@ import { NavLink, Outlet, useLocation } from 'react-router'
 import { signOut } from '@/auth/signOut'
 import { useCurrentUser } from '@/auth/useCurrentUser'
 import { Wordmark } from '@/components/RingsMark'
-import type { ShellContext } from '@/components/shellContext'
+import { myGender, type ShellContext } from '@/components/shellContext'
 import { ErrorState, LoadingState } from '@/components/states'
 import { Button } from '@/components/ui/button'
 import { useHousehold } from '@/household/api'
 import { CreateHouseholdScreen } from '@/household/CreateHouseholdScreen'
+import { GenderPrompt } from '@/household/GenderPrompt'
 import { JoinScreen } from '@/household/JoinScreen'
 import { usePendingInvitation } from '@/household/pendingInvitation'
 import { cn } from '@/lib/utils'
@@ -110,6 +111,7 @@ export function AppShell() {
         </main>
 
         <MobileTabBar />
+        <GenderPrompt gender={myGender(context)} />
       </div>
     </QuickAddProvider>
   )

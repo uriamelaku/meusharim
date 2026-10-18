@@ -8,7 +8,8 @@ type SegmentedProps<T extends string> = {
   /** Show the label above the control; otherwise it is for screen readers only. */
   showLabel?: boolean
   options: Option<T>[]
-  value: T
+  /** null: nothing chosen yet. */
+  value: T | null
   onChange: (value: T) => void
   className?: string
 }

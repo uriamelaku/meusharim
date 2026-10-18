@@ -6,8 +6,9 @@ import { TextField } from '@/components/TextField'
 import { LoadingState } from '@/components/states'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { useAcceptInvitation, useInvitationPreview } from './api'
+import { type Gender, useAcceptInvitation, useInvitationPreview } from './api'
 import { describeHouseholdError } from './errors'
+import { GenderField } from './GenderField'
 
 type JoinScreenProps = {
   token: string
@@ -19,10 +20,14 @@ export function JoinScreen({ token, onDone }: JoinScreenProps) {
   const preview = useInvitationPreview(token)
   const accept = useAcceptInvitation()
   const [displayName, setDisplayName] = useState('')
+  const [gender, setGender] = useState<Gender | null>(null)
+  const [submitted, setSubmitted] = useState(false)
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    accept.mutate({ token, display_name: displayName }, { onSuccess: onDone })
+    setSubmitted(true)
+    if (!gender) return
+    accept.mutate({ token, display_name: displayName, gender }, { onSuccess: onDone })
   }
 
   if (preview.isPending) {
@@ -70,6 +75,7 @@ export function JoinScreen({ token, onDone }: JoinScreenProps) {
           value={displayName}
           onChange={(event) => setDisplayName(event.target.value)}
         />
+        <GenderField value={gender} onChange={setGender} showError={submitted} />
         {accept.isError && (
           <Alert variant="destructive">
             <AlertCircle aria-hidden />

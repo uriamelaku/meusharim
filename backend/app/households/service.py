@@ -51,7 +51,7 @@ def get_my_household(session: Session) -> Household | None:
         return None
     members = session.execute(
         text(
-            "SELECT user_id, display_name, joined_at FROM household_members"
+            "SELECT user_id, display_name, gender, joined_at FROM household_members"
             " WHERE household_id = :household_id ORDER BY joined_at"
         ),
         {"household_id": row.id},
@@ -106,6 +106,14 @@ def accept_invitation(session: Session, token: str, display_name: str) -> UUID:
         "SELECT app.accept_invitation(:token_hash, :display_name)",
         {"token_hash": hash_token(token), "display_name": display_name},
     ).scalar_one()
+
+
+def set_my_gender(session: Session, gender: str) -> None:
+    # The policy limits the update to the caller's own row.
+    session.execute(
+        text("UPDATE household_members SET gender = :gender WHERE user_id = app.current_user_id()"),
+        {"gender": gender},
+    )
 
 
 def register_invitation_attempt(session: Session) -> int:

@@ -3,8 +3,8 @@ import type { Member } from '@/household/api'
 import { lastParty, rememberParty } from './lastParty'
 
 const members: Member[] = [
-  { user_id: 'me', display_name: 'אוריה', joined_at: '' },
-  { user_id: 'partner', display_name: 'נועה', joined_at: '' },
+  { user_id: 'me', display_name: 'אוריה', gender: null, joined_at: '' },
+  { user_id: 'partner', display_name: 'נועה', gender: null, joined_at: '' },
 ]
 
 const store = new Map<string, string>()
