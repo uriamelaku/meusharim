@@ -1,6 +1,6 @@
 import { CalendarClock } from 'lucide-react'
 import { CategoryIconBadge } from '@/categories/CategoryBadge'
-import { formatShortDate } from '@/lib/dates'
+import { formatRelativeDay } from '@/lib/dates'
 import { formatFlow } from '@/lib/money'
 import type { UpcomingItem } from './api'
 
@@ -9,7 +9,7 @@ function sourceLabel(item: UpcomingItem): string {
     return `תשלום ${item.sequence_no} מתוך ${item.installments_count}`
   }
   if (item.schedule_type === 'recurring') return 'הוראת קבע'
-  return 'מתוכננת'
+  return item.kind === 'expense' ? 'עוד לא שולם' : 'עוד לא התקבל'
 }
 
 /** A planned item still to come this month. Dimmed: it is not part of the balance yet. */
@@ -25,7 +25,7 @@ export function UpcomingRow({ item }: { item: UpcomingItem }) {
         <span className="truncate font-medium">{item.description || item.category.name}</span>
         <span className="flex items-center gap-1.5 truncate text-sm text-muted-foreground">
           <CalendarClock className="size-3.5 shrink-0" aria-hidden />
-          {formatShortDate(item.occurred_on)} · {sourceLabel(item)}
+          {formatRelativeDay(item.occurred_on)} · {sourceLabel(item)}
         </span>
       </span>
       <span className="shrink-0 font-semibold text-muted-foreground tabular-nums">

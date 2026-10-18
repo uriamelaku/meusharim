@@ -93,7 +93,7 @@ export function ScheduleEditor({ schedule, members, userId, onDone }: ScheduleEd
         )}
         {current.status === 'paused' && (
           <p className="text-sm text-muted-foreground">
-            בזמן ההשהיה לא נרשמות תנועות. בחידוש, מועדים שעברו בזמן ההשהיה ידולגו.
+            בזמן ההשהיה לא נרשם כלום. בחידוש, מועדים שעברו בזמן ההשהיה ידולגו.
           </p>
         )}
       </div>
@@ -141,7 +141,7 @@ export function ScheduleEditor({ schedule, members, userId, onDone }: ScheduleEd
         open={confirmingCancel}
         onOpenChange={setConfirmingCancel}
         title={isInstallments ? 'לבטל את התשלומים?' : 'לבטל את הוראת הקבע?'}
-        description="לא ייווצרו יותר מועדים חדשים. תנועות שכבר נרשמו יישארו בהיסטוריה."
+        description="לא ייווצרו יותר מועדים חדשים. מה שכבר נרשם יישאר בהיסטוריה."
         confirmLabel={isInstallments ? 'ביטול התשלומים' : 'ביטול ההוראה'}
         cancelLabel="חזרה"
         onConfirm={() => run('cancel', isInstallments ? 'התשלומים בוטלו' : 'הוראת הקבע בוטלה')}

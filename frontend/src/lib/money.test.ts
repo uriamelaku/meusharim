@@ -43,7 +43,8 @@ describe('formatMoney', () => {
   })
 
   it('formats negative balances', () => {
-    expect(formatMoney('-350.40')).toMatch(/-.*350\.40|350\.40.*-/)
+    expect(formatMoney('-350.40')).toMatch(/\u2212.*350\.40/)
+    expect(formatMoney('-350.40')).not.toContain('-')
   })
 
   it('keeps exact agorot for large amounts without float rounding', () => {
@@ -64,7 +65,7 @@ describe('amountToInput', () => {
 describe('formatFlow', () => {
   it('signs income and expense', () => {
     expect(formatFlow('80.00', 'income')).toMatch(/\+.*80/)
-    expect(formatFlow('350.40', 'expense')).toMatch(/-.*350\.40/)
+    expect(formatFlow('350.40', 'expense')).toMatch(/\u2212.*350\.40/)
   })
 })
 

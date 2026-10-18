@@ -27,7 +27,7 @@ export function InstallmentProgress({ schedule }: { schedule: Schedule }) {
         <span>
           שולמו {schedule.completed_count} מתוך {count}
         </span>
-        {schedule.remaining_amount && <span>נותרו {formatMoney(schedule.remaining_amount)}</span>}
+        {schedule.remaining_amount && <span>נשארו {formatMoney(schedule.remaining_amount)}</span>}
       </div>
     </div>
   )

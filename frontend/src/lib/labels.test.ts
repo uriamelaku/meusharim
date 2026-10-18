@@ -65,7 +65,7 @@ describe('scheduleState', () => {
 
 describe('budget usage text', () => {
   it('shows what is left or how much is over', () => {
-    expect(remainingText('200.00')).toMatch(/^נותרו .*200/)
+    expect(remainingText('200.00')).toMatch(/^נשארו .*200/)
     expect(remainingText('-8.50')).toMatch(/^חריגה של .*8\.50/)
     expect(remainingText('-8.50')).not.toContain('-')
   })

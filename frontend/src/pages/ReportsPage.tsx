@@ -128,7 +128,7 @@ function CustomRange({
       </Button>
       {!parsed && (
         <p role="alert" className="w-full text-sm text-destructive">
-          בחרו טווח של חודש עד {MAX_RANGE_MONTHS} חודשים, שבו חודש ההתחלה לא אחרי חודש הסיום.
+          הטווח צריך להיות בין חודש אחד ל-{MAX_RANGE_MONTHS} חודשים, וחודש ההתחלה לא אחרי חודש הסיום.
         </p>
       )}
     </div>
@@ -147,7 +147,7 @@ function ReportContent({ report }: { report: Report }) {
       <EmptyState
         icon={BarChart3}
         title="אין נתונים בטווח הזה"
-        description="בחרו טווח אחר, או הוסיפו הכנסות והוצאות כדי לראות כאן מגמות."
+        description="אפשר לבחור טווח אחר. כשיירשמו הכנסות והוצאות, יופיעו כאן מגמות."
       />
     )
   }
@@ -156,9 +156,9 @@ function ReportContent({ report }: { report: Report }) {
   return (
     <div className="flex flex-col gap-8">
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="הכנסות בפועל" value={report.income} planned={report.income_planned} />
-        <Stat label="הוצאות בפועל" value={report.expense} planned={report.expense_planned} />
-        <Stat label="מאזן בפועל" value={report.balance} />
+        <Stat label="הכנסות שהתקבלו" value={report.income} planned={report.income_planned} kind="income" />
+        <Stat label="הוצאות ששולמו" value={report.expense} planned={report.expense_planned} kind="expense" />
+        <Stat label="יתרה" value={report.balance} />
         <Stat label="ממוצע הוצאות לחודש" value={report.average_monthly_expense} />
       </dl>
 
@@ -205,7 +205,7 @@ function ReportContent({ report }: { report: Report }) {
                   הוצאות
                 </th>
                 <th scope="col" className="px-3 py-2 text-start font-medium">
-                  מאזן
+                  יתרה
                 </th>
                 <th scope="col" className="px-3 py-2 text-start font-medium">
                   שינוי בהוצאות
@@ -222,7 +222,7 @@ function ReportContent({ report }: { report: Report }) {
                     {formatMoney(month.income)}
                     {month.income_planned !== '0.00' && (
                       <span className="block text-xs text-muted-foreground">
-                        + {formatMoney(month.income_planned)} מתוכנן
+                        + {formatMoney(month.income_planned)} עוד לא התקבל
                       </span>
                     )}
                   </td>
@@ -230,7 +230,7 @@ function ReportContent({ report }: { report: Report }) {
                     {formatMoney(month.expense)}
                     {month.expense_planned !== '0.00' && (
                       <span className="block text-xs text-muted-foreground">
-                        + {formatMoney(month.expense_planned)} מתוכנן
+                        + {formatMoney(month.expense_planned)} עוד לא שולם
                       </span>
                     )}
                   </td>
@@ -261,7 +261,7 @@ function ReportContent({ report }: { report: Report }) {
             <li key={year.year} className="rounded-2xl border bg-card p-4">
               <p className="font-heading text-2xl font-semibold">{year.year}</p>
               <p className="mb-3 text-xs text-muted-foreground">
-                כל השנה, בפועל, לעומת {year.year - 1}
+                כל השנה (מה ששולם והתקבל), לעומת {year.year - 1}
               </p>
               <dl className="flex flex-col gap-2 text-sm">
                 <YearLine label="הכנסות" value={year.income} change={year.income_change_percent} />
@@ -272,7 +272,7 @@ function ReportContent({ report }: { report: Report }) {
                   higherIsWorse
                 />
                 <div className="flex justify-between gap-2 border-t pt-2">
-                  <dt className="font-medium">מאזן</dt>
+                  <dt className="font-medium">יתרה</dt>
                   <dd className="font-semibold tabular-nums">{formatMoney(year.balance)}</dd>
                 </div>
               </dl>
@@ -284,13 +284,17 @@ function ReportContent({ report }: { report: Report }) {
   )
 }
 
-function Stat({ label, value, planned }: { label: string; value: string; planned?: string }) {
+type StatProps = { label: string; value: string; planned?: string; kind?: 'income' | 'expense' }
+
+function Stat({ label, value, planned, kind = 'expense' }: StatProps) {
   return (
     <div className="rounded-2xl border bg-card p-3.5">
       <dt className="text-sm text-muted-foreground">{label}</dt>
       <dd className="mt-1 font-heading text-xl font-semibold tabular-nums">{formatMoney(value)}</dd>
       {planned && planned !== '0.00' && (
-        <dd className="text-xs text-muted-foreground">+ {formatMoney(planned)} מתוכנן</dd>
+        <dd className="text-xs text-muted-foreground">
+          + {formatMoney(planned)} {kind === 'income' ? 'עוד לא התקבל' : 'עוד לא שולם'}
+        </dd>
       )}
     </div>
   )

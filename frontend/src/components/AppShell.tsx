@@ -24,7 +24,7 @@ import { QuickAddProvider } from '@/transactions/QuickAddProvider'
 
 const NAV_ITEMS = [
   { to: '/', label: 'ראשי', icon: LayoutDashboard },
-  { to: '/transactions', label: 'תנועות', icon: ArrowLeftRight },
+  { to: '/transactions', label: 'הוצאות והכנסות', icon: ArrowLeftRight },
   { to: '/budget', label: 'תקציב', icon: Wallet },
   { to: '/reports', label: 'דוחות', icon: BarChart3 },
   { to: '/settings', label: 'הגדרות', icon: Settings },
@@ -52,7 +52,7 @@ export function AppShell() {
       <ErrorState
         className="min-h-dvh justify-center"
         title="לא הצלחנו לטעון את החשבון"
-        description="השרת לא זמין או לא אישר את ההתחברות. בדקו את החיבור ונסו שוב, או התחברו מחדש."
+        description="השרת לא זמין או לא אישר את ההתחברות. אפשר לנסות שוב, או להתחבר מחדש."
         onRetry={() => {
           void currentUser.refetch()
           void household.refetch()
@@ -122,7 +122,7 @@ function DesktopSidebar({ email }: { email: string | null }) {
       <Wordmark className="px-3" />
       <Button className="mt-8" onClick={() => add()}>
         <Plus aria-hidden />
-        הוספת תנועה
+        הוספת הוצאה או הכנסה
       </Button>
       <nav aria-label="ניווט ראשי" className="mt-6 flex flex-col gap-1">
         {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
@@ -187,7 +187,7 @@ function MobileTabBar() {
         <li className="flex justify-center">
           <Button
             size="icon"
-            aria-label="הוספת תנועה"
+            aria-label="הוספת הוצאה או הכנסה"
             onClick={() => add()}
             className="size-14 rounded-2xl bg-brass text-foreground shadow-lg shadow-brass/35 hover:bg-brass/90"
           >

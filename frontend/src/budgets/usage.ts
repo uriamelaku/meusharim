@@ -12,7 +12,7 @@ export function toneOf(status: UsageStatus | null): ProgressTone {
 export function remainingText(remaining: string): string {
   return remaining.startsWith('-')
     ? `חריגה של ${formatMoney(remaining.slice(1))}`
-    : `נותרו ${formatMoney(remaining)}`
+    : `נשארו ${formatMoney(remaining)}`
 }
 
 export const STATUS_TEXT: Record<UsageStatus, string> = {

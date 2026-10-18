@@ -1,11 +1,11 @@
 import { Repeat } from 'lucide-react'
 import { CategoryIconBadge } from '@/categories/CategoryBadge'
 import type { Member } from '@/household/api'
-import { formatShortDate } from '@/lib/dates'
+import { formatRelativeDay } from '@/lib/dates'
 import { formatFlow } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import type { Transaction } from './api'
-import { partyName, scheduleLabel } from './labels'
+import { partyName, scheduleLabel, statusLabel } from './labels'
 
 type TransactionRowProps = {
   transaction: Transaction
@@ -25,7 +25,7 @@ export function TransactionRow({
   const fromSchedule = scheduleLabel(transaction)
   const details = [
     transaction.description ? category.name : null,
-    showDate ? formatShortDate(transaction.occurred_on) : null,
+    showDate ? formatRelativeDay(transaction.occurred_on) : null,
     partyName(transaction.party_user_id, members),
   ].filter(Boolean)
 
@@ -61,7 +61,7 @@ export function TransactionRow({
         </span>
         {status === 'planned' && (
           <span className="rounded-full border border-dashed border-brass px-2 text-xs text-brass-strong">
-            מתוכננת
+            {statusLabel('planned', kind)}
           </span>
         )}
       </span>

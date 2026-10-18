@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isInPeriod, periodRange, todayIso } from './dates'
+import { formatRelativeDay, isInPeriod, periodRange, todayIso } from './dates'
 
 describe('todayIso', () => {
   it('uses the Israeli calendar day', () => {
@@ -25,5 +25,23 @@ describe('isInPeriod', () => {
     expect(isInPeriod('2026-10-31', { year: 2026, month: 10 })).toBe(true)
     expect(isInPeriod('2026-11-01', { year: 2026, month: 10 })).toBe(false)
     expect(isInPeriod('2025-10-15', { year: 2026, month: 10 })).toBe(false)
+  })
+})
+
+describe('formatRelativeDay', () => {
+  const today = '2026-10-18' // a Sunday
+  it('names today, yesterday and tomorrow', () => {
+    expect(formatRelativeDay('2026-10-18', today)).toBe('היום')
+    expect(formatRelativeDay('2026-10-17', today)).toBe('אתמול')
+    expect(formatRelativeDay('2026-10-19', today)).toBe('מחר')
+  })
+
+  it('shows the weekday and date, with the year only for other years', () => {
+    expect(formatRelativeDay('2026-10-15', today)).toBe('יום ה׳ 15.10')
+    expect(formatRelativeDay('2025-12-31', today)).toBe('יום ד׳ 31.12.2025')
+  })
+
+  it('crosses month and year boundaries', () => {
+    expect(formatRelativeDay('2026-12-31', '2027-01-01')).toBe('אתמול')
   })
 })

@@ -35,6 +35,7 @@
   --color-expense: var(--expense);
   --color-hero: var(--hero);
   --color-hero-foreground: var(--hero-foreground);
+  --color-hero-negative: var(--hero-negative);
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -76,6 +77,8 @@
   /* The balance card: forest green in both themes. */
   --hero: #1f5c45;
   --hero-foreground: #ffffff;
+  /* A negative amount on the green card (4.5:1 or more on --hero). */
+  --hero-negative: #ffc2b6;
   --radius: 1rem;
   color-scheme: light;
 }

@@ -87,7 +87,7 @@ export function BudgetPage() {
               <BudgetSummary budget={budget.data} />
               {!hasBudget && (
                 <p className="mt-4 text-sm text-muted-foreground">
-                  עדיין לא הוגדר תקציב ל{label}. קבעו תקציב כדי לראות כמה נוצל וכמה נשאר.
+                  עדיין לא הוגדר תקציב ל{label}. כשיוגדר, יופיע כאן כמה נוצל וכמה נשאר.
                 </p>
               )}
               <div className="mt-5">{actions}</div>
@@ -98,7 +98,7 @@ export function BudgetPage() {
                 className="w-full"
                 icon={Wallet}
                 title={`עדיין לא הוגדר תקציב ל${label}`}
-                description="קבעו כמה אתם מתכננים להוציא בכל קטגוריה, ותראו כאן כמה נוצל וכמה נשאר."
+                description="מגדירים כמה מתכננים להוציא בכל קטגוריה, ורואים כאן כמה נוצל וכמה נשאר."
               />
               {actions}
             </div>

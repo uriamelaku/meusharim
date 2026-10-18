@@ -44,7 +44,7 @@ export function DepositForm({ goal, members, userId, onDone }: DepositFormProps)
         label="כמה הפקדתם?"
         value={amountText}
         onChange={setAmountText}
-        error={submitted && !amount ? 'הזינו סכום חיובי.' : undefined}
+        error={submitted && !amount ? 'צריך סכום חיובי.' : undefined}
         autoFocus
       />
       {goal.monthly_needed && (
@@ -52,9 +52,9 @@ export function DepositForm({ goal, members, userId, onDone }: DepositFormProps)
           כדי להגיע בזמן: {formatMoney(goal.monthly_needed)} בחודש
         </p>
       )}
-      <PartyPicker label="מאיפה" members={members} value={party} onChange={setParty} />
+      <PartyPicker label="מאיזה חשבון" members={members} value={party} onChange={setParty} />
       <p className="text-sm text-muted-foreground">
-        ההפקדה נרשמת כהוצאה בקטגוריה "חיסכון" (החודש), כי הכסף יוצא מהשוטף.
+        הסכום יירשם כהוצאה בקטגוריית "חיסכון", כי הכסף יוצא מהחשבון השוטף.
       </p>
       {deposit.isError && (
         <p role="alert" className="text-sm text-destructive">

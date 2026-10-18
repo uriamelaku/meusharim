@@ -9,7 +9,7 @@ import { useShellContext } from '@/components/shellContext'
 import { EmptyState, ErrorState, LoadingState } from '@/components/states'
 import { Button } from '@/components/ui/button'
 import { useSelectedPeriod } from '@/hooks/useSelectedPeriod'
-import { formatMoney } from '@/lib/money'
+import { formatMoney, isNegative } from '@/lib/money'
 import { formatPeriod, monthName, toPeriodParam } from '@/lib/period'
 import { cn } from '@/lib/utils'
 import { type MonthSummary, useMonthSummary } from '@/summary/api'
@@ -108,11 +108,11 @@ export function OverviewPage() {
             <section aria-labelledby="recent-title" className="mt-4">
               <div className="mb-2 flex items-center justify-between">
                 <h2 id="recent-title" className="font-heading text-xl font-semibold">
-                  תנועות אחרונות
+                  נרשמו לאחרונה
                 </h2>
                 <Button asChild variant="ghost" size="sm" className="h-9">
                   <Link to={`/transactions?month=${month}`}>
-                    לכל התנועות
+                    לכל ההוצאות וההכנסות
                     <ArrowLeft aria-hidden />
                   </Link>
                 </Button>
@@ -133,8 +133,8 @@ export function OverviewPage() {
               ) : (
                 <EmptyState
                   icon={Receipt}
-                  title={`אין תנועות ב${formatPeriod(period)}`}
-                  description="הוסיפו הכנסה או הוצאה, והיא תופיע כאן אצל שניכם."
+                  title={`אין הוצאות והכנסות ב${formatPeriod(period)}`}
+                  description="כל הוצאה או הכנסה שתירשם תופיע כאן אצל שניכם."
                 />
               )}
             </section>
@@ -163,7 +163,7 @@ function SpendingRing({
       <EmptyState
         icon={PieChart}
         title={emptyTitle}
-        description="כשתוסיפו הוצאות לחודש הזה, תראו כאן לאן הכסף הולך."
+        description="כשיירשמו הוצאות לחודש הזה, יופיע כאן לאן הכסף הולך."
       />
     )
   }
@@ -171,7 +171,7 @@ function SpendingRing({
     <>
       <CategoryRing items={items} total={total} onAdd={onAdd} onOpen={onOpen} />
       <p className="text-center text-xs text-muted-foreground">
-        לחיצה על עיגול: הוצאה חדשה · לחיצה ארוכה: התנועות של הקטגוריה
+        לחיצה על עיגול: הוצאה חדשה · לחיצה ארוכה: מה נרשם בקטגוריה
       </p>
     </>
   )
@@ -189,9 +189,14 @@ function BalanceCard({ summary, monthLabel }: { summary: MonthSummary; monthLabe
       <div className="flex items-end justify-between gap-3">
         <div className="min-w-0">
           <p id="balance-title" className="text-[13px] font-semibold text-hero-foreground/80">
-            מאזן {monthLabel}
+            יתרה ל{monthLabel}
           </p>
-          <p className="font-heading text-[2rem] leading-tight font-semibold tabular-nums lg:text-5xl">
+          <p
+            className={cn(
+              'font-heading text-[2rem] leading-tight font-semibold tabular-nums lg:text-5xl',
+              isNegative(balance) && 'text-hero-negative',
+            )}
+          >
             {formatMoney(balance)}
           </p>
         </div>
@@ -202,7 +207,7 @@ function BalanceCard({ summary, monthLabel }: { summary: MonthSummary; monthLabe
       </div>
       {hasPlanned && (
         <p className="mt-1 text-xs text-hero-foreground/80">
-          אם כל המתוכנן יבוצע: {formatMoney(projected_balance)}
+          כולל מה שעוד לא שולם: {formatMoney(projected_balance)}
         </p>
       )}
       <Link

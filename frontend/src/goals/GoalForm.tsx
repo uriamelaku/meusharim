@@ -38,7 +38,7 @@ export function GoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void }) 
     if (!goal) return
     remove.mutate(goal.id, {
       onSuccess: () => {
-        toast.success('היעד נמחק. ההפקדות נשארות בתנועות.')
+        toast.success('היעד נמחק. ההפקדות נשארות ברשימת ההוצאות.')
         setConfirmingDelete(false)
         onDone()
       },
@@ -104,7 +104,7 @@ export function GoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void }) 
         open={confirmingDelete}
         onOpenChange={setConfirmingDelete}
         title="למחוק את היעד?"
-        description="היעד יימחק אצל שניכם. הפקדות שכבר נרשמו יישארו ברשימת התנועות."
+        description="היעד יימחק אצל שניכם. הפקדות שכבר נרשמו יישארו ברשימת ההוצאות."
         confirmLabel="מחיקה"
         onConfirm={confirmDelete}
         pending={remove.isPending}

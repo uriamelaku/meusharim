@@ -71,13 +71,13 @@ export function BudgetEditor({ budget, periodLabel, onDone }: BudgetEditorProps)
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-6">
       <TextField
-        label="תקרה לחודש (לא חובה)"
+        label="תקציב כולל לחודש (לא חובה)"
         inputMode="decimal"
-        placeholder="ללא תקרה"
+        placeholder="לא הוגדר"
         value={total}
         onChange={(event) => setTotal(event.target.value)}
         aria-invalid={(submitted && invalid(total)) || overCeiling}
-        hint="כמה מותר להוציא החודש בסך הכול. בלי תקרה, התקציב הוא סכום הקטגוריות."
+        hint="כמה מותר להוציא החודש בסך הכול. בלי סכום כאן, התקציב הכולל הוא סכום הקטגוריות."
       />
 
       <AllocationSummary allocated={allocated} unallocated={unallocated} />
@@ -118,7 +118,7 @@ export function BudgetEditor({ budget, periodLabel, onDone }: BudgetEditorProps)
 
       {submitted && hasErrors && !overCeiling && (
         <p role="alert" className="text-sm text-destructive">
-          יש סכום לא תקין. הזינו מספר חיובי עד שתי ספרות אחרי הנקודה, או השאירו ריק.
+          יש סכום לא תקין. צריך מספר חיובי (עד שתי ספרות אחרי הנקודה), או להשאיר ריק.
         </p>
       )}
       {save.isError && (
@@ -153,7 +153,7 @@ function AllocationSummary({
       )}
     >
       <p className="flex justify-between gap-2">
-        <span className="text-muted-foreground">חולק לקטגוריות</span>
+        <span className="text-muted-foreground">מתוכנן לפי קטגוריות</span>
         <span className="font-semibold tabular-nums">{formatMoney(allocated)}</span>
       </p>
       {unallocated !== null && (
@@ -161,7 +161,7 @@ function AllocationSummary({
           role={over ? 'alert' : undefined}
           className={cn('flex justify-between gap-2', over && 'font-medium text-destructive')}
         >
-          <span>{over ? 'חריגה מהתקרה' : 'לא מחולק (נשאר מהתקרה)'}</span>
+          <span>{over ? 'חריגה מהתקציב הכולל' : 'שארית'}</span>
           <span className="font-semibold tabular-nums">
             {formatMoney(over ? unallocated.slice(1) : unallocated)}
           </span>

@@ -13,7 +13,7 @@ import type { Member } from '@/household/api'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useSelectedPeriod } from '@/hooks/useSelectedPeriod'
 import { useDataPages } from '@/lib/data'
-import { formatDayHeading, periodRange } from '@/lib/dates'
+import { formatRelativeDay, periodRange } from '@/lib/dates'
 import { formatPeriod } from '@/lib/period'
 import { useOccurrences } from '@/schedules/api'
 import { OccurrenceRow } from '@/schedules/OccurrenceRow'
@@ -152,7 +152,7 @@ export function TransactionList({ members }: { members: Member[] }) {
         <LoadingState />
       ) : pages.isError ? (
         <ErrorState
-          title="לא הצלחנו לטעון את התנועות"
+          title="לא הצלחנו לטעון את ההוצאות וההכנסות"
           description="בדקו את החיבור ונסו שוב."
           onRetry={() => void pages.refetch()}
         />
@@ -160,20 +160,20 @@ export function TransactionList({ members }: { members: Member[] }) {
         narrowed ? (
           <EmptyState
             icon={SearchX}
-            title="לא נמצאו תנועות"
-            description="נסו מילת חיפוש אחרת, הסירו מסננים או בחרו תקופה אחרת."
+            title="לא נמצא כלום"
+            description="אפשר לנסות מילה אחרת, לבטל את הסינון או לבחור תקופה אחרת."
           />
         ) : (
           <EmptyState
             icon={ArrowLeftRight}
-            title={allTime ? 'עדיין אין תנועות' : `אין תנועות ב${formatPeriod(period)}`}
-            description="הוסיפו הכנסה או הוצאה עם כפתור הפלוס, והיא תופיע כאן אצל שניכם."
+            title={allTime ? 'עדיין אין הוצאות והכנסות' : `אין הוצאות והכנסות ב${formatPeriod(period)}`}
+            description="מוסיפים הוצאה או הכנסה בכפתור הפלוס הכתום, והיא מופיעה כאן אצל שניכם."
           />
         )
       ) : (
-        <section aria-label="רשימת התנועות" aria-busy={pages.isFetching}>
+        <section aria-label="רשימת ההוצאות וההכנסות" aria-busy={pages.isFetching}>
           <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
-            <span>{total === 1 ? 'תנועה אחת' : `${total} תנועות`}</span>
+            <span>{total === 1 ? 'נמצאה אחת' : `נמצאו ${total}`}</span>
             {narrowed && (
               <Button
                 variant="ghost"
@@ -184,7 +184,7 @@ export function TransactionList({ members }: { members: Member[] }) {
                 }}
               >
                 <X aria-hidden />
-                ניקוי סינון
+                ביטול הסינון
               </Button>
             )}
           </div>
@@ -192,7 +192,7 @@ export function TransactionList({ members }: { members: Member[] }) {
             groupByDay(items).map((group) => (
               <div key={group.date} className="mb-3">
                 <h3 className="sticky top-14 z-10 bg-background/90 px-2 py-1.5 text-sm font-medium text-muted-foreground backdrop-blur-sm lg:top-0">
-                  {formatDayHeading(group.date)}
+                  {formatRelativeDay(group.date)}
                 </h3>
                 <ul>
                   {group.items.map((transaction) => (
@@ -225,7 +225,7 @@ export function TransactionList({ members }: { members: Member[] }) {
               disabled={pages.isFetchingNextPage}
             >
               {pages.isFetchingNextPage && <Loader2 className="animate-spin" aria-hidden />}
-              טעינת תנועות נוספות
+              להציג עוד
             </Button>
           )}
         </section>
@@ -316,8 +316,8 @@ function FilterForm({ filters, members, onApply }: FilterFormProps) {
         showLabel
         options={[
           { value: '', label: 'הכל' },
-          { value: 'completed', label: 'בוצעו' },
-          { value: 'planned', label: 'מתוכננות' },
+          { value: 'completed', label: 'שולם / התקבל' },
+          { value: 'planned', label: 'עוד לא' },
         ]}
         value={draft.status}
         onChange={(status) => set('status', status)}
@@ -364,7 +364,7 @@ function FilterForm({ filters, members, onApply }: FilterFormProps) {
           הצגת התוצאות
         </Button>
         <Button size="lg" variant="ghost" onClick={() => setDraft(NO_FILTERS)}>
-          איפוס
+          ביטול הסינון
         </Button>
       </div>
     </div>

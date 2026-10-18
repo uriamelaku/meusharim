@@ -64,3 +64,24 @@ export function formatShortDate(iso: string): string {
 export function formatFullDate(iso: string): string {
   return fullFormatter.format(isoToDate(iso))
 }
+
+const weekdayFormatter = new Intl.DateTimeFormat('he-IL', { weekday: 'short', timeZone: 'UTC' })
+
+function addDays(iso: string, days: number): string {
+  const date = isoToDate(iso)
+  date.setUTCDate(date.getUTCDate() + days)
+  return date.toISOString().slice(0, 10)
+}
+
+/**
+ * A day the way people say it: "היום", "אתמול", "מחר", or "יום ה׳ 16.10"
+ * (with the year when it is not this year: "יום ה׳ 16.10.2025").
+ */
+export function formatRelativeDay(iso: string, today: string = todayIso()): string {
+  if (iso === today) return 'היום'
+  if (iso === addDays(today, -1)) return 'אתמול'
+  if (iso === addDays(today, 1)) return 'מחר'
+  const [year, month, day] = iso.split('-')
+  const date = `${Number(day)}.${Number(month)}${year === today.slice(0, 4) ? '' : `.${year}`}`
+  return `${weekdayFormatter.format(isoToDate(iso))} ${date}`
+}

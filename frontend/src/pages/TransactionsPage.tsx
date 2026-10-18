@@ -8,7 +8,7 @@ import { ScheduleList } from '@/schedules/ScheduleList'
 import { TransactionList } from '@/transactions/TransactionList'
 
 const TABS = [
-  { value: 'list', label: 'תנועות' },
+  { value: 'list', label: 'רשימה' },
   { value: 'recurring', label: 'הוראות קבע' },
   { value: 'installments', label: 'תשלומים' },
 ] as const
@@ -33,7 +33,7 @@ export function TransactionsPage() {
   return (
     <>
       <div className="flex items-start justify-between gap-3">
-        <PageHeader title="תנועות" />
+        <PageHeader title="הוצאות והכנסות" />
         {/* Reminder of a planned feature: the server side exists, file reading does not yet. */}
         <Button variant="outline" size="sm" className="mt-1 h-9 shrink-0" disabled>
           <Upload aria-hidden />

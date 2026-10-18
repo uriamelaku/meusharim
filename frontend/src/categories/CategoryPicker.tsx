@@ -59,7 +59,7 @@ export function CategoryPicker({
       </div>
       {invalid && (
         <p role="alert" className="mt-2 text-sm text-destructive">
-          בחרו קטגוריה.
+          צריך לבחור קטגוריה.
         </p>
       )}
     </fieldset>

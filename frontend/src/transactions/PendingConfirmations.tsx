@@ -29,7 +29,7 @@ export function PendingConfirmations({ members }: { members: Member[] }) {
   function confirmIds(ids: string[]) {
     confirm.mutate(ids, {
       onSuccess: ({ confirmed }) =>
-        toast.success(confirmed === 1 ? 'התנועה סומנה כבוצעה' : `${confirmed} תנועות סומנו כבוצעו`),
+        toast.success(confirmed === 1 ? 'סומן כשולם' : `${confirmed} סומנו כשולמו`),
       onError: (error) => toast.error(describeError(error)),
     })
   }
@@ -42,10 +42,10 @@ export function PendingConfirmations({ members }: { members: Member[] }) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 id="pending-title" className="font-heading text-lg font-semibold">
-            ממתינות לאישור
+            שולם כבר?
           </h2>
           <p className="text-sm text-muted-foreground">
-            המועד הגיע. אשרו מה שבוצע בפועל – רק אז זה ייכנס למאזן.
+            הגיע המועד. מסמנים מה באמת יצא מהחשבון (או נכנס אליו), ורק אז זה נכנס ליתרה.
           </p>
         </div>
         {items.length > 1 && (
@@ -59,7 +59,7 @@ export function PendingConfirmations({ members }: { members: Member[] }) {
             ) : (
               <CheckCheck aria-hidden />
             )}
-            אישור הכל ({items.length})
+            הכל שולם ({items.length})
           </Button>
         )}
       </div>
@@ -77,7 +77,7 @@ export function PendingConfirmations({ members }: { members: Member[] }) {
             <Button
               size="icon"
               variant="secondary"
-              aria-label={`סימון "${transaction.description || transaction.category.name}" כבוצעה`}
+              aria-label={`סימון "${transaction.description || transaction.category.name}" כשולם`}
               onClick={() => confirmIds([transaction.id])}
               disabled={confirm.isPending}
             >

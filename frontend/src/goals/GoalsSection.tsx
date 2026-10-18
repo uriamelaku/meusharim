@@ -65,7 +65,7 @@ export function GoalsSection() {
           className="flex w-full items-center gap-3 rounded-2xl border border-dashed p-4 text-start text-sm text-muted-foreground hover:bg-muted"
         >
           <PiggyBank className="size-6 shrink-0 text-primary" aria-hidden />
-          חוסכים למשהו? הגדירו יעד, למשל חופשה או קרן חירום, ועקבו אחרי ההתקדמות.
+          חוסכים למשהו? אפשר להגדיר יעד, למשל חופשה או קרן חירום, ולעקוב אחרי ההתקדמות.
         </button>
       ) : (
         <ul className="flex flex-col gap-3">

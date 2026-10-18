@@ -28,7 +28,7 @@ export function CategoriesCard() {
       onSuccess: ({ result }) => {
         toast.success(
           result === 'archived'
-            ? `"${deleting.name}" הוסרה מהרשימה. התנועות הקיימות שומרות עליה.`
+            ? `"${deleting.name}" הוסרה מהרשימה. מה שכבר נרשם בה נשאר כמו שהוא.`
             : `"${deleting.name}" נמחקה`,
         )
         setDeleting(null)
@@ -102,7 +102,7 @@ export function CategoriesCard() {
         open={deleting !== null}
         onOpenChange={(open) => !open && setDeleting(null)}
         title={`למחוק את "${deleting?.name ?? ''}"?`}
-        description="תנועות, הוראות קבע ותקציבים שכבר משויכים לקטגוריה יישמרו ויוצגו עם השם שלה. היא רק לא תופיע יותר לבחירה."
+        description="הוצאות, הכנסות, הוראות קבע ותקציבים שכבר משויכים לקטגוריה יישמרו עם השם שלה. היא רק לא תופיע יותר לבחירה."
         confirmLabel="מחיקה"
         onConfirm={confirmDelete}
         pending={deleteCategory.isPending}

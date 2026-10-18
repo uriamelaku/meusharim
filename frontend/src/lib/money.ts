@@ -41,7 +41,15 @@ export function formatMoney(amount: string, { signed = false } = {}): string {
     : whole
       ? formatters.whole
       : formatters.exact
-  return formatter.format((whole ? amount.split('.')[0] : amount) as DecimalString)
+  // A real minus sign (U+2212): clearer than a hyphen, and it does not flip in RTL text.
+  return formatter
+    .format((whole ? amount.split('.')[0] : amount) as DecimalString)
+    .replace('-', '\u2212')
+}
+
+/** Whether an API amount is below zero, e.g. to show it in red. */
+export function isNegative(amount: string): boolean {
+  return amount.startsWith('-')
 }
 
 /** An income (+) or expense (−) amount with its sign. */

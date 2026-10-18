@@ -50,20 +50,20 @@ export function JoinScreen({ token, onDone }: JoinScreenProps) {
   return (
     <FocusLayout>
       <RingsMark className="mx-auto h-12" />
-      <p className="mt-5 text-center text-sm font-medium text-brass-strong">הזמנה למשק בית</p>
+      <p className="mt-5 text-center text-sm font-medium text-brass-strong">הזמנה לבית משותף</p>
       <h1 className="mt-1 text-center font-heading text-3xl leading-tight font-semibold text-balance">
         {household_name}
       </h1>
       <p className="mt-3 text-center leading-relaxed text-muted-foreground">
         {inviter_name
-          ? `${inviter_name} מזמין/ה אותך לנהל יחד את התקציב המשותף.`
+          ? `הזמנה מ${inviter_name} לנהל יחד את התקציב המשותף.`
           : 'הוזמנת לנהל יחד את התקציב המשותף.'}
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-5">
         <TextField
           label="השם שלך"
-          hint="כך יראו אותך במשק הבית."
+          hint="כך יופיע השם שלך באפליקציה."
           autoComplete="given-name"
           maxLength={40}
           required
@@ -78,7 +78,7 @@ export function JoinScreen({ token, onDone }: JoinScreenProps) {
         )}
         <Button type="submit" size="lg" disabled={accept.isPending}>
           {accept.isPending && <Loader2 className="animate-spin" aria-hidden />}
-          {accept.isPending ? 'מצטרפים…' : 'הצטרפות למשק הבית'}
+          {accept.isPending ? 'מצטרפים…' : 'הצטרפות לבית'}
         </Button>
         <Button type="button" variant="ghost" onClick={onDone} disabled={accept.isPending}>
           לא עכשיו

@@ -96,7 +96,7 @@ export function IncomeExpenseChart({ months }: { months: MonthRow[] }) {
         </span>
         <span className="flex items-center gap-1.5">
           <span className="size-2.5 rounded-sm border border-dashed border-muted-foreground" />{' '}
-          מתוכנן
+          עוד לא שולם
         </span>
       </div>
     </div>

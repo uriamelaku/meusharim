@@ -37,7 +37,7 @@ export function ErrorState({ title, description, onRetry, children, className }:
       <h2 className="font-heading text-xl font-semibold">{title}</h2>
       <p className="max-w-sm text-muted-foreground">{description}</p>
       <div className="mt-2 flex flex-wrap justify-center gap-2">
-        {onRetry && <Button onClick={onRetry}>נסו שוב</Button>}
+        {onRetry && <Button onClick={onRetry}>לנסות שוב</Button>}
         {children}
       </div>
     </div>

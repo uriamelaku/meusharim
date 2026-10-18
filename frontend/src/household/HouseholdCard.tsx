@@ -31,11 +31,11 @@ export function HouseholdCard({ household, userId }: { household: Household; use
       <CardHeader>
         <CardTitle className="text-lg">{household.name}</CardTitle>
         <CardDescription>
-          {isFull ? 'משק בית משותף לשניכם' : 'עדיין רק את/ה במשק הבית'}
+          {isFull ? 'בית משותף לשניכם' : 'בינתיים רק החשבון שלך כאן'}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
-        <ul className="flex flex-col gap-3" aria-label="חברי משק הבית">
+        <ul className="flex flex-col gap-3" aria-label="מי בבית">
           {household.members.map((member) => (
             <li key={member.user_id} className="flex items-center gap-3">
               <span
@@ -82,7 +82,7 @@ function InvitePanel({ pendingUntil }: { pendingUntil: string | undefined }) {
   return (
     <section aria-labelledby="invite-title" className="rounded-2xl bg-muted/60 p-4">
       <h3 id="invite-title" className="font-medium">
-        הזמנת בן/בת הזוג
+        הזמנת בן או בת הזוג
       </h3>
 
       {created ? (
@@ -91,7 +91,7 @@ function InvitePanel({ pendingUntil }: { pendingUntil: string | undefined }) {
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
           {pendingUntil
             ? 'יש הזמנה פעילה. מטעמי אבטחה הקישור מוצג רק כשיוצרים אותו – אפשר ליצור קישור חדש במקומו.'
-            : 'צרו קישור הזמנה ושלחו אותו לבן/בת הזוג. כל אחד מכם יתחבר עם חשבון משלו ותראו את אותם הנתונים.'}
+            : 'יוצרים קישור הזמנה ושולחים אותו לבן או בת הזוג. כל אחד מתחבר עם חשבון משלו, ושניכם רואים את אותם נתונים.'}
         </p>
       )}
 
@@ -184,11 +184,11 @@ function InviteLink({ token }: { token: string }) {
       </div>
       {copyFailed && (
         <p role="alert" className="text-sm text-destructive">
-          לא הצלחנו להעתיק או לשתף. סמנו את הקישור והעתיקו אותו ידנית.
+          לא הצלחנו להעתיק או לשתף. אפשר לסמן את הקישור ולהעתיק אותו ידנית.
         </p>
       )}
       <p className="text-sm text-muted-foreground">
-        הקישור מוצג רק עכשיו. אם תאבדו אותו, פשוט צרו קישור חדש.
+        הקישור מוצג רק עכשיו. אם הוא הולך לאיבוד, פשוט יוצרים קישור חדש.
       </p>
     </div>
   )

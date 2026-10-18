@@ -51,7 +51,7 @@ function ForecastCard({ forecast }: { forecast: NonNullable<MonthInsights['forec
       </p>
       <div className="mt-2 grid grid-cols-2 gap-3">
         <Stat label="הוצאות" value={formatMoney(forecast.expense)} />
-        <Stat label="מאזן" value={formatMoney(forecast.balance)} />
+        <Stat label="יתרה" value={formatMoney(forecast.balance)} />
       </div>
       {forecast.budget && (
         <p
@@ -66,7 +66,7 @@ function ForecastCard({ forecast }: { forecast: NonNullable<MonthInsights['forec
         </p>
       )}
       <p className="mt-2 text-xs text-muted-foreground">
-        כולל הוצאות מתוכננות. הוראות קבע והפקדות לחיסכון לא מוכפלות בקצב.
+        איך חישבנו: מה שכבר שולם, ועוד מה שעוד לא שולם, ועוד אותו קצב הוצאות יומי עד סוף החודש (בלי הוראות קבע והפקדות לחיסכון).
       </p>
     </div>
   )
@@ -147,7 +147,14 @@ function YearCard({ year }: { year: MonthInsights['year'] }) {
         <PiggyBank className="size-4" aria-hidden />
         {negative ? `ב-${year.year} עד עכשיו הוצאתם יותר משהכנסתם` : `חסכתם ב-${year.year} עד עכשיו`}
       </p>
-      <p className="font-heading text-3xl font-semibold tabular-nums">{formatMoney(year.total_saved)}</p>
+      <p
+        className={cn(
+          'font-heading text-3xl font-semibold tabular-nums',
+          negative && 'text-hero-negative',
+        )}
+      >
+        {formatMoney(year.total_saved)}
+      </p>
       <p className="mt-1 text-sm text-hero-foreground/85 tabular-nums">
         נשאר מההכנסות {formatMoney(year.balance)} · הופקד ליעדים {formatMoney(year.saved_to_goals)}
       </p>

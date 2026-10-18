@@ -22,7 +22,7 @@ const ENTRY_OPTIONS: { value: EntryType; label: string }[] = [
 ]
 
 const TITLES: Record<EntryType, string> = {
-  once: 'תנועה חדשה',
+  once: 'הוצאה או הכנסה',
   recurring: 'הוראת קבע חדשה',
   installments: 'רכישה בתשלומים',
 }
@@ -32,7 +32,7 @@ function titleOf(sheet: OpenSheet | null): string {
   if (sheet.mode === 'add') {
     return sheet.categoryId && sheet.kind === 'expense' ? 'הוצאה חדשה' : TITLES[sheet.entry]
   }
-  if (sheet.mode === 'transaction') return 'עריכת תנועה'
+  if (sheet.mode === 'transaction') return sheet.transaction.kind === 'expense' ? 'עריכת הוצאה' : 'עריכת הכנסה'
   return sheet.schedule.type === 'installments' ? 'רכישה בתשלומים' : 'הוראת קבע'
 }
 

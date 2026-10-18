@@ -22,7 +22,7 @@ export function CreateHouseholdScreen() {
     <FocusLayout
       footer={
         <>
-          קיבלתם קישור הזמנה? פתחו אותו כדי להצטרף למשק בית קיים.
+          קיבלת קישור הזמנה? אפשר לפתוח אותו ולהצטרף לבית קיים.
           <Button variant="link" className="mx-auto mt-1 block h-auto" onClick={signOut}>
             התנתקות
           </Button>
@@ -31,15 +31,15 @@ export function CreateHouseholdScreen() {
     >
       <p className="text-sm font-medium text-brass-strong">ברוכים הבאים</p>
       <h1 className="mt-1 font-heading text-3xl leading-tight font-semibold">
-        בואו נקים את משק הבית שלכם
+        בואו ניצור את הבית שלכם
       </h1>
       <p className="mt-3 leading-relaxed text-muted-foreground">
-        כאן תנהלו יחד הכנסות, הוצאות ותקציב. אחרי ההקמה תוכלו להזמין את בן/בת הזוג.
+        כאן מנהלים יחד הכנסות, הוצאות ותקציב. אחר כך אפשר להזמין את בן או בת הזוג.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-5">
         <TextField
-          label="שם משק הבית"
+          label="שם הבית"
           placeholder="למשל: הבית שלנו"
           maxLength={60}
           required
@@ -48,7 +48,7 @@ export function CreateHouseholdScreen() {
         />
         <TextField
           label="השם שלך"
-          hint="כך יראו אותך במשק הבית."
+          hint="כך יופיע השם שלך באפליקציה."
           autoComplete="given-name"
           maxLength={40}
           required
@@ -63,7 +63,7 @@ export function CreateHouseholdScreen() {
         )}
         <Button type="submit" size="lg" disabled={createHousehold.isPending}>
           {createHousehold.isPending && <Loader2 className="animate-spin" aria-hidden />}
-          {createHousehold.isPending ? 'מקימים…' : 'הקמת משק הבית'}
+          {createHousehold.isPending ? 'יוצרים…' : 'יצירת הבית'}
         </Button>
       </form>
     </FocusLayout>

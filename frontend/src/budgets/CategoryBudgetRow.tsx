@@ -44,7 +44,7 @@ export function CategoryBudgetRow({ item }: { item: CategoryBudget }) {
         </>
       )}
       {hasPlanned && (
-        <p className="text-sm text-muted-foreground">ועוד {formatMoney(planned)} מתוכנן החודש</p>
+        <p className="text-sm text-muted-foreground">ועוד {formatMoney(planned)} שעוד לא שולם</p>
       )}
     </div>
   )

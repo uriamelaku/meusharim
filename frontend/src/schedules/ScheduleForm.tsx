@@ -87,7 +87,7 @@ export function ScheduleForm({
   const endBeforeStart = Boolean(endDate) && endDate < startDate
 
   const errors = {
-    amount: !amount ? 'הזינו סכום חיובי, עד שתי ספרות אחרי הנקודה.' : undefined,
+    amount: !amount ? 'צריך סכום חיובי (עד שתי ספרות אחרי הנקודה).' : undefined,
     count:
       isInstallments && !countValid
         ? `בין ${MIN_INSTALLMENTS} ל-${MAX_INSTALLMENTS} תשלומים.`
@@ -284,7 +284,7 @@ export function ScheduleForm({
       )}
       {started && !isInstallments && (
         <p className="rounded-2xl bg-muted/60 p-3 text-sm text-muted-foreground">
-          שינויים יחולו רק על המועדים הבאים. תנועות שכבר נרשמו נשארות כפי שהן.
+          שינויים יחולו רק על המועדים הבאים. מה שכבר נרשם נשאר כמו שהוא.
         </p>
       )}
 
@@ -303,11 +303,11 @@ export function ScheduleForm({
       />
 
       <ToggleField
-        label="לסמן כבוצע אוטומטית במועד"
+        label={kind === 'expense' ? 'לסמן "שולם" אוטומטית במועד' : 'לסמן "התקבל" אוטומטית במועד'}
         description={
           autoConfirm
-            ? 'במועד התנועה תיכנס ישר למאזן.'
-            : 'במועד התנועה תופיע ב"ממתינות לאישור" עד שתאשרו שבוצעה.'
+            ? 'במועד היא תיכנס ישר ליתרה.'
+            : 'במועד היא תופיע ב"שולם כבר?" עד שמסמנים שהיא שולמה.'
         }
         checked={autoConfirm}
         onChange={setAutoConfirm}

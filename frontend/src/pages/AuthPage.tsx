@@ -18,11 +18,11 @@ const TAGLINE = 'התקציב של שניכם, במקום אחד.'
 
 const errorMessages: Record<string, string> = {
   invalid_credentials: 'המייל או הסיסמה שגויים.',
-  email_not_confirmed: 'צריך לאשר את המייל לפני ההתחברות. בדקו את תיבת הדואר.',
-  user_already_exists: 'כבר קיים חשבון עם המייל הזה. נסו להתחבר.',
-  weak_password: 'הסיסמה חלשה מדי. בחרו סיסמה ארוכה יותר.',
-  over_email_send_rate_limit: 'נשלחו יותר מדי מיילים. נסו שוב מאוחר יותר.',
-  over_request_rate_limit: 'יותר מדי ניסיונות. נסו שוב בעוד כמה דקות.',
+  email_not_confirmed: 'צריך לאשר את המייל לפני ההתחברות. כדאי לבדוק את תיבת הדואר.',
+  user_already_exists: 'כבר יש חשבון עם המייל הזה. אפשר פשוט להתחבר.',
+  weak_password: 'הסיסמה חלשה מדי. צריך סיסמה ארוכה יותר.',
+  over_email_send_rate_limit: 'נשלחו יותר מדי מיילים. אפשר לנסות שוב מאוחר יותר.',
+  over_request_rate_limit: 'יותר מדי ניסיונות. אפשר לנסות שוב בעוד כמה דקות.',
 }
 
 function describeError(error: AuthError): string {
@@ -44,7 +44,7 @@ export function AuthPage() {
             <Alert className="mb-5 border-brass/40 bg-accent text-accent-foreground">
               <Users aria-hidden />
               <AlertDescription className="text-accent-foreground">
-                הוזמנת להצטרף למשק בית. הירשמו או התחברו כדי להמשיך.
+                הוזמנת להצטרף לבית משותף. כדי להמשיך, צריך להירשם או להתחבר.
               </AlertDescription>
             </Alert>
           )}
@@ -120,7 +120,7 @@ function CredentialsForm({ mode }: { mode: Mode }) {
       })
       if (error) setError(describeError(error))
       // No session means Supabase requires email confirmation first.
-      else if (!data.session) setNotice('שלחנו אליכם מייל אישור. אשרו אותו ואז התחברו.')
+      else if (!data.session) setNotice('שלחנו מייל אישור. אחרי שמאשרים אותו, אפשר להתחבר.')
     } catch {
       setError('הפעולה לא הצליחה. בדקו את החיבור ונסו שוב.')
     } finally {

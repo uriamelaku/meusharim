@@ -13,7 +13,7 @@ export function BudgetSummary({ budget }: { budget: BudgetMonth }) {
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
         <div>
-          <p className="text-sm text-muted-foreground">הוצאות בפועל</p>
+          <p className="text-sm text-muted-foreground">שולם עד עכשיו</p>
           <p className="font-heading text-3xl font-semibold tabular-nums">{formatMoney(actual)}</p>
         </div>
         {effective_budget && (
@@ -49,13 +49,13 @@ export function BudgetSummary({ budget }: { budget: BudgetMonth }) {
       )}
       {total_budget && unallocated && (
         <p className="text-sm text-muted-foreground">
-          מתוך התקרה: <span className="tabular-nums">{formatMoney(allocated)}</span> מחולק
-          לקטגוריות · <span className="tabular-nums">{formatMoney(unallocated)}</span> לא מחולק
+          מתוך התקציב הכולל: <span className="tabular-nums">{formatMoney(allocated)}</span> מתוכנן
+          לפי קטגוריות · <span className="tabular-nums">{formatMoney(unallocated)}</span> שארית
         </p>
       )}
       {planned !== '0.00' && (
         <p className="rounded-xl border border-dashed border-brass/60 px-3 py-2 text-sm text-accent-foreground">
-          ועוד {formatMoney(planned)} הוצאות מתוכננות החודש, שעדיין לא בוצעו
+          ועוד {formatMoney(planned)} החודש שעוד לא שולמו
         </p>
       )}
     </div>

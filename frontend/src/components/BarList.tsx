@@ -32,7 +32,7 @@ export function BarList({ items, label }: { items: BarItem[]; label: string }) {
                 <span className="shrink-0 tabular-nums">
                   <span className="font-semibold">{formatMoney(actual)}</span>
                   {planned && planned !== '0.00' && (
-                    <span className="text-muted-foreground"> + {formatMoney(planned)} מתוכנן</span>
+                    <span className="text-muted-foreground"> + {formatMoney(planned)} שעוד לא שולם</span>
                   )}
                 </span>
               </div>
