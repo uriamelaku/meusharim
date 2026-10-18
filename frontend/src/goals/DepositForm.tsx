@@ -5,6 +5,7 @@ import { AmountField } from '@/components/AmountField'
 import { PartyPicker } from '@/components/PartyPicker'
 import { Button } from '@/components/ui/button'
 import type { Member } from '@/household/api'
+import { newRequestId } from '@/lib/api'
 import { describeError } from '@/lib/errors'
 import { formatMoney, parseAmountInput } from '@/lib/money'
 import { lastParty, rememberParty } from '@/transactions/lastParty'
@@ -17,7 +18,7 @@ export function DepositForm({ goal, members, userId, onDone }: DepositFormProps)
   const [amountText, setAmountText] = useState('')
   const [party, setParty] = useState(() => lastParty(members, userId))
   const [submitted, setSubmitted] = useState(false)
-  const [requestId] = useState(() => crypto.randomUUID())
+  const [requestId] = useState(() => newRequestId())
   const deposit = useDeposit(goal.id)
   const amount = parseAmountInput(amountText)
 

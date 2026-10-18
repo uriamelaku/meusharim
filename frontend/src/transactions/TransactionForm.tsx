@@ -12,6 +12,7 @@ import { Segmented } from '@/components/Segmented'
 import { TextField } from '@/components/TextField'
 import { Button } from '@/components/ui/button'
 import type { Member } from '@/household/api'
+import { newRequestId } from '@/lib/api'
 import { todayIso } from '@/lib/dates'
 import { describeError } from '@/lib/errors'
 import { amountToInput, parseAmountInput } from '@/lib/money'
@@ -66,7 +67,7 @@ export function TransactionForm({
   const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   const create = useCreateTransaction()
-  const [requestId, setRequestId] = useState(() => crypto.randomUUID())
+  const [requestId, setRequestId] = useState(() => newRequestId())
   const update = useUpdateTransaction()
   const remove = useDeleteTransaction()
   const checkBudget = useBudgetAlert()
@@ -118,7 +119,7 @@ export function TransactionForm({
         { ...body, request_id: requestId },
         {
           onSuccess: () => {
-            setRequestId(crypto.randomUUID())
+            setRequestId(newRequestId())
             onSuccess()
           },
         },

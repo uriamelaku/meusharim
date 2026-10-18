@@ -10,6 +10,7 @@ import { TextField } from '@/components/TextField'
 import { ToggleField } from '@/components/ToggleField'
 import { Button } from '@/components/ui/button'
 import type { Member } from '@/household/api'
+import { newRequestId } from '@/lib/api'
 import { todayIso } from '@/lib/dates'
 import { describeError } from '@/lib/errors'
 import { amountToInput, formatMoney, parseAmountInput, previewInstallments } from '@/lib/money'
@@ -74,7 +75,7 @@ export function ScheduleForm({
   const [submitted, setSubmitted] = useState(false)
 
   const create = useCreateSchedule()
-  const [requestId, setRequestId] = useState(() => crypto.randomUUID())
+  const [requestId, setRequestId] = useState(() => newRequestId())
   const update = useUpdateSchedule()
   const mutation = schedule ? update : create
 
@@ -173,7 +174,7 @@ export function ScheduleForm({
         { ...input, request_id: requestId },
         {
           onSuccess: () => {
-            setRequestId(crypto.randomUUID())
+            setRequestId(newRequestId())
             toast.success(isInstallments ? 'התשלומים נוספו' : 'הוראת הקבע נוספה')
             onDone()
           },
