@@ -14,6 +14,7 @@ import { formatPeriod, monthName, toPeriodParam } from '@/lib/period'
 import { cn } from '@/lib/utils'
 import { type MonthSummary, useMonthSummary } from '@/summary/api'
 import { CategoryRing } from '@/summary/CategoryRing'
+import { MonthlySummaryCard } from '@/summary/MonthlySummaryCard'
 import { ringItems } from '@/summary/ringItems'
 import { UpcomingRow } from '@/summary/UpcomingRow'
 import { PendingConfirmations } from '@/transactions/PendingConfirmations'
@@ -73,6 +74,7 @@ export function OverviewPage() {
           />
         ) : (
           <>
+            <MonthlySummaryCard today={today} isCurrent={isCurrent} />
             <NewMonthBudgetPrompt budget={budget.data} period={period} isCurrent={isCurrent} />
             <BalanceCard summary={summary.data} monthLabel={monthName(period.month)} />
             <GoalPaceNotice />

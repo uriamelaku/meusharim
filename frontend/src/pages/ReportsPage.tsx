@@ -11,6 +11,7 @@ import { currentPeriod, formatPeriod, parsePeriodParam } from '@/lib/period'
 import { cn } from '@/lib/utils'
 import { type Report, useReport } from '@/reports/api'
 import { IncomeExpenseChart } from '@/reports/IncomeExpenseChart'
+import { MonthInsightsSection } from '@/reports/MonthInsightsSection'
 import {
   MAX_RANGE_MONTHS,
   type MonthRange,
@@ -63,6 +64,8 @@ export function ReportsPage() {
   return (
     <>
       <PageHeader title="דוחות" />
+      <MonthInsightsSection />
+      <h2 className="mb-3 font-heading text-xl font-semibold">לאורך זמן</h2>
       <div className="mb-6 flex flex-col gap-3">
         <Segmented label="טווח הדוח" options={PRESETS} value={preset} onChange={choosePreset} />
         {preset === 'custom' && <CustomRange range={range} onApply={applyRange} />}
