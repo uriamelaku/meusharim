@@ -18,7 +18,7 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 - Savings goals: a deposit is a completed expense in the goal's savings category, linked by `transactions.goal_id`; progress counts completed deposits only.
 - Account deletion: requires two confirmations plus email and password re-checked on the server. A remaining partner keeps the household and its data; a last member's household is deleted. The backend holds the Supabase secret key for this single call only.
 - Theme (light/dark) is a per-device setting. The app is installable (PWA); the service worker caches no data.
-- **No AWS.** Deployment: Render (backend Web Service + frontend Static Site, free tier) with Supabase for PostgreSQL/Auth; see `docs/deployment.md`. Keep the code platform-neutral: environment differences go through environment variables only, never platform-specific code.
+- **No AWS.** Deployment: Render (backend Docker Web Service + frontend Static Site, free tier) with Supabase for PostgreSQL/Auth; see `docs/deployment.md`. Keep the code platform-neutral: environment differences go through environment variables only, never platform-specific code.
 
 ## Tech stack
 - Frontend: React, TypeScript, Vite, Tailwind CSS, shadcn/ui, React Router, TanStack Query.

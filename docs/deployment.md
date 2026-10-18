@@ -1,7 +1,7 @@
 # Deployment
 
 The code is platform-neutral: everything that differs between environments comes from
-environment variables. The current target is **Render** (backend Web Service + frontend
+environment variables. The current target is **Render** (backend Docker Web Service + frontend
 Static Site) with **Supabase** for PostgreSQL and Auth. Local development is unchanged
 (Docker Compose with a local PostgreSQL).
 
@@ -9,10 +9,13 @@ Static Site) with **Supabase** for PostgreSQL and Auth. Local development is unc
 
 | Setting | Value |
 |---|---|
+| Runtime | Docker |
 | Root directory | `backend` |
-| Build command | `pip install -r requirements.txt` |
-| Start command | `sh start.sh` (runs `alembic upgrade head`, then uvicorn on `$PORT`) |
+| Dockerfile | `./Dockerfile` (context `.`); the same image as local development, without dev dependencies |
+| Start command | none: the image runs `sh start.sh` (`alembic upgrade head`, then uvicorn on `$PORT`) |
 | Health check | `/api/health` |
+
+The Python version comes from the Dockerfile's base image.
 
 Environment variables:
 
@@ -23,7 +26,6 @@ Environment variables:
 | `SUPABASE_PUBLISHABLE_KEY` | for account deletion | Same public key as the frontend. Used to re-check the password before deleting an account. |
 | `SUPABASE_SECRET_KEY` | for account deletion | **Secret** (`sb_secret_...`). Used only to delete the user in Supabase Auth after the password check. Without it (or the publishable key) account deletion answers 503. |
 | `CORS_ALLOWED_ORIGINS` | when the frontend is on another domain | Comma-separated origins, e.g. `https://meusharim.onrender.com`. No trailing slash. |
-| `PYTHON_VERSION` | recommended | e.g. `3.13.5`, to match local development. |
 | `API_DOCS_ENABLED` | no | Leave unset in production: `/docs`, `/redoc` and `/openapi.json` are then off. Docker Compose sets it to `true` locally. |
 
 The Supabase secret key is used for one call only (deleting the signed-in user's own
