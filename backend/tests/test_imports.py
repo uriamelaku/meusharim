@@ -125,3 +125,23 @@ def test_preview_ignores_other_households_history(couple):
 
     assert result["suggested_category_id"] is None
     assert result["possible_duplicate"] is False
+
+
+def test_commit_records_who_paid(couple):
+    owner, partner = couple
+    rows = [{**row(), "category_id": owner.category_id("מזון")}]
+
+    owner.ok("post", "/api/imports/commit", {"source": "cal", "rows": rows,
+             "party_user_id": str(partner.id)})  # fmt: skip
+
+    [transaction] = owner.ok("get", "/api/transactions", params={"month": "2026-10"})["items"]
+    assert transaction["party_user_id"] == str(partner.id)
+
+
+def test_commit_rejects_a_payer_outside_the_household(couple):
+    owner, _ = couple
+    rows = [{**row(), "category_id": owner.category_id("מזון")}]
+    response = owner.post(
+        "/api/imports/commit", {"source": "cal", "rows": rows, "party_user_id": str(Partner().id)}
+    )
+    assert response.status_code == 422

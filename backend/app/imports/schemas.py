@@ -46,6 +46,8 @@ class CommitRequest(BaseModel):
     rows: list[CommitRow] = Field(min_length=1, max_length=MAX_ROWS)
     # Rows that look like duplicates are skipped unless this is set.
     include_duplicates: bool = False
+    # Who paid, for every row (a statement belongs to one card or account); null is joint.
+    party_user_id: UUID | None = None
 
 
 class CommitResult(BaseModel):

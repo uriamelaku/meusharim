@@ -85,6 +85,7 @@ def commit(scope: HouseholdScope, body: CommitRequest) -> CommitResult:
                 category_id=row.category_id,
                 description=row.description,
                 status="completed",
+                party_user_id=body.party_user_id,
             ),
         )
         created += 1
