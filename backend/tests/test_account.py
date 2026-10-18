@@ -4,6 +4,7 @@ import pytest
 from sqlalchemy import text
 
 from app.account.supabase_auth import AuthServiceError, get_supabase_auth
+from app.config import settings
 from app.db import engine
 from app.main import app
 from tests.partners import Partner, make_couple
@@ -132,7 +133,9 @@ def test_failed_auth_deletion_keeps_the_data(supabase):
     assert partner.ok("get", "/api/household")["household"] is not None
 
 
-def test_not_configured_answers_503():
+def test_not_configured_answers_503(monkeypatch):
+    # Independent of the developer's .env: the keys may be set there for real logins.
+    monkeypatch.setattr(settings, "supabase_secret_key", "")
     user = Partner()
     response = user.post("/api/account/delete", {"email": EMAIL, "password": PASSWORD})
     assert response.status_code == 503
