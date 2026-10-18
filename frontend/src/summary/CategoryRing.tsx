@@ -87,7 +87,7 @@ type BubbleProps = Pick<CategoryRingProps, 'onAdd' | 'onOpen'> & { item: RingIte
 
 function Bubble({ item, onAdd, onOpen }: BubbleProps) {
   const { category, actual, percent, over } = item
-  const longPress = useLongPress(() => onOpen(category.id))
+  const { fired, ...longPressHandlers } = useLongPress(() => onOpen(category.id))
   const color = categoryColor(category.color)
   const ring = over
     ? 'var(--destructive)'
@@ -99,8 +99,8 @@ function Bubble({ item, onAdd, onOpen }: BubbleProps) {
   return (
     <button
       type="button"
-      {...longPress}
-      onClick={() => !longPress.fired() && onAdd(category.id)}
+      {...longPressHandlers}
+      onClick={() => !fired() && onAdd(category.id)}
       aria-label={`הוספת הוצאה ב${category.name} (עד עכשיו ${formatMoney(actual)}, ${usage})`}
       className="flex min-w-0 touch-manipulation flex-col items-center rounded-2xl py-0.5 transition-transform select-none [-webkit-touch-callout:none] focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:scale-95"
     >
