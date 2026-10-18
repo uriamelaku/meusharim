@@ -1,5 +1,5 @@
 import { ArrowLeft, CalendarCheck, CalendarClock, PieChart, Receipt, Settings } from 'lucide-react'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { useBudget } from '@/budgets/api'
 import { NewMonthBudgetPrompt } from '@/budgets/NewMonthBudgetPrompt'
 import { useCategories } from '@/categories/api'
@@ -27,6 +27,7 @@ export function OverviewPage() {
   const budget = useBudget(month)
   const categories = useCategories()
   const { add, edit } = useQuickAdd()
+  const navigate = useNavigate()
 
   return (
     <>
@@ -78,6 +79,7 @@ export function OverviewPage() {
               items={ringItems(categories.data, budget.data.categories)}
               emptyTitle={`אין הוצאות ב${formatPeriod(period)}`}
               onAdd={(categoryId) => add('expense', 'once', categoryId)}
+              onOpen={(categoryId) => navigate(`/transactions?month=${month}&category=${categoryId}`)}
             />
 
             {summary.data.upcoming.length > 0 && (
@@ -144,11 +146,13 @@ function SpendingRing({
   items,
   emptyTitle,
   onAdd,
+  onOpen,
 }: {
   total: string
   items: ReturnType<typeof ringItems>
   emptyTitle: string
   onAdd: (categoryId: string) => void
+  onOpen: (categoryId: string) => void
 }) {
   if (!items.length) {
     return (
@@ -161,9 +165,9 @@ function SpendingRing({
   }
   return (
     <>
-      <CategoryRing items={items} total={total} onAdd={onAdd} />
+      <CategoryRing items={items} total={total} onAdd={onAdd} onOpen={onOpen} />
       <p className="text-center text-xs text-muted-foreground">
-        לחיצה על עיגול פותחת הוצאה חדשה בקטגוריה
+        לחיצה על עיגול: הוצאה חדשה · לחיצה ארוכה: התנועות של הקטגוריה
       </p>
     </>
   )

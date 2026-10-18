@@ -1,7 +1,8 @@
-import { Loader2, Trash2 } from 'lucide-react'
+import { ChevronDown, Loader2, Trash2 } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import { toast } from 'sonner'
 import { type Kind, useCategories } from '@/categories/api'
+import { CategoryIconBadge } from '@/categories/CategoryBadge'
 import { CategoryPicker } from '@/categories/CategoryPicker'
 import { AmountField } from '@/components/AmountField'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
@@ -13,6 +14,7 @@ import type { Member } from '@/household/api'
 import { todayIso } from '@/lib/dates'
 import { describeError } from '@/lib/errors'
 import { amountToInput, parseAmountInput } from '@/lib/money'
+import { cn } from '@/lib/utils'
 import {
   type Transaction,
   type TransactionStatus,
@@ -20,7 +22,8 @@ import {
   useDeleteTransaction,
   useUpdateTransaction,
 } from './api'
-import { defaultStatusFor, STATUS_OPTIONS, TRANSACTION_KIND_OPTIONS } from './labels'
+import { defaultStatusFor, partyName, STATUS_OPTIONS, TRANSACTION_KIND_OPTIONS } from './labels'
+import { lastParty, rememberParty } from './lastParty'
 
 type TransactionFormProps = {
   transaction?: Transaction
@@ -49,9 +52,14 @@ export function TransactionForm({
   const [date, setDate] = useState(transaction?.occurred_on ?? todayIso())
   const [status, setStatus] = useState<TransactionStatus>(transaction?.status ?? 'completed')
   const [statusTouched, setStatusTouched] = useState(Boolean(transaction))
-  const [party, setParty] = useState<string | null>(
-    transaction ? transaction.party_user_id : userId,
+  const [party, setParty] = useState<string | null>(() =>
+    transaction ? transaction.party_user_id : lastParty(members, userId),
   )
+  // New entries show only amount and category; the rest has sensible defaults.
+  const [showDetails, setShowDetails] = useState(Boolean(transaction))
+  // Opened from a category on the main screen: the category is known, so the form
+  // starts at the amount. "שינוי" brings back the full picker.
+  const [pickingCategory, setPickingCategory] = useState(!initialCategoryId || Boolean(transaction))
   const [description, setDescription] = useState(transaction?.description ?? '')
   const [submitted, setSubmitted] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
@@ -63,6 +71,7 @@ export function TransactionForm({
   const mutation = transaction ? update : create
 
   const amount = parseAmountInput(amountText)
+  const selectedCategory = categories.data?.find((c) => c.id === categoryId)
   const amountError =
     submitted && !amount ? 'הזינו סכום חיובי, עד שתי ספרות אחרי הנקודה.' : undefined
 
@@ -81,7 +90,9 @@ export function TransactionForm({
   function submit(event: FormEvent) {
     event.preventDefault()
     setSubmitted(true)
+    if (!date) setShowDetails(true)
     if (!amount || !categoryId || !date) return
+    rememberParty(party)
     const body = {
       kind,
       amount,
@@ -124,12 +135,14 @@ export function TransactionForm({
 
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-6">
-      <Segmented
-        label="סוג התנועה"
-        options={TRANSACTION_KIND_OPTIONS}
-        value={kind}
-        onChange={changeKind}
-      />
+      {pickingCategory && (
+        <Segmented
+          label="סוג התנועה"
+          options={TRANSACTION_KIND_OPTIONS}
+          value={kind}
+          onChange={changeKind}
+        />
+      )}
 
       <AmountField
         label="סכום"
@@ -142,6 +155,17 @@ export function TransactionForm({
 
       {categories.isPending ? (
         <p className="text-sm text-muted-foreground">טוען קטגוריות…</p>
+      ) : !pickingCategory && selectedCategory ? (
+        <div className="flex items-center gap-3 rounded-2xl border px-3 py-2">
+          <CategoryIconBadge color={selectedCategory.color} icon={selectedCategory.icon} />
+          <span className="flex-1">
+            <span className="block text-xs text-muted-foreground">קטגוריה</span>
+            <span className="font-semibold">{selectedCategory.name}</span>
+          </span>
+          <Button type="button" variant="ghost" onClick={() => setPickingCategory(true)}>
+            שינוי
+          </Button>
+        </div>
       ) : (
         <CategoryPicker
           categories={categories.data ?? []}
@@ -152,41 +176,68 @@ export function TransactionForm({
         />
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <TextField
-          label="תאריך"
-          type="date"
-          value={date}
-          min="1900-01-01"
-          max="2100-12-31"
-          required
-          onChange={(event) => changeDate(event.target.value)}
-        />
-        <Segmented
-          label="סטטוס"
-          showLabel
-          options={STATUS_OPTIONS}
-          value={status}
-          onChange={(next) => {
-            setStatus(next)
-            setStatusTouched(true)
-          }}
-        />
+      <div className="flex flex-col gap-4">
+        <button
+          type="button"
+          aria-expanded={showDetails}
+          aria-controls="transaction-details"
+          onClick={() => setShowDetails((open) => !open)}
+          className="flex min-h-11 items-center justify-between gap-3 rounded-xl bg-muted px-4 py-2 text-start text-sm focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+        >
+          <span className="min-w-0">
+            <span className="font-semibold">עוד פרטים</span>
+            {!showDetails && (
+              <span className="block truncate text-muted-foreground">
+                {detailsSummary(date, status, partyName(party, members), description)}
+              </span>
+            )}
+          </span>
+          <ChevronDown
+            className={cn('size-5 shrink-0 transition-transform', showDetails && 'rotate-180')}
+            aria-hidden
+          />
+        </button>
+        {showDetails && (
+          <div id="transaction-details" className="flex flex-col gap-6">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextField
+              label="תאריך"
+              type="date"
+              value={date}
+              min="1900-01-01"
+              max="2100-12-31"
+              required
+              onChange={(event) => changeDate(event.target.value)}
+            />
+            <Segmented
+              label="סטטוס"
+              showLabel
+              options={STATUS_OPTIONS}
+              value={status}
+              onChange={(next) => {
+                setStatus(next)
+                setStatusTouched(true)
+              }}
+            />
+          </div>
+
+          <PartyPicker
+            label={kind === 'expense' ? 'מי שילם' : 'מי קיבל'}
+            members={members}
+            value={party}
+            onChange={setParty}
+          />
+
+          <TextField
+            label="תיאור (לא חובה)"
+            value={description}
+            maxLength={120}
+            onChange={(event) => setDescription(event.target.value)}
+          />
+
+          </div>
+        )}
       </div>
-
-      <PartyPicker
-        label={kind === 'expense' ? 'מי שילם' : 'מי קיבל'}
-        members={members}
-        value={party}
-        onChange={setParty}
-      />
-
-      <TextField
-        label="תיאור (לא חובה)"
-        value={description}
-        maxLength={120}
-        onChange={(event) => setDescription(event.target.value)}
-      />
 
       {mutation.isError && (
         <p role="alert" className="text-sm text-destructive">
@@ -223,4 +274,11 @@ export function TransactionForm({
       />
     </form>
   )
+}
+
+/** "היום · בוצעה · שילם/ה: אוריה" — what will be saved while the details are closed. */
+function detailsSummary(date: string, status: TransactionStatus, party: string, note: string) {
+  const day = date === todayIso() ? 'היום' : date.split('-').reverse().join('.')
+  const statusLabel = STATUS_OPTIONS.find((option) => option.value === status)?.label ?? ''
+  return [day, statusLabel, party, note.trim()].filter(Boolean).join(' · ')
 }

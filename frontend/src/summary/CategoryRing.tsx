@@ -1,4 +1,4 @@
-import { createElement } from 'react'
+import { createElement, useRef } from 'react'
 import { categoryColor, categoryIcon } from '@/categories/appearance'
 import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
@@ -9,6 +9,8 @@ type CategoryRingProps = {
   total: string
   /** Opens a new expense in this category. */
   onAdd: (categoryId: string) => void
+  /** Opens this category's transactions (long press or right click). */
+  onOpen: (categoryId: string) => void
 }
 
 /**
@@ -16,7 +18,7 @@ type CategoryRingProps = {
  * one on each side for two rows, the rest below. Arc lengths are visual ratios only;
  * every amount shown as text comes from the server.
  */
-export function CategoryRing({ items, total, onAdd }: CategoryRingProps) {
+export function CategoryRing({ items, total, onAdd, onOpen }: CategoryRingProps) {
   return (
     <section
       aria-label="הוצאות החודש לפי קטגוריה"
@@ -26,7 +28,7 @@ export function CategoryRing({ items, total, onAdd }: CategoryRingProps) {
         <Donut items={items} total={total} />
       </div>
       {items.map((item) => (
-        <Bubble key={item.category.id} item={item} onAdd={onAdd} />
+        <Bubble key={item.category.id} item={item} onAdd={onAdd} onOpen={onOpen} />
       ))}
     </section>
   )
@@ -37,7 +39,7 @@ const STROKE = 17
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 const GAP = 3
 
-function Donut({ items, total }: Omit<CategoryRingProps, 'onAdd'>) {
+function Donut({ items, total }: Pick<CategoryRingProps, 'items' | 'total'>) {
   const sum = items.reduce((acc, item) => acc + Number(item.actual), 0)
   let offset = 0
   const arcs = sum
@@ -79,8 +81,13 @@ function Donut({ items, total }: Omit<CategoryRingProps, 'onAdd'>) {
   )
 }
 
-function Bubble({ item, onAdd }: { item: RingItem; onAdd: (categoryId: string) => void }) {
+const LONG_PRESS_MS = 500
+
+type BubbleProps = Pick<CategoryRingProps, 'onAdd' | 'onOpen'> & { item: RingItem }
+
+function Bubble({ item, onAdd, onOpen }: BubbleProps) {
   const { category, actual, percent, over } = item
+  const longPress = useLongPress(() => onOpen(category.id))
   const color = categoryColor(category.color)
   const ring = over
     ? 'var(--destructive)'
@@ -92,9 +99,10 @@ function Bubble({ item, onAdd }: { item: RingItem; onAdd: (categoryId: string) =
   return (
     <button
       type="button"
-      onClick={() => onAdd(category.id)}
+      {...longPress}
+      onClick={() => !longPress.fired() && onAdd(category.id)}
       aria-label={`הוספת הוצאה ב${category.name} (עד עכשיו ${formatMoney(actual)}, ${usage})`}
-      className="flex min-w-0 flex-col items-center rounded-2xl py-0.5 transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:scale-95"
+      className="flex min-w-0 touch-manipulation flex-col items-center rounded-2xl py-0.5 transition-transform select-none [-webkit-touch-callout:none] focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:scale-95"
     >
       <span className="flex size-12 rounded-full p-[3px]" style={{ background: ring }} aria-hidden>
         <span
@@ -117,4 +125,40 @@ function Bubble({ item, onAdd }: { item: RingItem; onAdd: (categoryId: string) =
       </span>
     </button>
   )
+}
+
+/**
+ * Long press (touch) or right click (mouse) without triggering the normal click.
+ * Touch devices fire a click after the press ends; `fired()` tells the click to skip it.
+ */
+function useLongPress(onLongPress: () => void) {
+  const timer = useRef<number | undefined>(undefined)
+  const firedRef = useRef(false)
+  const cancel = () => window.clearTimeout(timer.current)
+  return {
+    onPointerDown: () => {
+      firedRef.current = false
+      cancel()
+      timer.current = window.setTimeout(() => {
+        firedRef.current = true
+        onLongPress()
+      }, LONG_PRESS_MS)
+    },
+    onPointerUp: cancel,
+    onPointerLeave: cancel,
+    onPointerCancel: cancel,
+    onContextMenu: (event: { preventDefault: () => void }) => {
+      event.preventDefault()
+      if (!firedRef.current) {
+        cancel()
+        firedRef.current = true
+        onLongPress()
+      }
+    },
+    fired: () => {
+      const fired = firedRef.current
+      firedRef.current = false
+      return fired
+    },
+  }
 }

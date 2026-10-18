@@ -1,5 +1,6 @@
 import { ArrowLeftRight, Loader2, Search, SearchX, SlidersHorizontal, X } from 'lucide-react'
 import { useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { type Kind, useCategories } from '@/categories/api'
 import { PeriodPicker } from '@/components/PeriodPicker'
 import { SelectField } from '@/components/SelectField'
@@ -71,7 +72,12 @@ function groupByDay(items: Transaction[]): { date: string; items: Transaction[] 
 export function TransactionList({ members }: { members: Member[] }) {
   const { period, today, setPeriod } = useSelectedPeriod()
   const [search, setSearch] = useState('')
-  const [filters, setFilters] = useState<Filters>(NO_FILTERS)
+  const [searchParams] = useSearchParams()
+  // ?category=<id> opens the list already filtered, e.g. from the main screen.
+  const [filters, setFilters] = useState<Filters>(() => ({
+    ...NO_FILTERS,
+    categoryId: searchParams.get('category') ?? '',
+  }))
   const [filtersOpen, setFiltersOpen] = useState(false)
   const query = useDebouncedValue(search.trim())
   const { edit } = useQuickAdd()

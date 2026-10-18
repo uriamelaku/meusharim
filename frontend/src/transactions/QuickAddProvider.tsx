@@ -29,7 +29,9 @@ const TITLES: Record<EntryType, string> = {
 
 function titleOf(sheet: OpenSheet | null): string {
   if (!sheet) return ''
-  if (sheet.mode === 'add') return TITLES[sheet.entry]
+  if (sheet.mode === 'add') {
+    return sheet.categoryId && sheet.kind === 'expense' ? 'הוצאה חדשה' : TITLES[sheet.entry]
+  }
   if (sheet.mode === 'transaction') return 'עריכת תנועה'
   return sheet.schedule.type === 'installments' ? 'רכישה בתשלומים' : 'הוראת קבע'
 }
@@ -68,12 +70,14 @@ export function QuickAddProvider({ household, userId, children }: QuickAddProvid
       >
         {sheet?.mode === 'add' && (
           <div className="flex flex-col gap-6">
-            <Segmented
-              label="סוג הרישום"
-              options={ENTRY_OPTIONS}
-              value={sheet.entry}
-              onChange={(entry) => setSheet({ ...sheet, entry })}
-            />
+            {!sheet.categoryId && (
+              <Segmented
+                label="סוג הרישום"
+                options={ENTRY_OPTIONS}
+                value={sheet.entry}
+                onChange={(entry) => setSheet({ ...sheet, entry })}
+              />
+            )}
             {sheet.entry === 'once' ? (
               <TransactionForm
                 initialKind={sheet.kind}
