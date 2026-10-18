@@ -7,8 +7,12 @@ import { Toaster } from '@/components/ui/sonner'
 import { AuthProvider } from '@/auth/AuthProvider'
 import { capturePendingInvitation } from '@/household/pendingInvitation'
 import { queryClient } from '@/lib/queryClient'
+import { applyTheme, storedTheme } from '@/lib/theme'
 import './index.css'
 import App from './App.tsx'
+
+// Before the first paint, so a dark theme never flashes light.
+applyTheme(storedTheme())
 
 // Before the router renders, so the token leaves the address bar immediately.
 capturePendingInvitation()

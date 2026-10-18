@@ -20,13 +20,15 @@ type PeriodPickerProps = {
   period: Period
   today: Period
   onChange: (period: Period) => void
+  /** A small pill for tight headers (the main screen) instead of a page title. */
+  compact?: boolean
 }
 
 /*
  * RTL: time flows right to left, so the right-hand arrow (first in the DOM) goes back
  * in time and the left-hand arrow goes forward.
  */
-export function PeriodPicker({ period, today, onChange }: PeriodPickerProps) {
+export function PeriodPicker({ period, today, onChange, compact = false }: PeriodPickerProps) {
   const [open, setOpen] = useState(false)
   const previous = shiftMonths(period, -1)
   const next = shiftMonths(period, 1)
@@ -37,10 +39,11 @@ export function PeriodPicker({ period, today, onChange }: PeriodPickerProps) {
   }
 
   return (
-    <div className="flex items-center gap-1">
+    <div className={cn('flex items-center gap-1', compact && 'gap-0 rounded-full bg-card p-1')}>
       <Button
         variant="ghost"
         size="icon"
+        className={cn(compact && 'size-10 rounded-full text-primary')}
         aria-label={`החודש הקודם: ${formatPeriod(previous)}`}
         disabled={!isWithinBounds(previous)}
         onClick={() => onChange(previous)}
@@ -53,10 +56,16 @@ export function PeriodPicker({ period, today, onChange }: PeriodPickerProps) {
           <button
             type="button"
             aria-label={`${formatPeriod(period)}, בחירת חודש ושנה`}
-            className="flex h-12 min-w-0 items-center gap-1.5 rounded-xl px-2 font-heading text-[1.75rem] leading-none font-semibold tracking-tight transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none lg:text-4xl"
+            className={cn(
+              'flex h-12 min-w-0 items-center gap-1.5 rounded-xl px-2 font-heading text-[1.75rem] leading-none font-semibold tracking-tight transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none lg:text-4xl',
+              compact && 'h-10 rounded-full px-2 text-lg lg:text-xl',
+            )}
           >
             <span className="truncate">{formatPeriod(period)}</span>
-            <ChevronDown className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+            <ChevronDown
+              className={cn('size-5 shrink-0 text-muted-foreground', compact && 'size-4')}
+              aria-hidden
+            />
           </button>
         </PopoverTrigger>
         <PopoverContent
@@ -71,6 +80,7 @@ export function PeriodPicker({ period, today, onChange }: PeriodPickerProps) {
       <Button
         variant="ghost"
         size="icon"
+        className={cn(compact && 'size-10 rounded-full text-primary')}
         aria-label={`החודש הבא: ${formatPeriod(next)}`}
         disabled={!isWithinBounds(next)}
         onClick={() => onChange(next)}

@@ -7,7 +7,7 @@ import {
   Settings,
   Wallet,
 } from 'lucide-react'
-import { NavLink, Outlet } from 'react-router'
+import { NavLink, Outlet, useLocation } from 'react-router'
 import { signOut } from '@/auth/signOut'
 import { useCurrentUser } from '@/auth/useCurrentUser'
 import { Wordmark } from '@/components/RingsMark'
@@ -41,6 +41,8 @@ export function AppShell() {
   const currentUser = useCurrentUser()
   const household = useHousehold()
   const pendingInvitation = usePendingInvitation()
+  // The main screen has its own compact top row (month + settings) on phones.
+  const isMain = useLocation().pathname === '/'
 
   if (currentUser.isPending || household.isPending) {
     return <LoadingState className="min-h-dvh" />
@@ -75,7 +77,12 @@ export function AppShell() {
       <div className="min-h-dvh">
         <DesktopSidebar email={currentUser.data.email} />
 
-        <header className="sticky top-0 z-20 flex h-14 items-center justify-between bg-background/85 px-4 backdrop-blur-md lg:hidden">
+        <header
+          className={cn(
+            'sticky top-0 z-20 flex h-14 items-center justify-between bg-background/85 px-4 backdrop-blur-md lg:hidden',
+            isMain && 'hidden',
+          )}
+        >
           <Wordmark />
           <NavLink
             to="/settings"
@@ -92,7 +99,12 @@ export function AppShell() {
         </header>
 
         <main className="lg:ps-64">
-          <div className="mx-auto max-w-3xl px-4 pt-6 pb-[calc(7rem+env(safe-area-inset-bottom))] lg:px-10 lg:pt-12 lg:pb-12">
+          <div
+            className={cn(
+              'mx-auto max-w-3xl px-4 pt-6 pb-[calc(7rem+env(safe-area-inset-bottom))] lg:px-10 lg:pt-12 lg:pb-12',
+              isMain && 'pt-2.5',
+            )}
+          >
             <Outlet context={context} />
           </div>
         </main>

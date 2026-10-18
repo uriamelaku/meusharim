@@ -7,25 +7,23 @@ import type { RingItem } from './ringItems'
 type CategoryRingProps = {
   items: RingItem[]
   total: string
-  /** The month's remaining budget, if a budget is set. */
-  remaining: string | null
   /** Opens a new expense in this category. */
   onAdd: (categoryId: string) => void
 }
 
 /**
- * The month's spending as a ring, with a bubble per category around it (four above,
- * two on each side, the rest below). Arc lengths are visual ratios only; every amount
- * shown as text comes from the server.
+ * The month's spending as a ring, with a bubble per category around it: five above,
+ * one on each side for two rows, the rest below. Arc lengths are visual ratios only;
+ * every amount shown as text comes from the server.
  */
-export function CategoryRing({ items, total, remaining, onAdd }: CategoryRingProps) {
+export function CategoryRing({ items, total, onAdd }: CategoryRingProps) {
   return (
     <section
       aria-label="הוצאות החודש לפי קטגוריה"
-      className="grid grid-cols-4 gap-x-1 gap-y-3 rounded-[1.75rem] bg-card px-2 py-4 sm:gap-x-3 sm:px-4"
+      className="grid grid-cols-5 gap-x-0.5 gap-y-2.5 rounded-[1.6rem] bg-card px-1.5 py-3.5 sm:gap-x-3 sm:px-4"
     >
-      <div className="col-span-2 col-start-2 row-span-2 row-start-2 flex items-center justify-center">
-        <Donut items={items} total={total} remaining={remaining} />
+      <div className="col-span-3 col-start-2 row-span-2 row-start-2 flex items-center justify-center">
+        <Donut items={items} total={total} />
       </div>
       {items.map((item) => (
         <Bubble key={item.category.id} item={item} onAdd={onAdd} />
@@ -35,11 +33,11 @@ export function CategoryRing({ items, total, remaining, onAdd }: CategoryRingPro
 }
 
 const RADIUS = 70
-const STROKE = 18
+const STROKE = 17
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 const GAP = 3
 
-function Donut({ items, total, remaining }: Omit<CategoryRingProps, 'onAdd'>) {
+function Donut({ items, total }: Omit<CategoryRingProps, 'onAdd'>) {
   const sum = items.reduce((acc, item) => acc + Number(item.actual), 0)
   let offset = 0
   const arcs = sum
@@ -52,10 +50,9 @@ function Donut({ items, total, remaining }: Omit<CategoryRingProps, 'onAdd'>) {
           return arc
         })
     : []
-  const over = remaining?.startsWith('-') ?? false
 
   return (
-    <div className="relative size-40 sm:size-44">
+    <div className="relative size-36 sm:size-44">
       <svg viewBox="0 0 180 180" className="size-full -rotate-90" aria-hidden>
         <circle cx="90" cy="90" r={RADIUS} fill="none" stroke="var(--muted)" strokeWidth={STROKE} />
         {arcs.map(({ item, length, offset: start }) => (
@@ -74,12 +71,9 @@ function Donut({ items, total, remaining }: Omit<CategoryRingProps, 'onAdd'>) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
         <span className="text-xs font-semibold text-muted-foreground">הוצאות</span>
-        <span className="font-heading text-2xl font-semibold tabular-nums">{formatMoney(total)}</span>
-        {remaining !== null && (
-          <span className={cn('text-xs font-bold', over ? 'text-destructive' : 'text-primary')}>
-            {over ? `חריגה ${formatMoney(remaining.slice(1))}` : `נשארו ${formatMoney(remaining)}`}
-          </span>
-        )}
+        <span className="font-heading text-xl font-semibold tabular-nums sm:text-2xl">
+          {formatMoney(total)}
+        </span>
       </div>
     </div>
   )
@@ -100,22 +94,22 @@ function Bubble({ item, onAdd }: { item: RingItem; onAdd: (categoryId: string) =
       type="button"
       onClick={() => onAdd(category.id)}
       aria-label={`הוספת הוצאה ב${category.name} (עד עכשיו ${formatMoney(actual)}, ${usage})`}
-      className="flex min-w-0 flex-col items-center gap-1 rounded-2xl py-1 transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:scale-95"
+      className="flex min-w-0 flex-col items-center rounded-2xl py-0.5 transition-transform focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:scale-95"
     >
-      <span className="max-w-full truncate text-xs font-semibold text-muted-foreground">
-        {category.name}
-      </span>
-      <span className="flex size-14 rounded-full p-[3px]" style={{ background: ring }} aria-hidden>
+      <span className="flex size-12 rounded-full p-[3px]" style={{ background: ring }} aria-hidden>
         <span
           className="flex size-full items-center justify-center rounded-full border-2 border-card"
           style={{ backgroundColor: color.tint, color: color.ink }}
         >
-          {createElement(categoryIcon(category.icon), { className: 'size-[22px]' })}
+          {createElement(categoryIcon(category.icon), { className: 'size-5' })}
         </span>
+      </span>
+      <span className="mt-1 max-w-full truncate text-[11px] leading-tight font-semibold text-muted-foreground">
+        {category.name}
       </span>
       <span
         className={cn(
-          'font-heading text-sm font-semibold tabular-nums',
+          'font-heading text-[13px] leading-tight font-semibold tabular-nums',
           over && 'text-destructive',
         )}
       >

@@ -1,10 +1,8 @@
-import { ArrowLeft, CalendarCheck, CalendarClock, PieChart, Receipt } from 'lucide-react'
+import { ArrowLeft, CalendarCheck, CalendarClock, PieChart, Receipt, Settings } from 'lucide-react'
 import { Link } from 'react-router'
 import { useBudget } from '@/budgets/api'
-import { toneOf } from '@/budgets/usage'
 import { useCategories } from '@/categories/api'
 import { PeriodPicker } from '@/components/PeriodPicker'
-import { ProgressBar } from '@/components/ProgressBar'
 import { useShellContext } from '@/components/shellContext'
 import { EmptyState, ErrorState, LoadingState } from '@/components/states'
 import { Button } from '@/components/ui/button'
@@ -31,26 +29,31 @@ export function OverviewPage() {
 
   return (
     <>
-      <header className="mb-5 lg:mb-8">
-        <div className="flex min-h-9 items-center justify-between gap-3">
-          <p className="truncate text-sm font-semibold text-muted-foreground">{household.name}</p>
+      <header className="mb-2.5 flex items-center justify-between gap-2 lg:mb-6">
+        <div className="flex min-w-0 items-center gap-1">
+          <PeriodPicker period={period} today={today} onChange={setPeriod} compact />
           {!isCurrent && (
             <Button
               variant="ghost"
-              className="h-9 shrink-0 px-2.5 text-sm text-brass-strong"
+              size="icon"
+              aria-label="לחודש הנוכחי"
+              className="shrink-0 rounded-full text-brass-strong"
               onClick={() => setPeriod(today)}
             >
-              <CalendarCheck aria-hidden />
-              לחודש הנוכחי
+              <CalendarCheck className="size-5" aria-hidden />
             </Button>
           )}
         </div>
-        <div className="-ms-3 mt-1">
-          <PeriodPicker period={period} today={today} onChange={setPeriod} />
-        </div>
+        <Link
+          to="/settings"
+          aria-label="הגדרות"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full bg-card text-muted-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none lg:hidden"
+        >
+          <Settings className="size-5" aria-hidden />
+        </Link>
       </header>
 
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-2.5 lg:gap-4">
         <PendingConfirmations members={household.members} />
 
         {summary.isPending || budget.isPending || categories.isPending ? (
@@ -69,15 +72,14 @@ export function OverviewPage() {
           <>
             <BalanceCard summary={summary.data} monthLabel={monthName(period.month)} />
             <SpendingRing
-              summary={summary.data}
+              total={summary.data.expense.actual}
               items={ringItems(categories.data, budget.data.categories)}
               emptyTitle={`אין הוצאות ב${formatPeriod(period)}`}
               onAdd={(categoryId) => add('expense', 'once', categoryId)}
             />
-            <BudgetCard summary={summary.data} />
 
             {summary.data.upcoming.length > 0 && (
-              <section aria-labelledby="upcoming-title">
+              <section aria-labelledby="upcoming-title" className="mt-4">
                 <h2
                   id="upcoming-title"
                   className="mb-2 flex items-center gap-2 font-heading text-xl font-semibold"
@@ -95,7 +97,7 @@ export function OverviewPage() {
               </section>
             )}
 
-            <section aria-labelledby="recent-title">
+            <section aria-labelledby="recent-title" className="mt-4">
               <div className="mb-2 flex items-center justify-between">
                 <h2 id="recent-title" className="font-heading text-xl font-semibold">
                   תנועות אחרונות
@@ -136,12 +138,12 @@ export function OverviewPage() {
 }
 
 function SpendingRing({
-  summary,
+  total,
   items,
   emptyTitle,
   onAdd,
 }: {
-  summary: MonthSummary
+  total: string
   items: ReturnType<typeof ringItems>
   emptyTitle: string
   onAdd: (categoryId: string) => void
@@ -156,94 +158,106 @@ function SpendingRing({
     )
   }
   return (
-    <CategoryRing
-      items={items}
-      total={summary.expense.actual}
-      remaining={summary.budget?.remaining ?? null}
-      onAdd={onAdd}
-    />
+    <>
+      <CategoryRing items={items} total={total} onAdd={onAdd} />
+      <p className="text-center text-xs text-muted-foreground">
+        לחיצה על עיגול פותחת הוצאה חדשה בקטגוריה
+      </p>
+    </>
   )
 }
 
+/** The month at a glance: balance, income and expenses, and how much budget is left. */
 function BalanceCard({ summary, monthLabel }: { summary: MonthSummary; monthLabel: string }) {
-  const { balance, projected_balance, income, expense } = summary
+  const { balance, projected_balance, income, expense, budget } = summary
   const hasPlanned = income.planned !== '0.00' || expense.planned !== '0.00'
   return (
     <section
       aria-labelledby="balance-title"
-      className="rounded-[1.75rem] bg-primary px-5 py-5 text-primary-foreground lg:px-8 lg:py-7"
+      className="rounded-3xl bg-hero px-4.5 pt-3.5 pb-4 text-hero-foreground lg:px-7 lg:py-6"
     >
-      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
-        <div>
-          <p id="balance-title" className="text-sm font-semibold text-primary-foreground/80">
-            מאזן {monthLabel} · בפועל
+      <div className="flex items-end justify-between gap-3">
+        <div className="min-w-0">
+          <p id="balance-title" className="text-[13px] font-semibold text-hero-foreground/80">
+            מאזן {monthLabel}
           </p>
-          <p className="mt-0.5 font-heading text-4xl font-semibold tabular-nums sm:text-5xl">
+          <p className="font-heading text-[2rem] leading-tight font-semibold tabular-nums lg:text-5xl">
             {formatMoney(balance)}
           </p>
         </div>
-        <dl className="flex gap-6">
-          <FlowStat label="הכנסות" actual={income.actual} planned={income.planned} />
-          <FlowStat label="הוצאות" actual={expense.actual} planned={expense.planned} />
+        <dl className="flex shrink-0 flex-col gap-0.5 text-[13px] text-hero-foreground/85">
+          <FlowStat label="הכנסות" actual={income.actual} />
+          <FlowStat label="הוצאות" actual={expense.actual} />
         </dl>
       </div>
       {hasPlanned && (
-        <p className="mt-4 inline-flex rounded-full bg-primary-foreground/12 px-3 py-1 text-sm text-primary-foreground/90">
+        <p className="mt-1 text-xs text-hero-foreground/80">
           אם כל המתוכנן יבוצע: {formatMoney(projected_balance)}
         </p>
       )}
+      <Link
+        to={`/budget?month=${summary.month}`}
+        className="mt-3 block border-t border-hero-foreground/20 pt-3 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+      >
+        {budget ? (
+          <>
+            <span className="flex items-center justify-between gap-2 text-[13px]">
+              <span className="flex items-center gap-1.5">
+                תקציב החודש
+                <span
+                  className={cn(
+                    'rounded-full px-2 text-xs font-bold tabular-nums',
+                    budget.status === 'over'
+                      ? 'bg-destructive text-background'
+                      : 'bg-brass text-foreground dark:text-background',
+                  )}
+                >
+                  {budget.percent}%
+                </span>
+              </span>
+              <span className="text-hero-foreground/85 tabular-nums">
+                {budget.status === 'over' ? 'חריגה של ' : 'נשארו '}
+                <b className="text-hero-foreground">
+                  {formatMoney(budget.remaining.replace('-', ''))}
+                </b>{' '}
+                מ-{formatMoney(budget.budget)}
+              </span>
+            </span>
+            <span
+              className="mt-2 block h-2 overflow-hidden rounded-full bg-hero-foreground/20"
+              role="progressbar"
+              aria-label={`נוצלו ${budget.percent}% מהתקציב`}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.min(budget.percent, 100)}
+            >
+              <span
+                className={cn(
+                  'block h-full rounded-full',
+                  budget.status === 'over' ? 'bg-destructive' : 'bg-brass',
+                )}
+                style={{ width: `${Math.min(budget.percent, 100)}%` }}
+              />
+            </span>
+          </>
+        ) : (
+          <span className="flex items-center justify-between text-[13px] text-hero-foreground/85">
+            עדיין לא הוגדר תקציב לחודש הזה
+            <b className="text-hero-foreground">הגדרת תקציב ←</b>
+          </span>
+        )}
+      </Link>
     </section>
   )
 }
 
-function FlowStat({ label, actual, planned }: { label: string; actual: string; planned: string }) {
+function FlowStat({ label, actual }: { label: string; actual: string }) {
   return (
-    <div>
-      <dt className="text-sm text-primary-foreground/80">{label}</dt>
-      <dd className="font-heading text-lg font-semibold tabular-nums">{formatMoney(actual)}</dd>
-      {planned !== '0.00' && (
-        <dd className="text-xs text-primary-foreground/80">+ {formatMoney(planned)} מתוכנן</dd>
-      )}
+    <div className="flex items-baseline justify-end gap-1.5">
+      <dt>{label}</dt>
+      <dd className="font-heading font-semibold text-hero-foreground tabular-nums">
+        {formatMoney(actual)}
+      </dd>
     </div>
-  )
-}
-
-function BudgetCard({ summary }: { summary: MonthSummary }) {
-  const { budget } = summary
-  return (
-    <Link
-      to={`/budget?month=${summary.month}`}
-      className="flex flex-col gap-3 rounded-[1.75rem] bg-card p-5 transition-colors hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
-    >
-      <span className="flex items-center justify-between gap-2">
-        <span className="font-medium">נשאר בתקציב</span>
-        {budget ? (
-          <span
-            className={cn(
-              'font-semibold tabular-nums',
-              budget.status === 'over' && 'text-destructive',
-            )}
-          >
-            {formatMoney(budget.remaining)}
-          </span>
-        ) : (
-          <span className="text-sm text-brass-strong">הגדרת תקציב</span>
-        )}
-      </span>
-      {budget ? (
-        <>
-          <ProgressBar
-            percent={budget.percent}
-            tone={toneOf(budget.status)}
-            label={`נוצלו ${budget.percent}% מהתקציב`}
-          />
-          <span className="text-sm text-muted-foreground">
-            נוצלו {budget.percent}% מתוך {formatMoney(budget.budget)}
-          </span>
-        </>
-      ) : (
-        <span className="text-sm text-muted-foreground">עדיין לא הוגדר תקציב לחודש הזה.</span>
-      )}
-    </Link>
   )
 }
