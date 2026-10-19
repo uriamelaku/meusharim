@@ -57,7 +57,7 @@ def get_household(db: DbSession) -> MyHousehold:
 
 @router.post("/household", status_code=status.HTTP_201_CREATED)
 def create_household(body: HouseholdCreate, db: DbSession) -> MyHousehold:
-    service.create_household(db, body.name, body.display_name)
+    service.create_household(db, body.name, body.display_name, body.language)
     if body.gender:
         service.set_my_gender(db, body.gender)
     return MyHousehold(household=service.get_my_household(db))

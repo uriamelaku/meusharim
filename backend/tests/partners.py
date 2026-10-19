@@ -32,8 +32,8 @@ class Partner:
     def delete(self, path: str):
         return client.delete(path, headers=self.headers)
 
-    def create_household(self, name="הבית שלנו", display_name="אוריה"):
-        return self.post("/api/household", {"name": name, "display_name": display_name})
+    def create_household(self, name="הבית שלנו", display_name="אוריה", **extra):
+        return self.post("/api/household", {"name": name, "display_name": display_name, **extra})
 
     def invite(self) -> str:
         response = self.post("/api/household/invitation")

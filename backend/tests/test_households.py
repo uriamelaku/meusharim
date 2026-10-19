@@ -234,8 +234,8 @@ def test_concurrent_household_creation_by_same_user_creates_one():
     user_id = uuid4()
 
     results = run_concurrently(
-        call_as(user_id, service.create_household, "בית 1", "א"),
-        call_as(user_id, service.create_household, "בית 2", "א"),
+        call_as(user_id, service.create_household, "בית 1", "א", "he"),
+        call_as(user_id, service.create_household, "בית 2", "א", "he"),
     )
 
     errors = [r for r in results if isinstance(r, service.HouseholdError)]

@@ -51,6 +51,14 @@ def test_first_goal_creates_one_savings_category(couple):
     assert category["kind"] == "expense" and category["icon"] == "piggy-bank"
 
 
+def test_savings_category_follows_household_language():
+    owner = Partner()
+    owner.create_household(name="Our home", language="en")
+    create_goal(owner)
+    names = [c["name"] for c in owner.ok("get", "/api/categories") if c["icon"] == "piggy-bank"]
+    assert names == ["Savings"]
+
+
 def test_deposits_are_completed_expenses_and_fill_the_goal(couple):
     owner, partner = couple
     goal = create_goal(owner, target="1000", target_date=None)

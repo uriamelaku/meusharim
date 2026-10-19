@@ -13,7 +13,9 @@ from app.scope import HouseholdScope
 from app.transactions import service as transactions
 from app.transactions.schemas import Transaction, TransactionCreate
 
-SAVINGS_CATEGORY = {"name": "חיסכון", "color": "teal", "icon": "piggy-bank"}
+# Created on first use, named in the household's language.
+SAVINGS_CATEGORY = {"color": "teal", "icon": "piggy-bank"}
+SAVINGS_CATEGORY_NAMES = {"he": "חיסכון", "en": "Savings"}
 AGORA = Decimal("0.01")
 
 SELECT_GOALS = """
@@ -92,7 +94,12 @@ def _goal_row(scope: HouseholdScope, goal_id: UUID):
 
 def _savings_category(scope: HouseholdScope) -> UUID:
     """The household's active savings category, created on first use."""
-    params = {"household_id": scope.household_id, **SAVINGS_CATEGORY}
+    language = scope.session.scalar(text("SELECT language FROM households"))
+    params = {
+        "household_id": scope.household_id,
+        "name": SAVINGS_CATEGORY_NAMES[language],
+        **SAVINGS_CATEGORY,
+    }
     find = text(
         "SELECT id FROM categories WHERE kind = 'expense' AND archived_at IS NULL"
         " AND lower(name) = lower(:name)"

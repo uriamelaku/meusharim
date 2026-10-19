@@ -71,11 +71,11 @@ def get_my_household(session: Session) -> Household | None:
     )
 
 
-def create_household(session: Session, name: str, display_name: str) -> UUID:
+def create_household(session: Session, name: str, display_name: str, language: str) -> UUID:
     return _call(
         session,
-        "SELECT app.create_household(:name, :display_name)",
-        {"name": name, "display_name": display_name},
+        "SELECT app.create_household(:name, :display_name, :language)",
+        {"name": name, "display_name": display_name, "language": language},
     ).scalar_one()
 
 

@@ -10,6 +10,7 @@ HouseholdName = Annotated[
 DisplayName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=40)]
 # secrets.token_urlsafe(32) produces 43 URL-safe characters.
 Gender = Literal["female", "male"]
+Language = Literal["he", "en"]
 InvitationToken = Annotated[str, StringConstraints(pattern=r"^[A-Za-z0-9_-]{43}$")]
 
 
@@ -17,6 +18,8 @@ class HouseholdCreate(BaseModel):
     name: HouseholdName
     display_name: DisplayName
     gender: Gender | None = None
+    # Language of the default categories; the UI language is a per-device setting.
+    language: Language = "he"
 
 
 class Member(BaseModel):

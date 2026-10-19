@@ -14,7 +14,7 @@ from app.households import service
 
 def create_household_for(user_id, name="הבית") -> None:
     with user_transaction(user_id) as session:
-        service.create_household(session, name, "שם")
+        service.create_household(session, name, "שם", "he")
 
 
 @pytest.fixture

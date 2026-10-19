@@ -31,6 +31,22 @@ def test_new_household_gets_default_categories(couple):
     assert not any(c["archived"] for c in categories)
 
 
+def test_household_created_in_english_gets_english_categories():
+    owner = Partner()
+    assert owner.create_household(name="Our home", language="en").status_code == 201
+    categories = owner.ok("get", "/api/categories")
+
+    expense = [c["name"] for c in categories if c["kind"] == "expense"]
+    income = [c["name"] for c in categories if c["kind"] == "income"]
+    assert len(expense) == 14
+    assert {"Groceries", "Eating out", "Housing", "Insurance", "Other"} <= set(expense)
+    assert set(income) == {"Salary", "Business", "Extra income", "Refunds"}
+
+
+def test_unknown_household_language_is_rejected():
+    assert Partner().create_household(language="fr").status_code == 422
+
+
 def test_both_partners_manage_the_same_categories(couple):
     owner, partner = couple
     created = new_category(partner).json()
