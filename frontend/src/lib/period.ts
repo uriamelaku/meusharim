@@ -1,3 +1,5 @@
+import { locale } from './i18n'
+
 /** A calendar month in the household's time zone. `month` is 1–12. */
 export type Period = { year: number; month: number }
 
@@ -57,7 +59,7 @@ function monthDate(period: Period): Date {
 }
 
 export function formatPeriod(period: Period): string {
-  return new Intl.DateTimeFormat('he-IL', {
+  return new Intl.DateTimeFormat(locale, {
     month: 'long',
     year: 'numeric',
     timeZone: 'UTC',
@@ -65,7 +67,7 @@ export function formatPeriod(period: Period): string {
 }
 
 export function monthName(month: number): string {
-  return new Intl.DateTimeFormat('he-IL', { month: 'long', timeZone: 'UTC' }).format(
+  return new Intl.DateTimeFormat(locale, { month: 'long', timeZone: 'UTC' }).format(
     monthDate({ year: 2000, month }),
   )
 }

@@ -1,6 +1,7 @@
 import { toast } from 'sonner'
 import { useSession } from '@/auth/useAuth'
 import { apiRequest } from '@/lib/api'
+import { tr } from '@/lib/i18n'
 import { formatMoney } from '@/lib/money'
 import type { BudgetMonth, CategoryBudget } from './api'
 
@@ -25,12 +26,18 @@ export function budgetAlertFor(
     ? {
         key,
         level: 'over',
-        message: `חרגתם מהתקציב של ${name} ב-${formatMoney(row.remaining.replace('-', ''))}`,
+        message: tr({
+          he: `חרגתם מהתקציב של ${name} ב-${formatMoney(row.remaining.replace('-', ''))}`,
+          en: `You're ${formatMoney(row.remaining.replace('-', ''))} over the ${name} budget`,
+        }),
       }
     : {
         key,
         level: 'near',
-        message: `נוצלו ${row.percent}% מהתקציב של ${name}. נשארו ${formatMoney(row.remaining)}`,
+        message: tr({
+          he: `נוצלו ${row.percent}% מהתקציב של ${name}. נשארו ${formatMoney(row.remaining)}`,
+          en: `${row.percent}% of the ${name} budget used. ${formatMoney(row.remaining)} left`,
+        }),
       }
 }
 

@@ -19,6 +19,7 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 - Account deletion: requires two confirmations plus email and password re-checked on the server. A remaining partner keeps the household and its data; a last member's household is deleted. The backend holds the Supabase secret key for this single call only.
 - Wording: personal sentences follow the reader's chosen gender (`household_members.gender`, chosen at join, editable in settings, asked once of existing members); general instructions stay neutral; the partner is named. Onboarding (guided tour, one-time tips) is remembered per device.
 - Theme (light/dark) is a per-device setting. The app is installable (PWA); the service worker caches no data.
+- Language: Hebrew (default) or English, a per-device setting like the theme; switching reloads the app in the other language and direction. Texts live next to the code as `tr({ he, en })` (no i18n library). A household's default categories are created in the language it was created in (`households.language`); existing names are user data and are not translated. Gendered forms of address exist in Hebrew only.
 - **No AWS.** Deployment: Render (backend Docker Web Service + frontend Static Site, free tier) with Supabase for PostgreSQL/Auth; see `docs/deployment.md`. Keep the code platform-neutral: environment differences go through environment variables only, never platform-specific code.
 
 ## Tech stack

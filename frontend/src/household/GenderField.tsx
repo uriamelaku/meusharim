@@ -9,6 +9,7 @@ type GenderFieldProps = {
   showError?: boolean
 }
 
+/** Hebrew only: English has no gendered forms of address. */
 export function GenderField({ value, onChange, showError = false }: GenderFieldProps) {
   return (
     <div className="flex flex-col gap-1.5">

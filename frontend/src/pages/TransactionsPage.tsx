@@ -4,13 +4,14 @@ import { PageHeader } from '@/components/PageHeader'
 import { useShellContext } from '@/components/shellContext'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { tr } from '@/lib/i18n'
 import { ScheduleList } from '@/schedules/ScheduleList'
 import { TransactionList } from '@/transactions/TransactionList'
 
 const TABS = [
-  { value: 'list', label: 'רשימה' },
-  { value: 'recurring', label: 'הוראות קבע' },
-  { value: 'installments', label: 'תשלומים' },
+  { value: 'list', label: tr({ he: 'רשימה', en: 'List' }) },
+  { value: 'recurring', label: tr({ he: 'הוראות קבע', en: 'Recurring' }) },
+  { value: 'installments', label: tr({ he: 'תשלומים', en: 'Installments' }) },
 ] as const
 
 type Tab = (typeof TABS)[number]['value']
@@ -33,12 +34,14 @@ export function TransactionsPage() {
   return (
     <>
       <div className="flex items-start justify-between gap-3">
-        <PageHeader title="הוצאות והכנסות" />
+        <PageHeader title={tr({ he: 'הוצאות והכנסות', en: 'Transactions' })} />
         {/* Reminder of a planned feature: the server side exists, file reading does not yet. */}
         <Button variant="outline" size="sm" className="mt-1 h-9 shrink-0" disabled>
           <Upload aria-hidden />
-          ייבוא מהאשראי
-          <span className="rounded-full bg-accent px-1.5 text-[11px] text-accent-foreground">בקרוב</span>
+          {tr({ he: 'ייבוא מהאשראי', en: 'Import from card' })}
+          <span className="rounded-full bg-accent px-1.5 text-[11px] text-accent-foreground">
+            {tr({ he: 'בקרוב', en: 'Soon' })}
+          </span>
         </Button>
       </div>
       <Tabs value={tab} onValueChange={changeTab}>

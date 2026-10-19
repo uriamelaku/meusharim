@@ -1,10 +1,11 @@
 import { useDataMutation, useDataQuery } from '@/lib/data'
+import { tr } from '@/lib/i18n'
 
 export type Kind = 'income' | 'expense'
 
 export const KIND_OPTIONS: { value: Kind; label: string }[] = [
-  { value: 'expense', label: 'הוצאות' },
-  { value: 'income', label: 'הכנסות' },
+  { value: 'expense', label: tr({ he: 'הוצאות', en: 'Expenses' }) },
+  { value: 'income', label: tr({ he: 'הכנסות', en: 'Income' }) },
 ]
 
 export type Category = {

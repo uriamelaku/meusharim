@@ -1,3 +1,4 @@
+import { locale, tr } from './i18n'
 import type { Period } from './period'
 
 const TIME_ZONE = 'Asia/Jerusalem'
@@ -32,18 +33,18 @@ function isoToDate(iso: string): Date {
   return new Date(`${iso}T12:00:00Z`)
 }
 
-const dayFormatter = new Intl.DateTimeFormat('he-IL', {
+const dayFormatter = new Intl.DateTimeFormat(locale, {
   weekday: 'long',
   day: 'numeric',
   month: 'long',
   timeZone: 'UTC',
 })
-const shortFormatter = new Intl.DateTimeFormat('he-IL', {
+const shortFormatter = new Intl.DateTimeFormat(locale, {
   day: 'numeric',
   month: 'short',
   timeZone: 'UTC',
 })
-const fullFormatter = new Intl.DateTimeFormat('he-IL', {
+const fullFormatter = new Intl.DateTimeFormat(locale, {
   day: 'numeric',
   month: 'long',
   year: 'numeric',
@@ -65,7 +66,7 @@ export function formatFullDate(iso: string): string {
   return fullFormatter.format(isoToDate(iso))
 }
 
-const weekdayFormatter = new Intl.DateTimeFormat('he-IL', { weekday: 'short', timeZone: 'UTC' })
+const weekdayFormatter = new Intl.DateTimeFormat(locale, { weekday: 'short', timeZone: 'UTC' })
 
 function addDays(iso: string, days: number): string {
   const date = isoToDate(iso)
@@ -75,13 +76,16 @@ function addDays(iso: string, days: number): string {
 
 /**
  * A day the way people say it: "היום", "אתמול", "מחר", or "יום ה׳ 16.10"
- * (with the year when it is not this year: "יום ה׳ 16.10.2025").
+ * (with the year when it is not this year: "יום ה׳ 16.10.2025"). In English:
+ * "Today", "Yesterday", "Tomorrow", "Thu 16/10".
  */
 export function formatRelativeDay(iso: string, today: string = todayIso()): string {
-  if (iso === today) return 'היום'
-  if (iso === addDays(today, -1)) return 'אתמול'
-  if (iso === addDays(today, 1)) return 'מחר'
+  if (iso === today) return tr({ he: 'היום', en: 'Today' })
+  if (iso === addDays(today, -1)) return tr({ he: 'אתמול', en: 'Yesterday' })
+  if (iso === addDays(today, 1)) return tr({ he: 'מחר', en: 'Tomorrow' })
   const [year, month, day] = iso.split('-')
-  const date = `${Number(day)}.${Number(month)}${year === today.slice(0, 4) ? '' : `.${year}`}`
+  const separator = tr({ he: '.', en: '/' })
+  const thisYear = year === today.slice(0, 4)
+  const date = [Number(day), Number(month), ...(thisYear ? [] : [year])].join(separator)
   return `${weekdayFormatter.format(isoToDate(iso))} ${date}`
 }

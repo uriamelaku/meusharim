@@ -13,6 +13,7 @@ import {
   subtractAmounts,
   sumAmounts,
 } from '@/lib/money'
+import { tr } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { type BudgetMonth, useSaveBudget } from './api'
 
@@ -61,7 +62,9 @@ export function BudgetEditor({ budget, periodLabel, onDone }: BudgetEditorProps)
       { total: parseAmountInput(total), categories: rows },
       {
         onSuccess: () => {
-          toast.success(`התקציב ל${periodLabel} נשמר`)
+          toast.success(
+            tr({ he: `התקציב ל${periodLabel} נשמר`, en: `Budget for ${periodLabel} saved` }),
+          )
           onDone()
         },
       },
@@ -71,19 +74,24 @@ export function BudgetEditor({ budget, periodLabel, onDone }: BudgetEditorProps)
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-6">
       <TextField
-        label="תקציב כולל לחודש (לא חובה)"
+        label={tr({ he: 'תקציב כולל לחודש (לא חובה)', en: 'Total monthly budget (optional)' })}
         inputMode="decimal"
-        placeholder="לא הוגדר"
+        placeholder={tr({ he: 'לא הוגדר', en: 'Not set' })}
         value={total}
         onChange={(event) => setTotal(event.target.value)}
         aria-invalid={(submitted && invalid(total)) || overCeiling}
-        hint="כמה מותר להוציא החודש בסך הכול. בלי סכום כאן, התקציב הכולל הוא סכום הקטגוריות."
+        hint={tr({
+          he: 'כמה מותר להוציא החודש בסך הכול. בלי סכום כאן, התקציב הכולל הוא סכום הקטגוריות.',
+          en: 'How much you can spend this month in total. Without an amount here, the total is the sum of the categories.',
+        })}
       />
 
       <AllocationSummary allocated={allocated} unallocated={unallocated} />
 
       <fieldset className="flex flex-col gap-1">
-        <legend className="mb-2 text-sm font-medium">תקציב לפי קטגוריה</legend>
+        <legend className="mb-2 text-sm font-medium">
+          {tr({ he: 'תקציב לפי קטגוריה', en: 'Budget by category' })}
+        </legend>
         {options.map((category) => {
           const value = amounts[category.id] ?? ''
           return (
@@ -91,12 +99,16 @@ export function BudgetEditor({ budget, periodLabel, onDone }: BudgetEditorProps)
               <CategoryIconBadge color={category.color} icon={category.icon} className="size-9" />
               <span className="min-w-0 flex-1 truncate">
                 {category.name}
-                {category.archived && <span className="text-muted-foreground"> (נמחקה)</span>}
+                {category.archived && (
+                  <span className="text-muted-foreground">
+                    {tr({ he: ' (נמחקה)', en: ' (deleted)' })}
+                  </span>
+                )}
               </span>
               <span className="relative w-32 shrink-0">
                 <input
                   inputMode="decimal"
-                  placeholder="ללא"
+                  placeholder={tr({ he: 'ללא', en: 'None' })}
                   value={value}
                   onChange={(event) =>
                     setAmounts((current) => ({ ...current, [category.id]: event.target.value }))
@@ -118,7 +130,10 @@ export function BudgetEditor({ budget, periodLabel, onDone }: BudgetEditorProps)
 
       {submitted && hasErrors && !overCeiling && (
         <p role="alert" className="text-sm text-destructive">
-          יש סכום לא תקין. צריך מספר חיובי (עד שתי ספרות אחרי הנקודה), או להשאיר ריק.
+          {tr({
+            he: 'יש סכום לא תקין. צריך מספר חיובי (עד שתי ספרות אחרי הנקודה), או להשאיר ריק.',
+            en: 'An amount is invalid. Enter a positive number (up to two decimal places), or leave it empty.',
+          })}
         </p>
       )}
       {save.isError && (
@@ -129,7 +144,7 @@ export function BudgetEditor({ budget, periodLabel, onDone }: BudgetEditorProps)
 
       <Button type="submit" size="lg" disabled={save.isPending}>
         {save.isPending && <Loader2 className="animate-spin" aria-hidden />}
-        שמירת התקציב
+        {tr({ he: 'שמירת התקציב', en: 'Save budget' })}
       </Button>
     </form>
   )
@@ -153,7 +168,9 @@ function AllocationSummary({
       )}
     >
       <p className="flex justify-between gap-2">
-        <span className="text-muted-foreground">מתוכנן לפי קטגוריות</span>
+        <span className="text-muted-foreground">
+          {tr({ he: 'מתוכנן לפי קטגוריות', en: 'Planned by category' })}
+        </span>
         <span className="font-semibold tabular-nums">{formatMoney(allocated)}</span>
       </p>
       {unallocated !== null && (
@@ -161,7 +178,11 @@ function AllocationSummary({
           role={over ? 'alert' : undefined}
           className={cn('flex justify-between gap-2', over && 'font-medium text-destructive')}
         >
-          <span>{over ? 'חריגה מהתקציב הכולל' : 'שארית'}</span>
+          <span>
+            {over
+              ? tr({ he: 'חריגה מהתקציב הכולל', en: 'Over the total budget' })
+              : tr({ he: 'שארית', en: 'Unallocated' })}
+          </span>
           <span className="font-semibold tabular-nums">
             {formatMoney(over ? unallocated.slice(1) : unallocated)}
           </span>

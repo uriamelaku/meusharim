@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import type { Member } from '@/household/api'
 import { formatShortDate } from '@/lib/dates'
 import { describeError } from '@/lib/errors'
+import { tr } from '@/lib/i18n'
 import { formatMoney } from '@/lib/money'
 import { type Schedule, useSchedule, useScheduleAction } from './api'
 import { scheduleState, STATE_LABELS } from './labels'
@@ -61,10 +62,10 @@ export function ScheduleEditor({ schedule, members, userId, onDone }: ScheduleEd
                 size="sm"
                 className="h-9"
                 disabled={action.isPending}
-                onClick={() => run('pause', 'ההוראה הושהתה')}
+                onClick={() => run('pause', tr({ he: 'ההוראה הושהתה', en: 'Paused' }))}
               >
                 <Pause aria-hidden />
-                השהיה
+                {tr({ he: 'השהיה', en: 'Pause' })}
               </Button>
             )}
             {current.status === 'paused' && (
@@ -73,10 +74,10 @@ export function ScheduleEditor({ schedule, members, userId, onDone }: ScheduleEd
                 size="sm"
                 className="h-9"
                 disabled={action.isPending}
-                onClick={() => run('resume', 'ההוראה חודשה')}
+                onClick={() => run('resume', tr({ he: 'ההוראה חודשה', en: 'Resumed' }))}
               >
                 <Play aria-hidden />
-                חידוש
+                {tr({ he: 'חידוש', en: 'Resume' })}
               </Button>
             )}
             <Button
@@ -87,13 +88,18 @@ export function ScheduleEditor({ schedule, members, userId, onDone }: ScheduleEd
               onClick={() => setConfirmingCancel(true)}
             >
               <Ban aria-hidden />
-              {isInstallments ? 'ביטול התשלומים' : 'ביטול ההוראה'}
+              {isInstallments
+                ? tr({ he: 'ביטול התשלומים', en: 'Cancel installments' })
+                : tr({ he: 'ביטול ההוראה', en: 'Cancel payment' })}
             </Button>
           </div>
         )}
         {current.status === 'paused' && (
           <p className="text-sm text-muted-foreground">
-            בזמן ההשהיה לא נרשם כלום. בחידוש, מועדים שעברו בזמן ההשהיה ידולגו.
+            {tr({
+              he: 'בזמן ההשהיה לא נרשם כלום. בחידוש, מועדים שעברו בזמן ההשהיה ידולגו.',
+              en: 'Nothing is recorded while paused. When you resume, dates that passed in the meantime are skipped.',
+            })}
           </p>
         )}
       </div>
@@ -113,7 +119,7 @@ export function ScheduleEditor({ schedule, members, userId, onDone }: ScheduleEd
       {detail.data && detail.data.upcoming.length > 0 && (
         <section aria-labelledby="upcoming-title">
           <h3 id="upcoming-title" className="mb-2 text-sm font-medium">
-            המועדים הבאים
+            {tr({ he: 'המועדים הבאים', en: 'Upcoming dates' })}
           </h3>
           <ul className="flex flex-col divide-y rounded-2xl border">
             {detail.data.upcoming.map((occurrence) => (
@@ -126,7 +132,10 @@ export function ScheduleEditor({ schedule, members, userId, onDone }: ScheduleEd
                   {isInstallments && (
                     <span className="text-muted-foreground">
                       {' '}
-                      · תשלום {occurrence.sequence_no} מתוך {occurrence.installments_count}
+                      {tr({
+                        he: `· תשלום ${occurrence.sequence_no} מתוך ${occurrence.installments_count}`,
+                        en: `· Installment ${occurrence.sequence_no} of ${occurrence.installments_count}`,
+                      })}
                     </span>
                   )}
                 </span>
@@ -140,11 +149,29 @@ export function ScheduleEditor({ schedule, members, userId, onDone }: ScheduleEd
       <ConfirmDialog
         open={confirmingCancel}
         onOpenChange={setConfirmingCancel}
-        title={isInstallments ? 'לבטל את התשלומים?' : 'לבטל את הוראת הקבע?'}
-        description="לא ייווצרו יותר מועדים חדשים. מה שכבר נרשם יישאר בהיסטוריה."
-        confirmLabel={isInstallments ? 'ביטול התשלומים' : 'ביטול ההוראה'}
-        cancelLabel="חזרה"
-        onConfirm={() => run('cancel', isInstallments ? 'התשלומים בוטלו' : 'הוראת הקבע בוטלה')}
+        title={
+          isInstallments
+            ? tr({ he: 'לבטל את התשלומים?', en: 'Cancel the installments?' })
+            : tr({ he: 'לבטל את הוראת הקבע?', en: 'Cancel the recurring payment?' })
+        }
+        description={tr({
+          he: 'לא ייווצרו יותר מועדים חדשים. מה שכבר נרשם יישאר בהיסטוריה.',
+          en: 'No new dates will be created. What was already recorded stays in the history.',
+        })}
+        confirmLabel={
+          isInstallments
+            ? tr({ he: 'ביטול התשלומים', en: 'Cancel installments' })
+            : tr({ he: 'ביטול ההוראה', en: 'Cancel payment' })
+        }
+        cancelLabel={tr({ he: 'חזרה', en: 'Back' })}
+        onConfirm={() =>
+          run(
+            'cancel',
+            isInstallments
+              ? tr({ he: 'התשלומים בוטלו', en: 'Installments cancelled' })
+              : tr({ he: 'הוראת הקבע בוטלה', en: 'Recurring payment cancelled' }),
+          )
+        }
         pending={action.isPending}
       />
     </div>

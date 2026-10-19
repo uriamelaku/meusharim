@@ -1,6 +1,7 @@
+import { locale, tr } from '@/lib/i18n'
 import type { MonthRow } from './api'
 
-const SHORT_MONTH = new Intl.DateTimeFormat('he-IL', { month: 'short', timeZone: 'UTC' })
+const SHORT_MONTH = new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' })
 
 function monthLabel(month: string): string {
   const [year, number] = month.split('-').map(Number)
@@ -89,14 +90,14 @@ export function IncomeExpenseChart({ months }: { months: MonthRow[] }) {
       </div>
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <span className="size-2.5 rounded-sm bg-income" /> הכנסות
+          <span className="size-2.5 rounded-sm bg-income" /> {tr({ he: 'הכנסות', en: 'Income' })}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="size-2.5 rounded-sm bg-expense" /> הוצאות
+          <span className="size-2.5 rounded-sm bg-expense" /> {tr({ he: 'הוצאות', en: 'Expenses' })}
         </span>
         <span className="flex items-center gap-1.5">
           <span className="size-2.5 rounded-sm border border-dashed border-muted-foreground" />{' '}
-          עוד לא שולם
+          {tr({ he: 'עוד לא שולם', en: 'Not paid yet' })}
         </span>
       </div>
     </div>

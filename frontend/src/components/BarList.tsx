@@ -1,5 +1,6 @@
 import { CategoryIconBadge } from '@/categories/CategoryBadge'
 import { categoryColor } from '@/categories/appearance'
+import { tr } from '@/lib/i18n'
 import { formatMoney } from '@/lib/money'
 import type { Transaction } from '@/transactions/api'
 
@@ -32,7 +33,12 @@ export function BarList({ items, label }: { items: BarItem[]; label: string }) {
                 <span className="shrink-0 tabular-nums">
                   <span className="font-semibold">{formatMoney(actual)}</span>
                   {planned && planned !== '0.00' && (
-                    <span className="text-muted-foreground"> + {formatMoney(planned)} שעוד לא שולם</span>
+                    <span className="text-muted-foreground">
+                      {tr({
+                        he: ` + ${formatMoney(planned)} שעוד לא שולם`,
+                        en: ` + ${formatMoney(planned)} not paid yet`,
+                      })}
+                    </span>
                   )}
                 </span>
               </div>

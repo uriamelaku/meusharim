@@ -1,3 +1,5 @@
+import { tr } from '@/lib/i18n'
+
 import * as React from "react"
 import { cn } from "cn"
 import { Dialog as DialogPrimitive } from "radix-ui"
@@ -74,7 +76,7 @@ function DialogContent({
             >
               <XIcon
               />
-              <span className="sr-only">סגירה</span>
+              <span className="sr-only">{tr({ he: 'סגירה', en: 'Close' })}</span>
             </Button>
           </DialogPrimitive.Close>
         )}
@@ -113,7 +115,7 @@ function DialogFooter({
       {children}
       {showCloseButton && (
         <DialogPrimitive.Close asChild>
-          <Button variant="outline">סגירה</Button>
+          <Button variant="outline">{tr({ he: 'סגירה', en: 'Close' })}</Button>
         </DialogPrimitive.Close>
       )}
     </div>

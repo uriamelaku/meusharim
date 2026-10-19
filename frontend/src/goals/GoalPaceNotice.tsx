@@ -1,5 +1,6 @@
 import { PiggyBank } from 'lucide-react'
 import { Link } from 'react-router'
+import { tr } from '@/lib/i18n'
 import { formatMoney } from '@/lib/money'
 import { useGoals } from './api'
 
@@ -18,7 +19,11 @@ export function GoalPaceNotice() {
     >
       <PiggyBank className="size-5 shrink-0" aria-hidden />
       <span>
-        <b>{behind.name}</b> מאחור: כדי להגיע בזמן צריך {formatMoney(behind.monthly_needed)} בחודש
+        <b>{behind.name}</b>
+        {tr({
+          he: ` מאחור: כדי להגיע בזמן צריך ${formatMoney(behind.monthly_needed)} בחודש`,
+          en: ` is behind: ${formatMoney(behind.monthly_needed)} a month gets it there on time`,
+        })}
       </span>
     </Link>
   )

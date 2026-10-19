@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import type { Member } from '@/household/api'
 import { todayIso } from '@/lib/dates'
 import { describeError } from '@/lib/errors'
+import { tr } from '@/lib/i18n'
 import { useConfirmTransactions, useTransactions } from './api'
 import { useQuickAdd } from './quickAdd'
 import { TransactionRow } from './TransactionRow'
@@ -29,7 +30,11 @@ export function PendingConfirmations({ members }: { members: Member[] }) {
   function confirmIds(ids: string[]) {
     confirm.mutate(ids, {
       onSuccess: ({ confirmed }) =>
-        toast.success(confirmed === 1 ? 'סומן כשולם' : `${confirmed} סומנו כשולמו`),
+        toast.success(
+          confirmed === 1
+            ? tr({ he: 'סומן כשולם', en: 'Marked as paid' })
+            : tr({ he: `${confirmed} סומנו כשולמו`, en: `${confirmed} marked as paid` }),
+        ),
       onError: (error) => toast.error(describeError(error)),
     })
   }
@@ -42,10 +47,13 @@ export function PendingConfirmations({ members }: { members: Member[] }) {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 id="pending-title" className="font-heading text-lg font-semibold">
-            שולם כבר?
+            {tr({ he: 'שולם כבר?', en: 'Already paid?' })}
           </h2>
           <p className="text-sm text-muted-foreground">
-            הגיע המועד. מסמנים מה באמת יצא מהחשבון (או נכנס אליו), ורק אז זה נכנס ליתרה.
+            {tr({
+              he: 'הגיע המועד. מסמנים מה באמת יצא מהחשבון (או נכנס אליו), ורק אז זה נכנס ליתרה.',
+              en: 'These are due. Mark what actually left your account (or came in), and only then does it count in the balance.',
+            })}
           </p>
         </div>
         {items.length > 1 && (
@@ -59,7 +67,7 @@ export function PendingConfirmations({ members }: { members: Member[] }) {
             ) : (
               <CheckCheck aria-hidden />
             )}
-            הכל שולם ({items.length})
+            {tr({ he: `הכל שולם (${items.length})`, en: `All paid (${items.length})` })}
           </Button>
         )}
       </div>
@@ -77,7 +85,10 @@ export function PendingConfirmations({ members }: { members: Member[] }) {
             <Button
               size="icon"
               variant="secondary"
-              aria-label={`סימון "${transaction.description || transaction.category.name}" כשולם`}
+              aria-label={tr({
+                he: `סימון "${transaction.description || transaction.category.name}" כשולם`,
+                en: `Mark "${transaction.description || transaction.category.name}" as paid`,
+              })}
               onClick={() => confirmIds([transaction.id])}
               disabled={confirm.isPending}
             >

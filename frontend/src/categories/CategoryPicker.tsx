@@ -1,4 +1,5 @@
 import { createElement } from 'react'
+import { tr } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import type { Category, Kind } from './api'
 import { categoryColor, categoryIcon } from './appearance'
@@ -22,7 +23,7 @@ export function CategoryPicker({
   const options = categories.filter((c) => c.kind === kind && (!c.archived || c.id === value))
   return (
     <fieldset aria-invalid={invalid || undefined}>
-      <legend className="mb-3 text-sm font-medium">קטגוריה</legend>
+      <legend className="mb-3 text-sm font-medium">{tr({ he: 'קטגוריה', en: 'Category' })}</legend>
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
         {options.map((category) => {
           const selected = category.id === value
@@ -59,7 +60,7 @@ export function CategoryPicker({
       </div>
       {invalid && (
         <p role="alert" className="mt-2 text-sm text-destructive">
-          צריך לבחור קטגוריה.
+          {tr({ he: 'צריך לבחור קטגוריה.', en: 'Please choose a category.' })}
         </p>
       )}
     </fieldset>

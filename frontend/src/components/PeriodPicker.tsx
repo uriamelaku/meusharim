@@ -14,6 +14,7 @@ import {
   YEARS_PER_PAGE,
   yearPageStart,
 } from '@/lib/period'
+import { tr } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 type PeriodPickerProps = {
@@ -25,8 +26,8 @@ type PeriodPickerProps = {
 }
 
 /*
- * RTL: time flows right to left, so the right-hand arrow (first in the DOM) goes back
- * in time and the left-hand arrow goes forward.
+ * The first arrow in the DOM goes back in time: on the right in Hebrew (time flows right
+ * to left), on the left in English. The chevrons flip with the direction.
  */
 export function PeriodPicker({ period, today, onChange, compact = false }: PeriodPickerProps) {
   const [open, setOpen] = useState(false)
@@ -44,18 +45,20 @@ export function PeriodPicker({ period, today, onChange, compact = false }: Perio
         variant="ghost"
         size="icon"
         className={cn(compact && 'size-10 rounded-full text-primary')}
-        aria-label={`החודש הקודם: ${formatPeriod(previous)}`}
+        aria-label={tr({ he: 'החודש הקודם: ', en: 'Previous month: ' }) + formatPeriod(previous)}
         disabled={!isWithinBounds(previous)}
         onClick={() => onChange(previous)}
       >
-        <ChevronRight className="size-6" />
+        <ChevronRight className="size-6 ltr:-scale-x-100" />
       </Button>
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
             type="button"
-            aria-label={`${formatPeriod(period)}, בחירת חודש ושנה`}
+            aria-label={
+              formatPeriod(period) + tr({ he: ', בחירת חודש ושנה', en: ', choose month and year' })
+            }
             className={cn(
               'flex h-12 min-w-0 items-center gap-1.5 rounded-xl px-2 font-heading text-[1.75rem] leading-none font-semibold tracking-tight transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none lg:text-4xl',
               compact && 'h-10 rounded-full px-2 text-lg lg:text-xl',
@@ -81,11 +84,11 @@ export function PeriodPicker({ period, today, onChange, compact = false }: Perio
         variant="ghost"
         size="icon"
         className={cn(compact && 'size-10 rounded-full text-primary')}
-        aria-label={`החודש הבא: ${formatPeriod(next)}`}
+        aria-label={tr({ he: 'החודש הבא: ', en: 'Next month: ' }) + formatPeriod(next)}
         disabled={!isWithinBounds(next)}
         onClick={() => onChange(next)}
       >
-        <ChevronLeft className="size-6" />
+        <ChevronLeft className="size-6 ltr:-scale-x-100" />
       </Button>
     </div>
   )
@@ -121,16 +124,24 @@ function MonthYearPanel({ period, today, onSelect }: MonthYearPanelProps) {
         <Button
           variant="ghost"
           size="icon"
-          aria-label={view === 'months' ? 'השנה הקודמת' : 'שנים קודמות'}
+          aria-label={
+            view === 'months'
+              ? tr({ he: 'השנה הקודמת', en: 'Previous year' })
+              : tr({ he: 'שנים קודמות', en: 'Earlier years' })
+          }
           disabled={!canGoBack}
           onClick={() => moveYear(-1)}
         >
-          <ChevronRight className="size-5" />
+          <ChevronRight className="size-5 ltr:-scale-x-100" />
         </Button>
         <Button
           variant="ghost"
           className="font-heading text-xl font-semibold"
-          aria-label={view === 'months' ? `${viewYear}, בחירת שנה` : 'חזרה לבחירת חודש'}
+          aria-label={
+            view === 'months'
+              ? `${viewYear}${tr({ he: ', בחירת שנה', en: ', choose year' })}`
+              : tr({ he: 'חזרה לבחירת חודש', en: 'Back to choosing a month' })
+          }
           onClick={() => setView(view === 'months' ? 'years' : 'months')}
         >
           {/* LTR so the range reads 2016–2027, not reversed by the RTL layout. */}
@@ -143,11 +154,15 @@ function MonthYearPanel({ period, today, onSelect }: MonthYearPanelProps) {
         <Button
           variant="ghost"
           size="icon"
-          aria-label={view === 'months' ? 'השנה הבאה' : 'שנים הבאות'}
+          aria-label={
+            view === 'months'
+              ? tr({ he: 'השנה הבאה', en: 'Next year' })
+              : tr({ he: 'שנים הבאות', en: 'Later years' })
+          }
           disabled={!canGoForward}
           onClick={() => moveYear(1)}
         >
-          <ChevronLeft className="size-5" />
+          <ChevronLeft className="size-5 ltr:-scale-x-100" />
         </Button>
       </div>
 
@@ -182,7 +197,7 @@ function MonthYearPanel({ period, today, onSelect }: MonthYearPanelProps) {
 
       <Button variant="ghost" className="text-brass-strong" onClick={() => onSelect(today)}>
         <CalendarCheck aria-hidden />
-        החודש הנוכחי
+        {tr({ he: 'החודש הנוכחי', en: 'This month' })}
       </Button>
     </div>
   )

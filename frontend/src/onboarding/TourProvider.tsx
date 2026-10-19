@@ -9,6 +9,7 @@ import {
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button'
+import { tr } from '@/lib/i18n'
 import { FLAGS, hasFlag, setFlag } from './storage'
 import type { TourStep } from './steps'
 import { TourContext } from './tourContext'
@@ -155,7 +156,7 @@ function TourOverlay({ step, position, count, onNext, onBack, onClose }: TourOve
         style={cardStyle}
       >
         <p className="text-xs font-semibold text-muted-foreground">
-          {position + 1} מתוך {count}
+          {tr({ he: `${position + 1} מתוך ${count}`, en: `${position + 1} of ${count}` })}
         </p>
         <h2 id="tour-title" className="mt-0.5 font-heading text-lg font-semibold">
           {step.title}
@@ -163,16 +164,20 @@ function TourOverlay({ step, position, count, onNext, onBack, onClose }: TourOve
         <p className="mt-1 leading-relaxed text-muted-foreground">{step.body}</p>
         <div className="mt-4 flex items-center gap-2">
           <Button onClick={onNext} autoFocus>
-            {position === 0 ? 'בואו נתחיל' : isLast ? 'סיום' : 'הבא'}
+            {position === 0
+              ? tr({ he: 'בואו נתחיל', en: "Let's go" })
+              : isLast
+                ? tr({ he: 'סיום', en: 'Done' })
+                : tr({ he: 'הבא', en: 'Next' })}
           </Button>
           {position > 0 && (
             <Button variant="ghost" onClick={onBack}>
-              הקודם
+              {tr({ he: 'הקודם', en: 'Back' })}
             </Button>
           )}
           {!isLast && (
             <Button variant="ghost" className="ms-auto text-muted-foreground" onClick={onClose}>
-              {position === 0 ? 'לא עכשיו' : 'יציאה'}
+              {position === 0 ? tr({ he: 'לא עכשיו', en: 'Not now' }) : tr({ he: 'יציאה', en: 'Exit' })}
             </Button>
           )}
         </div>

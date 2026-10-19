@@ -11,13 +11,14 @@ import {
   useCreateInvitation,
   useRevokeInvitation,
 } from './api'
+import { locale, tr } from '@/lib/i18n'
 import { describeHouseholdError } from './errors'
 import { invitationLink } from './pendingInvitation'
 
 const MAX_MEMBERS = 2
 const COPIED_FEEDBACK_MS = 2000
 
-const formatDateTime = new Intl.DateTimeFormat('he-IL', {
+const formatDateTime = new Intl.DateTimeFormat(locale, {
   day: 'numeric',
   month: 'long',
   hour: '2-digit',
@@ -32,11 +33,13 @@ export function HouseholdCard({ household, userId }: { household: Household; use
       <CardHeader>
         <CardTitle className="text-lg">{household.name}</CardTitle>
         <CardDescription>
-          {isFull ? 'בית משותף לשניכם' : 'בינתיים רק החשבון שלך כאן'}
+          {isFull
+            ? tr({ he: 'בית משותף לשניכם', en: 'A shared household for both of you' })
+            : tr({ he: 'בינתיים רק החשבון שלך כאן', en: "For now, it's just your account here" })}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
-        <ul className="flex flex-col gap-3" aria-label="מי בבית">
+        <ul className="flex flex-col gap-3" aria-label={tr({ he: 'מי בבית', en: 'Members' })}>
           {household.members.map((member) => (
             <li key={member.user_id} className="flex items-center gap-3">
               <span
@@ -48,7 +51,10 @@ export function HouseholdCard({ household, userId }: { household: Household; use
               <span className="font-medium">{member.display_name}</span>
               {member.user_id === userId && (
                 <span className="rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground">
-                  {byGender(member.gender, { female: 'את', male: 'אתה', neutral: 'החשבון שלך' })}
+                  {tr({
+                    he: byGender(member.gender, { female: 'את', male: 'אתה', neutral: 'החשבון שלך' }),
+                    en: 'You',
+                  })}
                 </span>
               )}
             </li>
@@ -83,7 +89,7 @@ function InvitePanel({ pendingUntil }: { pendingUntil: string | undefined }) {
   return (
     <section aria-labelledby="invite-title" className="rounded-2xl bg-muted/60 p-4">
       <h3 id="invite-title" className="font-medium">
-        הזמנת בן או בת הזוג
+        {tr({ he: 'הזמנת בן או בת הזוג', en: 'Invite your partner' })}
       </h3>
 
       {created ? (
@@ -91,14 +97,23 @@ function InvitePanel({ pendingUntil }: { pendingUntil: string | undefined }) {
       ) : (
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
           {pendingUntil
-            ? 'יש הזמנה פעילה. מטעמי אבטחה הקישור מוצג רק כשיוצרים אותו – אפשר ליצור קישור חדש במקומו.'
-            : 'יוצרים קישור הזמנה ושולחים אותו לבן או בת הזוג. כל אחד מתחבר עם חשבון משלו, ושניכם רואים את אותם נתונים.'}
+            ? tr({
+                he: 'יש הזמנה פעילה. מטעמי אבטחה הקישור מוצג רק כשיוצרים אותו – אפשר ליצור קישור חדש במקומו.',
+                en: 'There is an active invitation. For security, the link is shown only when it is created – you can create a new one instead.',
+              })
+            : tr({
+                he: 'יוצרים קישור הזמנה ושולחים אותו לבן או בת הזוג. כל אחד מתחבר עם חשבון משלו, ושניכם רואים את אותם נתונים.',
+                en: 'Create an invitation link and send it to your partner. Each of you signs in with your own account, and you both see the same data.',
+              })}
         </p>
       )}
 
       {expiresAt && (
         <p className="mt-3 text-sm text-muted-foreground">
-          הקישור בתוקף עד {formatDateTime(new Date(expiresAt))}, לשימוש חד-פעמי.
+          {tr({
+            he: `הקישור בתוקף עד ${formatDateTime(new Date(expiresAt))}, לשימוש חד-פעמי.`,
+            en: `The link is valid until ${formatDateTime(new Date(expiresAt))} and works once.`,
+          })}
         </p>
       )}
 
@@ -117,12 +132,14 @@ function InvitePanel({ pendingUntil }: { pendingUntil: string | undefined }) {
             ) : (
               <UserPlus aria-hidden />
             )}
-            {pendingUntil ? 'יצירת קישור חדש' : 'יצירת קישור הזמנה'}
+            {pendingUntil
+              ? tr({ he: 'יצירת קישור חדש', en: 'Create a new link' })
+              : tr({ he: 'יצירת קישור הזמנה', en: 'Create invitation link' })}
           </Button>
         )}
         {expiresAt && (
           <Button variant="ghost" onClick={revoke} disabled={busy}>
-            ביטול ההזמנה
+            {tr({ he: 'ביטול ההזמנה', en: 'Cancel invitation' })}
           </Button>
         )}
       </div>
@@ -150,8 +167,11 @@ function InviteLink({ token }: { token: string }) {
   async function share() {
     try {
       await navigator.share({
-        title: 'הזמנה למאושרים',
-        text: 'הזמנה לנהל יחד את התקציב המשותף שלנו',
+        title: tr({ he: 'הזמנה למאושרים', en: 'Invitation to Meusharim' }),
+        text: tr({
+          he: 'הזמנה לנהל יחד את התקציב המשותף שלנו',
+          en: "Let's manage our shared budget together",
+        }),
         url: link,
       })
     } catch (error) {
@@ -166,7 +186,7 @@ function InviteLink({ token }: { token: string }) {
       <Input
         readOnly
         dir="ltr"
-        aria-label="קישור ההזמנה"
+        aria-label={tr({ he: 'קישור ההזמנה', en: 'Invitation link' })}
         value={link}
         onFocus={(event) => event.target.select()}
         className="text-sm"
@@ -175,21 +195,29 @@ function InviteLink({ token }: { token: string }) {
         {canShare && (
           <Button onClick={share}>
             <Share2 aria-hidden />
-            שיתוף
+            {tr({ he: 'שיתוף', en: 'Share' })}
           </Button>
         )}
         <Button variant={canShare ? 'outline' : 'default'} onClick={copy}>
           {copied ? <Check aria-hidden /> : <Copy aria-hidden />}
-          {copied ? 'הקישור הועתק' : 'העתקת הקישור'}
+          {copied
+            ? tr({ he: 'הקישור הועתק', en: 'Link copied' })
+            : tr({ he: 'העתקת הקישור', en: 'Copy link' })}
         </Button>
       </div>
       {copyFailed && (
         <p role="alert" className="text-sm text-destructive">
-          לא הצלחנו להעתיק או לשתף. אפשר לסמן את הקישור ולהעתיק אותו ידנית.
+          {tr({
+            he: 'לא הצלחנו להעתיק או לשתף. אפשר לסמן את הקישור ולהעתיק אותו ידנית.',
+            en: "We couldn't copy or share it. You can select the link and copy it yourself.",
+          })}
         </p>
       )}
       <p className="text-sm text-muted-foreground">
-        הקישור מוצג רק עכשיו. אם הוא הולך לאיבוד, פשוט יוצרים קישור חדש.
+        {tr({
+          he: 'הקישור מוצג רק עכשיו. אם הוא הולך לאיבוד, פשוט יוצרים קישור חדש.',
+          en: 'The link is shown only now. If it gets lost, just create a new one.',
+        })}
       </p>
     </div>
   )

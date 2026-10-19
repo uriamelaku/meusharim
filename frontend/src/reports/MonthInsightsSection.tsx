@@ -5,6 +5,7 @@ import { PeriodPicker } from '@/components/PeriodPicker'
 import { Segmented } from '@/components/Segmented'
 import { ErrorState, LoadingState } from '@/components/states'
 import { useSelectedPeriod } from '@/hooks/useSelectedPeriod'
+import { tr } from '@/lib/i18n'
 import { formatMoney } from '@/lib/money'
 import { formatPeriod, monthName, parsePeriodParam, toPeriodParam } from '@/lib/period'
 import { cn } from '@/lib/utils'
@@ -21,7 +22,7 @@ export function MonthInsightsSection() {
     <section aria-labelledby="insights-title" className="mb-8 flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <h2 id="insights-title" className="font-heading text-xl font-semibold">
-          תמונת החודש
+          {tr({ he: 'תמונת החודש', en: 'Month at a glance' })}
         </h2>
         <PeriodPicker period={period} today={today} onChange={setPeriod} compact />
       </div>
@@ -29,8 +30,8 @@ export function MonthInsightsSection() {
         <LoadingState />
       ) : insights.isError ? (
         <ErrorState
-          title="לא הצלחנו לטעון את תמונת החודש"
-          description="בדקו את החיבור ונסו שוב."
+          title={tr({ he: 'לא הצלחנו לטעון את תמונת החודש', en: "We couldn't load this month's overview" })}
+          description={tr({ he: 'בדקו את החיבור ונסו שוב.', en: 'Check your connection and try again.' })}
           onRetry={() => void insights.refetch()}
         />
       ) : (
@@ -49,11 +50,11 @@ function ForecastCard({ forecast }: { forecast: NonNullable<MonthInsights['forec
     <div className="rounded-2xl bg-card p-4">
       <p className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
         <Telescope className="size-4" aria-hidden />
-        צפי לסוף החודש, בקצב הנוכחי
+        {tr({ he: 'צפי לסוף החודש, בקצב הנוכחי', en: 'End-of-month forecast, at the current pace' })}
       </p>
       <div className="mt-2 grid grid-cols-2 gap-3">
-        <Stat label="הוצאות" value={formatMoney(forecast.expense)} />
-        <Stat label="יתרה" value={formatMoney(forecast.balance)} />
+        <Stat label={tr({ he: 'הוצאות', en: 'Expenses' })} value={formatMoney(forecast.expense)} />
+        <Stat label={tr({ he: 'יתרה', en: 'Balance' })} value={formatMoney(forecast.balance)} />
       </div>
       {forecast.budget && (
         <p
@@ -63,20 +64,29 @@ function ForecastCard({ forecast }: { forecast: NonNullable<MonthInsights['forec
           )}
         >
           {forecast.over_budget
-            ? `בקצב הזה תעברו את התקציב (${formatMoney(forecast.budget)}).`
-            : `בקצב הזה תישארו בתוך התקציב (${formatMoney(forecast.budget)}).`}
+            ? tr({
+                he: `בקצב הזה תעברו את התקציב (${formatMoney(forecast.budget)}).`,
+                en: `At this pace, you'll go over the budget (${formatMoney(forecast.budget)}).`,
+              })
+            : tr({
+                he: `בקצב הזה תישארו בתוך התקציב (${formatMoney(forecast.budget)}).`,
+                en: `At this pace, you'll stay within the budget (${formatMoney(forecast.budget)}).`,
+              })}
         </p>
       )}
       <p className="mt-2 text-xs text-muted-foreground">
-        איך חישבנו: מה שכבר שולם, ועוד מה שעוד לא שולם, ועוד אותו קצב הוצאות יומי עד סוף החודש (בלי הוראות קבע והפקדות לחיסכון).
+        {tr({
+          he: 'איך חישבנו: מה שכבר שולם, ועוד מה שעוד לא שולם, ועוד אותו קצב הוצאות יומי עד סוף החודש (בלי הוראות קבע והפקדות לחיסכון).',
+          en: "How we worked it out: what's already paid, plus what isn't paid yet, plus the same daily spending pace until the end of the month (excluding recurring payments and savings deposits).",
+        })}
       </p>
     </div>
   )
 }
 
 const COMPARISONS: { value: Comparison; label: string }[] = [
-  { value: 'previous_month', label: 'לחודש הקודם' },
-  { value: 'last_year', label: 'לשנה שעברה' },
+  { value: 'previous_month', label: tr({ he: 'לחודש הקודם', en: 'Last month' }) },
+  { value: 'last_year', label: tr({ he: 'לשנה שעברה', en: 'Last year' }) },
 ]
 
 /** Against last month (already loaded with the section) or the same month last year. */
@@ -87,7 +97,7 @@ function CompareCard({ month, previousMonth }: { month: string; previousMonth: M
   return (
     <div className="rounded-2xl bg-card p-4">
       <Segmented
-        label="השוואה"
+        label={tr({ he: 'השוואה', en: 'Compare with' })}
         options={COMPARISONS}
         value={compare}
         onChange={setCompare}
@@ -97,8 +107,8 @@ function CompareCard({ month, previousMonth }: { month: string; previousMonth: M
         <CompareBody insights={insights} />
       ) : lastYear.isError ? (
         <ErrorState
-          title="לא הצלחנו לטעון את ההשוואה"
-          description="בדקו את החיבור ונסו שוב."
+          title={tr({ he: 'לא הצלחנו לטעון את ההשוואה', en: "We couldn't load the comparison" })}
+          description={tr({ he: 'בדקו את החיבור ונסו שוב.', en: 'Check your connection and try again.' })}
           onRetry={() => void lastYear.refetch()}
         />
       ) : (
@@ -116,14 +126,19 @@ function CompareBody({ insights }: { insights: MonthInsights }) {
   return (
     <>
       <div className="flex items-baseline justify-between gap-2">
-        <p className="text-sm font-semibold text-muted-foreground">לעומת {comparedName}</p>
+        <p className="text-sm font-semibold text-muted-foreground">
+          {tr({ he: `לעומת ${comparedName}`, en: `Compared with ${comparedName}` })}
+        </p>
         <ChangeBadge percent={insights.expense_change_percent} />
       </div>
       <p className="mt-1 text-sm">
-        הוצאות <b className="font-heading tabular-nums">{formatMoney(insights.expense)}</b>
+        {tr({ he: 'הוצאות ', en: 'Expenses ' })}
+        <b className="font-heading tabular-nums">{formatMoney(insights.expense)}</b>
         <span className="text-muted-foreground">
-          {' '}
-          · ב{comparedName} {formatMoney(insights.previous_expense)}
+          {tr({
+            he: ` · ב${comparedName} ${formatMoney(insights.previous_expense)}`,
+            en: ` · ${comparedName}: ${formatMoney(insights.previous_expense)}`,
+          })}
         </span>
       </p>
       {changes.length > 0 ? (
@@ -133,7 +148,9 @@ function CompareBody({ insights }: { insights: MonthInsights }) {
           ))}
         </ul>
       ) : (
-        <p className="mt-3 text-sm text-muted-foreground">אין שינויים בין החודשים.</p>
+        <p className="mt-3 text-sm text-muted-foreground">
+          {tr({ he: 'אין שינויים בין החודשים.', en: 'No changes between the months.' })}
+        </p>
       )}
     </>
   )
@@ -147,7 +164,9 @@ function ChangeRow({ change }: { change: CategoryChange }) {
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-medium">{change.category.name}</span>
         <span className="text-xs text-muted-foreground tabular-nums">
-          {formatMoney(change.actual)} · קודם {formatMoney(change.previous)}
+          {formatMoney(change.actual)}
+          {tr({ he: ' · קודם ', en: ' · before: ' })}
+          {formatMoney(change.previous)}
         </span>
       </span>
       <span
@@ -157,7 +176,9 @@ function ChangeRow({ change }: { change: CategoryChange }) {
         )}
       >
         {up ? <ArrowUp className="size-4" aria-hidden /> : <ArrowDown className="size-4" aria-hidden />}
-        <span className="sr-only">{up ? 'עלייה של' : 'ירידה של'}</span>
+        <span className="sr-only">
+          {up ? tr({ he: 'עלייה של', en: 'up by' }) : tr({ he: 'ירידה של', en: 'down by' })}
+        </span>
         {formatMoney(change.difference.replace('-', ''))}
       </span>
     </li>
@@ -175,7 +196,7 @@ function ChangeBadge({ percent }: { percent: number | null }) {
       )}
     >
       <Icon className="size-3.5" aria-hidden />
-      {Math.abs(percent)}% בהוצאות
+      {tr({ he: `${Math.abs(percent)}% בהוצאות`, en: `${Math.abs(percent)}% in expenses` })}
     </span>
   )
 }
@@ -186,7 +207,12 @@ function YearCard({ year }: { year: MonthInsights['year'] }) {
     <div className="rounded-2xl bg-hero p-4 text-hero-foreground">
       <p className="flex items-center gap-2 text-sm font-semibold text-hero-foreground/80">
         <PiggyBank className="size-4" aria-hidden />
-        {negative ? `ב-${year.year} עד עכשיו הוצאתם יותר משהכנסתם` : `חסכתם ב-${year.year} עד עכשיו`}
+        {negative
+          ? tr({
+              he: `ב-${year.year} עד עכשיו הוצאתם יותר משהכנסתם`,
+              en: `So far in ${year.year}, you've spent more than you earned`,
+            })
+          : tr({ he: `חסכתם ב-${year.year} עד עכשיו`, en: `Saved in ${year.year} so far` })}
       </p>
       <p
         className={cn(
@@ -197,7 +223,10 @@ function YearCard({ year }: { year: MonthInsights['year'] }) {
         {formatMoney(year.total_saved)}
       </p>
       <p className="mt-1 text-sm text-hero-foreground/85 tabular-nums">
-        נשאר מההכנסות {formatMoney(year.balance)} · הופקד ליעדים {formatMoney(year.saved_to_goals)}
+        {tr({
+          he: `נשאר מההכנסות ${formatMoney(year.balance)} · הופקד ליעדים ${formatMoney(year.saved_to_goals)}`,
+          en: `Left from income ${formatMoney(year.balance)} · Deposited to goals ${formatMoney(year.saved_to_goals)}`,
+        })}
       </p>
     </div>
   )

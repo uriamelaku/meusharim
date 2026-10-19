@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from '@/auth/useAuth'
 import { apiRequest } from '@/lib/api'
+import type { Language } from '@/lib/i18n'
 
 export type Gender = 'female' | 'male'
 
@@ -53,14 +54,17 @@ function useHouseholdMutation<TVariables>(
 
 export function useCreateHousehold() {
   return useHouseholdMutation(
-    (token, body: { name: string; display_name: string; gender: Gender }) =>
+    (
+      token,
+      body: { name: string; display_name: string; gender?: Gender; language: Language },
+    ) =>
       apiRequest<MyHousehold>('/api/household', token, { method: 'POST', body }),
   )
 }
 
 export function useAcceptInvitation() {
   return useHouseholdMutation(
-    (token, body: { token: string; display_name: string; gender: Gender }) =>
+    (token, body: { token: string; display_name: string; gender?: Gender }) =>
       apiRequest<MyHousehold>('/api/invitations/accept', token, { method: 'POST', body }),
   )
 }

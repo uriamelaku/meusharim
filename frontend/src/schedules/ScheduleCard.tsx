@@ -1,6 +1,7 @@
 import { CategoryIconBadge } from '@/categories/CategoryBadge'
 import { ProgressBar } from '@/components/ProgressBar'
 import type { Member } from '@/household/api'
+import { tr } from '@/lib/i18n'
 import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { partyName } from '@/transactions/labels'
@@ -14,20 +15,33 @@ const STATE_STYLES = {
   finished: 'bg-muted text-muted-foreground',
 }
 
-/** "שולמו 3 מתוך 12" with a bar, and what is left to pay. */
+/** "3 of 12 paid" with a bar, and what is left to pay. */
 export function InstallmentProgress({ schedule }: { schedule: Schedule }) {
   const count = schedule.installments_count ?? 0
   return (
     <div className="flex flex-col gap-1.5">
       <ProgressBar
         percent={count ? (schedule.completed_count / count) * 100 : 0}
-        label={`שולמו ${schedule.completed_count} מתוך ${count} תשלומים`}
+        label={tr({
+          he: `שולמו ${schedule.completed_count} מתוך ${count} תשלומים`,
+          en: `${schedule.completed_count} of ${count} installments paid`,
+        })}
       />
       <div className="flex justify-between gap-2 text-sm text-muted-foreground">
         <span>
-          שולמו {schedule.completed_count} מתוך {count}
+          {tr({
+            he: `שולמו ${schedule.completed_count} מתוך ${count}`,
+            en: `${schedule.completed_count} of ${count} paid`,
+          })}
         </span>
-        {schedule.remaining_amount && <span>נשארו {formatMoney(schedule.remaining_amount)}</span>}
+        {schedule.remaining_amount && (
+          <span>
+            {tr({
+              he: `נשארו ${formatMoney(schedule.remaining_amount)}`,
+              en: `${formatMoney(schedule.remaining_amount)} left`,
+            })}
+          </span>
+        )}
       </div>
     </div>
   )
@@ -44,7 +58,10 @@ export function ScheduleCard({ schedule, members, onSelect }: ScheduleCardProps)
   const isInstallments = schedule.type === 'installments'
   const amount = isInstallments ? schedule.total_amount : schedule.amount
   const subtitle = isInstallments
-    ? `${schedule.installments_count} תשלומים · ${partyName(schedule.party_user_id, members)}`
+    ? tr({
+        he: `${schedule.installments_count} תשלומים · ${partyName(schedule.party_user_id, members)}`,
+        en: `${schedule.installments_count} installments · ${partyName(schedule.party_user_id, members)}`,
+      })
     : `${describeFrequency(schedule.frequency, schedule.start_date)} · ${partyName(schedule.party_user_id, members)}`
 
   return (

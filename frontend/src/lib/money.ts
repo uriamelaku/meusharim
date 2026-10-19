@@ -4,10 +4,12 @@
  * client-side arithmetic is live form previews, done in exact integer agorot (BigInt).
  */
 
+import { locale } from './i18n'
+
 const MAX_INTEGER_DIGITS = 10
 
 function currencyFormatter(fractionDigits: 0 | 2, signed: boolean) {
-  return new Intl.NumberFormat('he-IL', {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: 'ILS',
     minimumFractionDigits: fractionDigits,

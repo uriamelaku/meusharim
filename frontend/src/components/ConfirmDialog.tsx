@@ -9,6 +9,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { tr } from '@/lib/i18n'
 
 type ConfirmDialogProps = {
   open: boolean
@@ -28,7 +29,7 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel,
-  cancelLabel = 'ביטול',
+  cancelLabel = tr({ he: 'ביטול', en: 'Cancel' }),
   onConfirm,
   pending = false,
 }: ConfirmDialogProps) {

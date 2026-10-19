@@ -5,6 +5,7 @@ import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { TextField } from '@/components/TextField'
 import { Button } from '@/components/ui/button'
 import { describeError } from '@/lib/errors'
+import { tr } from '@/lib/i18n'
 import { amountToInput, parseAmountInput } from '@/lib/money'
 import { type Goal, useCreateGoal, useDeleteGoal, useUpdateGoal } from './api'
 
@@ -27,7 +28,9 @@ export function GoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void }) 
     if (!name.trim() || !amount) return
     const body = { name: name.trim(), target_amount: amount, target_date: date || null }
     const onSuccess = () => {
-      toast.success(goal ? 'היעד עודכן' : 'היעד נוצר')
+      toast.success(
+        goal ? tr({ he: 'היעד עודכן', en: 'Goal updated' }) : tr({ he: 'היעד נוצר', en: 'Goal created' }),
+      )
       onDone()
     }
     if (goal) update.mutate({ id: goal.id, ...body }, { onSuccess })
@@ -38,7 +41,12 @@ export function GoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void }) 
     if (!goal) return
     remove.mutate(goal.id, {
       onSuccess: () => {
-        toast.success('היעד נמחק. ההפקדות נשארות ברשימת ההוצאות.')
+        toast.success(
+          tr({
+            he: 'היעד נמחק. ההפקדות נשארות ברשימת ההוצאות.',
+            en: 'Goal deleted. Its deposits stay in your transactions.',
+          }),
+        )
         setConfirmingDelete(false)
         onDone()
       },
@@ -49,8 +57,8 @@ export function GoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void }) 
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-5">
       <TextField
-        label="שם היעד"
-        placeholder="למשל: חופשה בקיץ"
+        label={tr({ he: 'שם היעד', en: 'Goal name' })}
+        placeholder={tr({ he: 'למשל: חופשה בקיץ', en: 'For example: Summer vacation' })}
         maxLength={40}
         value={name}
         onChange={(event) => setName(event.target.value)}
@@ -58,24 +66,30 @@ export function GoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void }) 
         autoFocus={!goal}
       />
       <TextField
-        label="סכום יעד (₪)"
+        label={tr({ he: 'סכום יעד (₪)', en: 'Target amount (₪)' })}
         inputMode="decimal"
         value={target}
         onChange={(event) => setTarget(event.target.value)}
         aria-invalid={submitted && !amount}
       />
       <TextField
-        label="עד מתי (לא חובה)"
+        label={tr({ he: 'עד מתי (לא חובה)', en: 'By when (optional)' })}
         type="date"
         min="2000-01-01"
         max="2100-12-31"
         value={date}
         onChange={(event) => setDate(event.target.value)}
-        hint="עם תאריך נחשב כמה צריך לחסוך בכל חודש."
+        hint={tr({
+          he: 'עם תאריך נחשב כמה צריך לחסוך בכל חודש.',
+          en: "With a date, we'll work out how much to save each month.",
+        })}
       />
       {submitted && (!name.trim() || !amount) && (
         <p role="alert" className="text-sm text-destructive">
-          צריך שם וסכום יעד חיובי.
+          {tr({
+            he: 'צריך שם וסכום יעד חיובי.',
+            en: 'Please enter a name and a positive target amount.',
+          })}
         </p>
       )}
       {mutation.isError && (
@@ -86,14 +100,16 @@ export function GoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void }) 
       <div className="flex gap-2">
         <Button type="submit" size="lg" className="flex-1" disabled={mutation.isPending}>
           {mutation.isPending && <Loader2 className="animate-spin" aria-hidden />}
-          {goal ? 'שמירת השינויים' : 'יצירת היעד'}
+          {goal
+            ? tr({ he: 'שמירת השינויים', en: 'Save changes' })
+            : tr({ he: 'יצירת היעד', en: 'Create goal' })}
         </Button>
         {goal && (
           <Button
             type="button"
             size="lg"
             variant="destructive"
-            aria-label="מחיקת היעד"
+            aria-label={tr({ he: 'מחיקת היעד', en: 'Delete goal' })}
             onClick={() => setConfirmingDelete(true)}
           >
             <Trash2 aria-hidden />
@@ -103,9 +119,12 @@ export function GoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void }) 
       <ConfirmDialog
         open={confirmingDelete}
         onOpenChange={setConfirmingDelete}
-        title="למחוק את היעד?"
-        description="היעד יימחק אצל שניכם. הפקדות שכבר נרשמו יישארו ברשימת ההוצאות."
-        confirmLabel="מחיקה"
+        title={tr({ he: 'למחוק את היעד?', en: 'Delete this goal?' })}
+        description={tr({
+          he: 'היעד יימחק אצל שניכם. הפקדות שכבר נרשמו יישארו ברשימת ההוצאות.',
+          en: "The goal will be deleted for both of you. Deposits already recorded stay in your transactions.",
+        })}
+        confirmLabel={tr({ he: 'מחיקה', en: 'Delete' })}
         onConfirm={confirmDelete}
         pending={remove.isPending}
       />

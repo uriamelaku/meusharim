@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { apiRequest } from '@/lib/api'
 import { describeError } from '@/lib/errors'
+import { tr } from '@/lib/i18n'
 
 type Step = 'closed' | 'warning' | 'credentials'
 
@@ -48,17 +49,25 @@ export function DeleteAccountCard({ partner }: { partner: string | null }) {
   return (
     <Card className="rounded-2xl border-destructive/30">
       <CardHeader>
-        <CardTitle className="text-lg text-destructive">מחיקת חשבון</CardTitle>
+        <CardTitle className="text-lg text-destructive">
+          {tr({ he: 'מחיקת חשבון', en: 'Delete account' })}
+        </CardTitle>
         <CardDescription>
           {hasPartner
-            ? `החשבון שלך יימחק. הבית וכל ההוצאות וההכנסות יישארו אצל ${partner}.`
-            : 'החשבון שלך וכל הנתונים של הבית יימחקו לצמיתות.'}
+            ? tr({
+                he: `החשבון שלך יימחק. הבית וכל ההוצאות וההכנסות יישארו אצל ${partner}.`,
+                en: `Your account will be deleted. ${partner} keeps the household and all its expenses and income.`,
+              })
+            : tr({
+                he: 'החשבון שלך וכל הנתונים של הבית יימחקו לצמיתות.',
+                en: "Your account and all of the household's data will be permanently deleted.",
+              })}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Button variant="outline" className="text-destructive" onClick={() => setStep('warning')}>
           <Trash2 aria-hidden />
-          מחיקת החשבון
+          {tr({ he: 'מחיקת החשבון', en: 'Delete my account' })}
         </Button>
       </CardContent>
 
@@ -73,7 +82,7 @@ export function DeleteAccountCard({ partner }: { partner: string | null }) {
               onSubmit={(body) =>
                 remove.mutate(body, {
                   onSuccess: () => {
-                    toast.success('החשבון נמחק')
+                    toast.success(tr({ he: 'החשבון נמחק', en: 'Account deleted' }))
                     signOut()
                   },
                 })
@@ -92,29 +101,49 @@ function WarningStep({ partner, onContinue }: { partner: string | null; onContin
       <AlertDialogHeader>
         <AlertDialogTitle className="flex items-center gap-2 font-heading text-lg">
           <AlertTriangle className="size-5 text-destructive" aria-hidden />
-          למחוק את החשבון?
+          {tr({ he: 'למחוק את החשבון?', en: 'Delete your account?' })}
         </AlertDialogTitle>
         <AlertDialogDescription asChild>
           <div className="flex flex-col gap-2 text-start leading-relaxed">
-            <p>זו פעולה שאי אפשר לבטל.</p>
+            <p>{tr({ he: 'זו פעולה שאי אפשר לבטל.', en: 'This cannot be undone.' })}</p>
             <ul className="list-disc ps-5">
-              <li>אי אפשר יהיה להתחבר יותר עם המייל והסיסמה האלה.</li>
+              <li>
+                {tr({
+                  he: 'אי אפשר יהיה להתחבר יותר עם המייל והסיסמה האלה.',
+                  en: 'You will no longer be able to sign in with this email and password.',
+                })}
+              </li>
               {partner ? (
                 <>
-                  <li>ל{partner} יישארו כל ההוצאות, ההכנסות והתקציבים.</li>
-                  <li>מה שרשום על שמך יעבור ל"משותף".</li>
+                  <li>
+                    {tr({
+                      he: `ל${partner} יישארו כל ההוצאות, ההכנסות והתקציבים.`,
+                      en: `${partner} keeps all the expenses, income and budgets.`,
+                    })}
+                  </li>
+                  <li>
+                    {tr({
+                      he: 'מה שרשום על שמך יעבור ל"משותף".',
+                      en: 'Anything recorded under your name moves to "Joint".',
+                    })}
+                  </li>
                 </>
               ) : (
-                <li>כל הקטגוריות, ההוצאות, ההכנסות, הוראות הקבע והתקציבים יימחקו.</li>
+                <li>
+                  {tr({
+                    he: 'כל הקטגוריות, ההוצאות, ההכנסות, הוראות הקבע והתקציבים יימחקו.',
+                    en: 'All categories, expenses, income, recurring payments and budgets will be deleted.',
+                  })}
+                </li>
               )}
             </ul>
           </div>
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter className="-mx-5 -mb-5 rounded-b-2xl">
-        <AlertDialogCancel>ביטול</AlertDialogCancel>
+        <AlertDialogCancel>{tr({ he: 'ביטול', en: 'Cancel' })}</AlertDialogCancel>
         <Button variant="destructive" onClick={onContinue}>
-          כן, להמשיך
+          {tr({ he: 'כן, להמשיך', en: 'Yes, continue' })}
         </Button>
       </AlertDialogFooter>
     </>
@@ -143,13 +172,18 @@ function CredentialsStep({
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
       <AlertDialogHeader>
-        <AlertDialogTitle className="font-heading text-lg">אישור אחרון</AlertDialogTitle>
+        <AlertDialogTitle className="font-heading text-lg">
+          {tr({ he: 'אישור אחרון', en: 'Final confirmation' })}
+        </AlertDialogTitle>
         <AlertDialogDescription>
-          כדי לוודא שזה באמת החשבון שלך, צריך להקליד שוב את המייל והסיסמה.
+          {tr({
+            he: 'כדי לוודא שזה באמת החשבון שלך, צריך להקליד שוב את המייל והסיסמה.',
+            en: "To make sure it's really your account, please enter your email and password again.",
+          })}
         </AlertDialogDescription>
       </AlertDialogHeader>
       <TextField
-        label="מייל"
+        label={tr({ he: 'מייל', en: 'Email' })}
         type="email"
         dir="ltr"
         autoComplete="email"
@@ -157,7 +191,7 @@ function CredentialsStep({
         onChange={(event) => setEmail(event.target.value)}
       />
       <TextField
-        label="סיסמה"
+        label={tr({ he: 'סיסמה', en: 'Password' })}
         type="password"
         dir="ltr"
         autoComplete="current-password"
@@ -171,7 +205,10 @@ function CredentialsStep({
           checked={understood}
           onChange={(event) => setUnderstood(event.target.checked)}
         />
-        הבנתי שהמחיקה סופית ואי אפשר לשחזר את החשבון.
+        {tr({
+          he: 'הבנתי שהמחיקה סופית ואי אפשר לשחזר את החשבון.',
+          en: 'I understand that deletion is final and the account cannot be recovered.',
+        })}
       </label>
       {error && (
         <p role="alert" className="text-sm text-destructive">
@@ -179,10 +216,10 @@ function CredentialsStep({
         </p>
       )}
       <AlertDialogFooter className="-mx-5 -mb-5 rounded-b-2xl">
-        <AlertDialogCancel disabled={pending}>ביטול</AlertDialogCancel>
+        <AlertDialogCancel disabled={pending}>{tr({ he: 'ביטול', en: 'Cancel' })}</AlertDialogCancel>
         <Button type="submit" variant="destructive" disabled={!ready || pending}>
           {pending && <Loader2 className="animate-spin" aria-hidden />}
-          מחיקה לצמיתות
+          {tr({ he: 'מחיקה לצמיתות', en: 'Delete permanently' })}
         </Button>
       </AlertDialogFooter>
     </form>

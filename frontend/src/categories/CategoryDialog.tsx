@@ -5,6 +5,7 @@ import { Sheet } from '@/components/Sheet'
 import { TextField } from '@/components/TextField'
 import { Button } from '@/components/ui/button'
 import { describeError } from '@/lib/errors'
+import { tr } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { type Category, type Kind, useCreateCategory, useUpdateCategory } from './api'
 import { CATEGORY_COLORS, CATEGORY_ICONS, categoryColor, ICON_LABELS } from './appearance'
@@ -27,10 +28,10 @@ export function CategoryDialog({ open, onOpenChange, category, kind }: CategoryD
       onOpenChange={onOpenChange}
       title={
         category
-          ? 'עריכת קטגוריה'
+          ? tr({ he: 'עריכת קטגוריה', en: 'Edit category' })
           : kind === 'expense'
-            ? 'קטגוריית הוצאה חדשה'
-            : 'קטגוריית הכנסה חדשה'
+            ? tr({ he: 'קטגוריית הוצאה חדשה', en: 'New expense category' })
+            : tr({ he: 'קטגוריית הכנסה חדשה', en: 'New income category' })
       }
     >
       {/* Remount per open so the form starts from the category's current values. */}
@@ -60,7 +61,11 @@ function CategoryForm({
     event.preventDefault()
     if (!trimmed) return
     const onSuccess = () => {
-      toast.success(category ? 'הקטגוריה עודכנה' : 'הקטגוריה נוספה')
+      toast.success(
+        category
+          ? tr({ he: 'הקטגוריה עודכנה', en: 'Category updated' })
+          : tr({ he: 'הקטגוריה נוספה', en: 'Category added' }),
+      )
       onDone()
     }
     if (category) update.mutate({ id: category.id, name: trimmed, color, icon }, { onSuccess })
@@ -71,11 +76,13 @@ function CategoryForm({
     <form onSubmit={submit} className="flex flex-col gap-6">
       <div className="flex items-center gap-3 rounded-2xl bg-muted/60 p-3">
         <CategoryIconBadge color={color} icon={icon} className="size-12" />
-        <span className="truncate font-medium">{trimmed || 'שם הקטגוריה'}</span>
+        <span className="truncate font-medium">
+          {trimmed || tr({ he: 'שם הקטגוריה', en: 'Category name' })}
+        </span>
       </div>
 
       <TextField
-        label="שם"
+        label={tr({ he: 'שם', en: 'Name' })}
         value={name}
         onChange={(event) => setName(event.target.value)}
         maxLength={NAME_MAX_LENGTH}
@@ -84,7 +91,7 @@ function CategoryForm({
       />
 
       <fieldset>
-        <legend className="mb-3 text-sm font-medium">צבע</legend>
+        <legend className="mb-3 text-sm font-medium">{tr({ he: 'צבע', en: 'Color' })}</legend>
         <div className="flex flex-wrap gap-2">
           {Object.entries(CATEGORY_COLORS).map(([key, swatch]) => (
             <label key={key} className="relative cursor-pointer" title={swatch.label}>
@@ -108,7 +115,7 @@ function CategoryForm({
       </fieldset>
 
       <fieldset>
-        <legend className="mb-3 text-sm font-medium">אייקון</legend>
+        <legend className="mb-3 text-sm font-medium">{tr({ he: 'אייקון', en: 'Icon' })}</legend>
         <div className="grid grid-cols-6 gap-2 sm:grid-cols-8">
           {Object.entries(CATEGORY_ICONS).map(([key, Icon]) => (
             <label key={key} className="cursor-pointer">
@@ -151,7 +158,9 @@ function CategoryForm({
 
       <Button type="submit" size="lg" disabled={!trimmed || mutation.isPending}>
         {mutation.isPending && <Loader2 className="animate-spin" aria-hidden />}
-        {category ? 'שמירת השינויים' : 'הוספת הקטגוריה'}
+        {category
+          ? tr({ he: 'שמירת השינויים', en: 'Save changes' })
+          : tr({ he: 'הוספת הקטגוריה', en: 'Add category' })}
       </Button>
     </form>
   )

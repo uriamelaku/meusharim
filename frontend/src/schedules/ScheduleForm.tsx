@@ -13,6 +13,7 @@ import type { Member } from '@/household/api'
 import { newRequestId } from '@/lib/api'
 import { todayIso } from '@/lib/dates'
 import { describeError } from '@/lib/errors'
+import { tr } from '@/lib/i18n'
 import { amountToInput, formatMoney, parseAmountInput, previewInstallments } from '@/lib/money'
 import { TRANSACTION_KIND_OPTIONS } from '@/transactions/labels'
 import {
@@ -87,17 +88,30 @@ export function ScheduleForm({
   const endBeforeStart = Boolean(endDate) && endDate < startDate
 
   const errors = {
-    amount: !amount ? 'צריך סכום חיובי (עד שתי ספרות אחרי הנקודה).' : undefined,
+    amount: !amount
+      ? tr({
+          he: 'צריך סכום חיובי (עד שתי ספרות אחרי הנקודה).',
+          en: 'Please enter a positive amount (up to two decimal places).',
+        })
+      : undefined,
     count:
       isInstallments && !countValid
-        ? `בין ${MIN_INSTALLMENTS} ל-${MAX_INSTALLMENTS} תשלומים.`
+        ? tr({
+            he: `בין ${MIN_INSTALLMENTS} ל-${MAX_INSTALLMENTS} תשלומים.`,
+            en: `Between ${MIN_INSTALLMENTS} and ${MAX_INSTALLMENTS} installments.`,
+          })
         : undefined,
     split:
       isInstallments && amount && countValid && !split
-        ? 'הסכום קטן מדי למספר התשלומים.'
+        ? tr({
+            he: 'הסכום קטן מדי למספר התשלומים.',
+            en: 'The amount is too small for this number of installments.',
+          })
         : undefined,
     category: !categoryId,
-    endDate: endBeforeStart ? 'תאריך הסיום לפני תאריך ההתחלה.' : undefined,
+    endDate: endBeforeStart
+      ? tr({ he: 'תאריך הסיום לפני תאריך ההתחלה.', en: 'The end date is before the start date.' })
+      : undefined,
   }
   const valid =
     !errors.amount && !errors.count && !errors.split && !errors.category && !errors.endDate
@@ -162,8 +176,11 @@ export function ScheduleForm({
           onSuccess: (result) => {
             toast.success(
               result.id === schedule.id
-                ? 'השינויים נשמרו'
-                : 'נשמר. מהמועד החדש ממשיכה הוראה מעודכנת.',
+                ? tr({ he: 'השינויים נשמרו', en: 'Changes saved' })
+                : tr({
+                    he: 'נשמר. מהמועד החדש ממשיכה הוראה מעודכנת.',
+                    en: 'Saved. An updated payment continues from the new date.',
+                  }),
             )
             onDone()
           },
@@ -175,7 +192,11 @@ export function ScheduleForm({
         {
           onSuccess: () => {
             setRequestId(newRequestId())
-            toast.success(isInstallments ? 'התשלומים נוספו' : 'הוראת הקבע נוספה')
+            toast.success(
+              isInstallments
+                ? tr({ he: 'התשלומים נוספו', en: 'Installments added' })
+                : tr({ he: 'הוראת הקבע נוספה', en: 'Recurring payment added' }),
+            )
             onDone()
           },
         },
@@ -187,7 +208,7 @@ export function ScheduleForm({
     <form onSubmit={submit} noValidate className="flex flex-col gap-6">
       {!isInstallments && !schedule && (
         <Segmented
-          label="סוג"
+          label={tr({ he: 'סוג', en: 'Type' })}
           options={TRANSACTION_KIND_OPTIONS}
           value={kind}
           onChange={changeKind}
@@ -195,7 +216,11 @@ export function ScheduleForm({
       )}
 
       <AmountField
-        label={isInstallments ? 'סכום כולל של הרכישה' : 'סכום בכל פעם'}
+        label={
+          isInstallments
+            ? tr({ he: 'סכום כולל של הרכישה', en: 'Total purchase amount' })
+            : tr({ he: 'סכום בכל פעם', en: 'Amount each time' })
+        }
         value={amountText}
         onChange={setAmountText}
         error={submitted ? errors.amount : undefined}
@@ -207,7 +232,7 @@ export function ScheduleForm({
       {isInstallments && (
         <div className="flex flex-col gap-2">
           <TextField
-            label="מספר תשלומים"
+            label={tr({ he: 'מספר תשלומים', en: 'Number of installments' })}
             inputMode="numeric"
             value={countText}
             disabled={planLocked}
@@ -217,8 +242,14 @@ export function ScheduleForm({
           {split ? (
             <p className="text-sm text-muted-foreground" aria-live="polite">
               {split.first === split.rest
-                ? `${count} תשלומים של ${formatMoney(split.rest)}`
-                : `${count} תשלומים: הראשון ${formatMoney(split.first)}, והשאר ${formatMoney(split.rest)}`}
+                ? tr({
+                    he: `${count} תשלומים של ${formatMoney(split.rest)}`,
+                    en: `${count} installments of ${formatMoney(split.rest)}`,
+                  })
+                : tr({
+                    he: `${count} תשלומים: הראשון ${formatMoney(split.first)}, והשאר ${formatMoney(split.rest)}`,
+                    en: `${count} installments: the first ${formatMoney(split.first)}, the rest ${formatMoney(split.rest)}`,
+                  })}
             </p>
           ) : (
             submitted && (
@@ -231,7 +262,9 @@ export function ScheduleForm({
       )}
 
       {categories.isPending ? (
-        <p className="text-sm text-muted-foreground">טוען קטגוריות…</p>
+        <p className="text-sm text-muted-foreground">
+          {tr({ he: 'טוען קטגוריות…', en: 'Loading categories…' })}
+        </p>
       ) : (
         <CategoryPicker
           categories={categories.data ?? []}
@@ -244,7 +277,7 @@ export function ScheduleForm({
 
       {!isInstallments && (
         <Segmented
-          label="תדירות"
+          label={tr({ he: 'תדירות', en: 'Frequency' })}
           showLabel
           options={FREQUENCY_OPTIONS}
           value={frequency}
@@ -254,7 +287,11 @@ export function ScheduleForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField
-          label={isInstallments ? 'תאריך התשלום הראשון' : 'תאריך התחלה'}
+          label={
+            isInstallments
+              ? tr({ he: 'תאריך התשלום הראשון', en: 'First payment date' })
+              : tr({ he: 'תאריך התחלה', en: 'Start date' })
+          }
           type="date"
           value={startDate}
           min="1900-01-01"
@@ -265,7 +302,7 @@ export function ScheduleForm({
         />
         {!isInstallments && (
           <TextField
-            label="תאריך סיום (לא חובה)"
+            label={tr({ he: 'תאריך סיום (לא חובה)', en: 'End date (optional)' })}
             type="date"
             value={endDate}
             min={startDate}
@@ -279,35 +316,55 @@ export function ScheduleForm({
 
       {planLocked && (
         <p className="rounded-2xl bg-muted/60 p-3 text-sm text-muted-foreground">
-          כבר נרשמו תשלומים, ולכן אי אפשר לשנות סכום, מספר תשלומים או תאריך. אפשר לבטל ולהזין מחדש.
+          {tr({
+            he: 'כבר נרשמו תשלומים, ולכן אי אפשר לשנות סכום, מספר תשלומים או תאריך. אפשר לבטל ולהזין מחדש.',
+            en: 'Payments were already recorded, so the amount, number of installments and date can no longer change. You can cancel and enter it again.',
+          })}
         </p>
       )}
       {started && !isInstallments && (
         <p className="rounded-2xl bg-muted/60 p-3 text-sm text-muted-foreground">
-          שינויים יחולו רק על המועדים הבאים. מה שכבר נרשם נשאר כמו שהוא.
+          {tr({
+            he: 'שינויים יחולו רק על המועדים הבאים. מה שכבר נרשם נשאר כמו שהוא.',
+            en: 'Changes apply only to upcoming payments. What was already recorded stays as it is.',
+          })}
         </p>
       )}
 
       <PartyPicker
-        label={kind === 'expense' ? 'מי משלם' : 'מי מקבל'}
+        label={
+          kind === 'expense'
+            ? tr({ he: 'מי משלם', en: 'Who pays' })
+            : tr({ he: 'מי מקבל', en: 'Who receives it' })
+        }
         members={members}
         value={party}
         onChange={setParty}
       />
 
       <TextField
-        label="תיאור (לא חובה)"
+        label={tr({ he: 'תיאור (לא חובה)', en: 'Description (optional)' })}
         value={description}
         maxLength={120}
         onChange={(event) => setDescription(event.target.value)}
       />
 
       <ToggleField
-        label={kind === 'expense' ? 'לסמן "שולם" אוטומטית במועד' : 'לסמן "התקבל" אוטומטית במועד'}
+        label={
+          kind === 'expense'
+            ? tr({ he: 'לסמן "שולם" אוטומטית במועד', en: 'Mark as "Paid" automatically on the date' })
+            : tr({
+                he: 'לסמן "התקבל" אוטומטית במועד',
+                en: 'Mark as "Received" automatically on the date',
+              })
+        }
         description={
           autoConfirm
-            ? 'במועד היא תיכנס ישר ליתרה.'
-            : 'במועד היא תופיע ב"שולם כבר?" עד שמסמנים שהיא שולמה.'
+            ? tr({ he: 'במועד היא תיכנס ישר ליתרה.', en: 'On the date, it goes straight into the balance.' })
+            : tr({
+                he: 'במועד היא תופיע ב"שולם כבר?" עד שמסמנים שהיא שולמה.',
+                en: 'On the date, it appears under "Already paid?" until you mark it as paid.',
+              })
         }
         checked={autoConfirm}
         onChange={setAutoConfirm}
@@ -321,7 +378,11 @@ export function ScheduleForm({
 
       <Button type="submit" size="lg" disabled={mutation.isPending}>
         {mutation.isPending && <Loader2 className="animate-spin" aria-hidden />}
-        {schedule ? 'שמירת השינויים' : isInstallments ? 'הוספת התשלומים' : 'הוספת הוראת הקבע'}
+        {schedule
+          ? tr({ he: 'שמירת השינויים', en: 'Save changes' })
+          : isInstallments
+            ? tr({ he: 'הוספת התשלומים', en: 'Add installments' })
+            : tr({ he: 'הוספת הוראת הקבע', en: 'Add recurring payment' })}
       </Button>
     </form>
   )

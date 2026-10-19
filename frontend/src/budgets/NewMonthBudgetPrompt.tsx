@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { describeError } from '@/lib/errors'
+import { tr } from '@/lib/i18n'
 import { monthName, shiftMonths, type Period } from '@/lib/period'
 import { type BudgetMonth, useCopyPreviousBudget } from './api'
 import { dismissBudgetCopy, isBudgetCopyDismissed, shouldOfferBudgetCopy } from './newMonthPrompt'
@@ -37,10 +38,16 @@ export function NewMonthBudgetPrompt({ budget, period, isCurrent }: NewMonthBudg
         </span>
         <div>
           <h2 id="new-month-title" className="font-heading text-lg font-semibold">
-            חודש חדש! להעתיק את התקציב מ{previous}?
+            {tr({
+              he: `חודש חדש! להעתיק את התקציב מ${previous}?`,
+              en: `New month! Copy the budget from ${previous}?`,
+            })}
           </h2>
           <p className="text-sm text-muted-foreground">
-            כל הסכומים יועתקו לחודש הזה, ואפשר לערוך אותם אחר כך.
+            {tr({
+              he: 'כל הסכומים יועתקו לחודש הזה, ואפשר לערוך אותם אחר כך.',
+              en: 'All the amounts are copied to this month, and you can edit them afterwards.',
+            })}
           </p>
         </div>
       </div>
@@ -49,16 +56,19 @@ export function NewMonthBudgetPrompt({ budget, period, isCurrent }: NewMonthBudg
           disabled={copy.isPending}
           onClick={() =>
             copy.mutate(undefined, {
-              onSuccess: () => toast.success(`התקציב הועתק מ${previous}`),
+              onSuccess: () =>
+                toast.success(
+                  tr({ he: `התקציב הועתק מ${previous}`, en: `Budget copied from ${previous}` }),
+                ),
               onError: (error) => toast.error(describeError(error)),
             })
           }
         >
           {copy.isPending && <Loader2 className="animate-spin" aria-hidden />}
-          העתקה
+          {tr({ he: 'העתקה', en: 'Copy' })}
         </Button>
         <Button variant="outline" disabled={copy.isPending} onClick={decline}>
-          לא עכשיו
+          {tr({ he: 'לא עכשיו', en: 'Not now' })}
         </Button>
       </div>
     </section>

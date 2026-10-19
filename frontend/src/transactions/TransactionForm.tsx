@@ -15,6 +15,7 @@ import type { Member } from '@/household/api'
 import { newRequestId } from '@/lib/api'
 import { formatRelativeDay, todayIso } from '@/lib/dates'
 import { describeError } from '@/lib/errors'
+import { tr } from '@/lib/i18n'
 import { amountToInput, parseAmountInput } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import {
@@ -52,7 +53,9 @@ export function TransactionForm({
   onDone,
 }: TransactionFormProps) {
   const categories = useCategories()
-  const partner = members.find((m) => m.user_id !== userId)?.display_name ?? 'בן או בת הזוג'
+  const partner =
+    members.find((m) => m.user_id !== userId)?.display_name ??
+    tr({ he: 'בן או בת הזוג', en: 'your partner' })
   const [kind, setKind] = useState<Kind>(transaction?.kind ?? initialKind)
   const [amountText, setAmountText] = useState(transaction ? amountToInput(transaction.amount) : '')
   const [categoryId, setCategoryId] = useState<string | null>(
@@ -67,7 +70,7 @@ export function TransactionForm({
   // Details (date, status, payer, description) start open; they can be collapsed.
   const [showDetails, setShowDetails] = useState(true)
   // Opened from a category on the main screen: the category is known, so the form
-  // starts at the amount. "שינוי" brings back the full picker.
+  // starts at the amount. "Change" brings back the full picker.
   const [pickingCategory, setPickingCategory] = useState(!initialCategoryId || Boolean(transaction))
   const [description, setDescription] = useState(transaction?.description ?? '')
   const [submitted, setSubmitted] = useState(false)
@@ -83,7 +86,12 @@ export function TransactionForm({
   const amount = parseAmountInput(amountText)
   const selectedCategory = categories.data?.find((c) => c.id === categoryId)
   const amountError =
-    submitted && !amount ? 'צריך סכום חיובי (עד שתי ספרות אחרי הנקודה).' : undefined
+    submitted && !amount
+      ? tr({
+          he: 'צריך סכום חיובי (עד שתי ספרות אחרי הנקודה).',
+          en: 'Please enter a positive amount (up to two decimal places).',
+        })
+      : undefined
 
   function changeKind(next: Kind) {
     setKind(next)
@@ -114,7 +122,11 @@ export function TransactionForm({
     }
     const onSuccess = () => {
       toast.success(
-        transaction ? 'השינויים נשמרו' : kind === 'expense' ? 'ההוצאה נוספה' : 'ההכנסה נוספה',
+        transaction
+          ? tr({ he: 'השינויים נשמרו', en: 'Changes saved' })
+          : kind === 'expense'
+            ? tr({ he: 'ההוצאה נוספה', en: 'Expense added' })
+            : tr({ he: 'ההכנסה נוספה', en: 'Income added' }),
       )
       // Only completed expenses count against the budget.
       if (kind === 'expense' && status === 'completed') void checkBudget(date, categoryId)
@@ -137,7 +149,11 @@ export function TransactionForm({
     if (!transaction) return
     remove.mutate(transaction.id, {
       onSuccess: () => {
-        toast.success(kind === 'expense' ? 'ההוצאה נמחקה' : 'ההכנסה נמחקה')
+        toast.success(
+          kind === 'expense'
+            ? tr({ he: 'ההוצאה נמחקה', en: 'Expense deleted' })
+            : tr({ he: 'ההכנסה נמחקה', en: 'Income deleted' }),
+        )
         setConfirmingDelete(false)
         onDone()
       },
@@ -149,7 +165,7 @@ export function TransactionForm({
     <form onSubmit={submit} noValidate className="flex flex-col gap-6">
       {pickingCategory && (
         <Segmented
-          label="הוצאה או הכנסה"
+          label={tr({ he: 'הוצאה או הכנסה', en: 'Expense or income' })}
           options={TRANSACTION_KIND_OPTIONS}
           value={kind}
           onChange={changeKind}
@@ -157,7 +173,7 @@ export function TransactionForm({
       )}
 
       <AmountField
-        label="סכום"
+        label={tr({ he: 'סכום', en: 'Amount' })}
         value={amountText}
         onChange={setAmountText}
         error={amountError}
@@ -166,16 +182,20 @@ export function TransactionForm({
       />
 
       {categories.isPending ? (
-        <p className="text-sm text-muted-foreground">טוען קטגוריות…</p>
+        <p className="text-sm text-muted-foreground">
+          {tr({ he: 'טוען קטגוריות…', en: 'Loading categories…' })}
+        </p>
       ) : !pickingCategory && selectedCategory ? (
         <div className="flex items-center gap-3 rounded-2xl border px-3 py-2">
           <CategoryIconBadge color={selectedCategory.color} icon={selectedCategory.icon} />
           <span className="flex-1">
-            <span className="block text-xs text-muted-foreground">קטגוריה</span>
+            <span className="block text-xs text-muted-foreground">
+              {tr({ he: 'קטגוריה', en: 'Category' })}
+            </span>
             <span className="font-semibold">{selectedCategory.name}</span>
           </span>
           <Button type="button" variant="ghost" onClick={() => setPickingCategory(true)}>
-            שינוי
+            {tr({ he: 'שינוי', en: 'Change' })}
           </Button>
         </div>
       ) : (
@@ -197,7 +217,7 @@ export function TransactionForm({
           className="flex min-h-11 items-center justify-between gap-3 rounded-xl bg-muted px-4 py-2 text-start text-sm focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
         >
           <span className="min-w-0">
-            <span className="font-semibold">עוד פרטים</span>
+            <span className="font-semibold">{tr({ he: 'עוד פרטים', en: 'More details' })}</span>
             {!showDetails && (
               <span className="block truncate text-muted-foreground">
                 {detailsSummary(date, status, kind, partyName(party, members), description)}
@@ -213,7 +233,7 @@ export function TransactionForm({
           <div id="transaction-details" className="flex flex-col gap-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <TextField
-              label="תאריך"
+              label={tr({ he: 'תאריך', en: 'Date' })}
               type="date"
               value={date}
               min="1900-01-01"
@@ -222,7 +242,11 @@ export function TransactionForm({
               onChange={(event) => changeDate(event.target.value)}
             />
             <Segmented
-              label={kind === 'expense' ? 'שולם?' : 'התקבל?'}
+              label={
+                kind === 'expense'
+                  ? tr({ he: 'שולם?', en: 'Paid?' })
+                  : tr({ he: 'התקבל?', en: 'Received?' })
+              }
               showLabel
               options={statusOptions(kind)}
               value={status}
@@ -234,14 +258,18 @@ export function TransactionForm({
           </div>
 
           <PartyPicker
-            label={kind === 'expense' ? 'מי שילם' : 'מי קיבל'}
+            label={
+              kind === 'expense'
+                ? tr({ he: 'מי שילם', en: 'Who paid' })
+                : tr({ he: 'מי קיבל', en: 'Who received it' })
+            }
             members={members}
             value={party}
             onChange={setParty}
           />
 
           <TextField
-            label="תיאור (לא חובה)"
+            label={tr({ he: 'תיאור (לא חובה)', en: 'Description (optional)' })}
             value={description}
             maxLength={120}
             onChange={(event) => setDescription(event.target.value)}
@@ -260,14 +288,22 @@ export function TransactionForm({
       <div className="flex gap-2">
         <Button type="submit" size="lg" className="flex-1" disabled={mutation.isPending}>
           {mutation.isPending && <Loader2 className="animate-spin" aria-hidden />}
-          {transaction ? 'שמירת השינויים' : kind === 'expense' ? 'הוספת ההוצאה' : 'הוספת ההכנסה'}
+          {transaction
+            ? tr({ he: 'שמירת השינויים', en: 'Save changes' })
+            : kind === 'expense'
+              ? tr({ he: 'הוספת ההוצאה', en: 'Add expense' })
+              : tr({ he: 'הוספת ההכנסה', en: 'Add income' })}
         </Button>
         {transaction && (
           <Button
             type="button"
             size="lg"
             variant="destructive"
-            aria-label={kind === 'expense' ? 'מחיקת ההוצאה' : 'מחיקת ההכנסה'}
+            aria-label={
+              kind === 'expense'
+                ? tr({ he: 'מחיקת ההוצאה', en: 'Delete expense' })
+                : tr({ he: 'מחיקת ההכנסה', en: 'Delete income' })
+            }
             onClick={() => setConfirmingDelete(true)}
           >
             <Trash2 aria-hidden />
@@ -278,9 +314,16 @@ export function TransactionForm({
       <ConfirmDialog
         open={confirmingDelete}
         onOpenChange={setConfirmingDelete}
-        title={kind === 'expense' ? 'למחוק את ההוצאה?' : 'למחוק את ההכנסה?'}
-        description={`היא תימחק לצמיתות, גם אצל ${partner}.`}
-        confirmLabel="מחיקה"
+        title={
+          kind === 'expense'
+            ? tr({ he: 'למחוק את ההוצאה?', en: 'Delete this expense?' })
+            : tr({ he: 'למחוק את ההכנסה?', en: 'Delete this income?' })
+        }
+        description={tr({
+          he: `היא תימחק לצמיתות, גם אצל ${partner}.`,
+          en: `It will be permanently deleted, for ${partner} too.`,
+        })}
+        confirmLabel={tr({ he: 'מחיקה', en: 'Delete' })}
         onConfirm={confirmDelete}
         pending={remove.isPending}
       />
@@ -288,7 +331,7 @@ export function TransactionForm({
   )
 }
 
-/** "היום · שולם · אוריה" — what will be saved while the details are closed. */
+/** "Today · Paid · Noa": what will be saved while the details are closed. */
 function detailsSummary(
   date: string,
   status: TransactionStatus,

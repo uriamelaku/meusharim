@@ -9,6 +9,7 @@ import { useShellContext } from '@/components/shellContext'
 import { EmptyState, ErrorState, LoadingState } from '@/components/states'
 import { Button } from '@/components/ui/button'
 import { useSelectedPeriod } from '@/hooks/useSelectedPeriod'
+import { tr } from '@/lib/i18n'
 import { formatMoney, isNegative } from '@/lib/money'
 import { formatPeriod, monthName, toPeriodParam } from '@/lib/period'
 import { cn } from '@/lib/utils'
@@ -41,7 +42,7 @@ export function OverviewPage() {
             <Button
               variant="ghost"
               size="icon"
-              aria-label="לחודש הנוכחי"
+              aria-label={tr({ he: 'לחודש הנוכחי', en: 'Go to this month' })}
               className="shrink-0 rounded-full text-brass-strong"
               onClick={() => setPeriod(today)}
             >
@@ -51,7 +52,7 @@ export function OverviewPage() {
         </div>
         <Link
           to="/settings"
-          aria-label="הגדרות"
+          aria-label={tr({ he: 'הגדרות', en: 'Settings' })}
           className="flex size-11 shrink-0 items-center justify-center rounded-full bg-card text-muted-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none lg:hidden"
         >
           <Settings className="size-5" aria-hidden />
@@ -65,8 +66,8 @@ export function OverviewPage() {
           <LoadingState />
         ) : summary.isError || budget.isError || categories.isError ? (
           <ErrorState
-            title="לא הצלחנו לטעון את המסך הראשי"
-            description="בדקו את החיבור ונסו שוב."
+            title={tr({ he: 'לא הצלחנו לטעון את המסך הראשי', en: "We couldn't load the home screen" })}
+            description={tr({ he: 'בדקו את החיבור ונסו שוב.', en: 'Check your connection and try again.' })}
             onRetry={() => {
               void summary.refetch()
               void budget.refetch()
@@ -82,7 +83,10 @@ export function OverviewPage() {
             <SpendingRing
               total={summary.data.expense.actual}
               items={ringItems(categories.data, budget.data.categories)}
-              emptyTitle={`אין הוצאות ב${formatPeriod(period)}`}
+              emptyTitle={tr({
+                he: `אין הוצאות ב${formatPeriod(period)}`,
+                en: `No expenses in ${formatPeriod(period)}`,
+              })}
               onAdd={(categoryId) => add('expense', 'once', categoryId)}
               onOpen={(categoryId) =>
                 navigate(`/transactions?month=${month}&category=${categoryId}`)
@@ -96,7 +100,7 @@ export function OverviewPage() {
                   className="mb-2 flex items-center gap-2 font-heading text-xl font-semibold"
                 >
                   <CalendarClock className="size-5 text-brass-strong" aria-hidden />
-                  צפוי בהמשך החודש
+                  {tr({ he: 'צפוי בהמשך החודש', en: 'Coming up this month' })}
                 </h2>
                 <ul className="divide-y">
                   {summary.data.upcoming.map((item) => (
@@ -111,12 +115,12 @@ export function OverviewPage() {
             <section aria-labelledby="recent-title" className="mt-4">
               <div className="mb-2 flex items-center justify-between">
                 <h2 id="recent-title" className="font-heading text-xl font-semibold">
-                  נרשמו לאחרונה
+                  {tr({ he: 'נרשמו לאחרונה', en: 'Recently added' })}
                 </h2>
                 <Button asChild variant="ghost" size="sm" className="h-9">
                   <Link to={`/transactions?month=${month}`}>
-                    לכל ההוצאות וההכנסות
-                    <ArrowLeft aria-hidden />
+                    {tr({ he: 'לכל ההוצאות וההכנסות', en: 'All transactions' })}
+                    <ArrowLeft className="ltr:-scale-x-100" aria-hidden />
                   </Link>
                 </Button>
               </div>
@@ -136,8 +140,14 @@ export function OverviewPage() {
               ) : (
                 <EmptyState
                   icon={Receipt}
-                  title={`אין הוצאות והכנסות ב${formatPeriod(period)}`}
-                  description="כל הוצאה או הכנסה שתירשם תופיע כאן אצל שניכם."
+                  title={tr({
+                    he: `אין הוצאות והכנסות ב${formatPeriod(period)}`,
+                    en: `No transactions in ${formatPeriod(period)}`,
+                  })}
+                  description={tr({
+                    he: 'כל הוצאה או הכנסה שתירשם תופיע כאן אצל שניכם.',
+                    en: 'Every expense or income you add will show up here for both of you.',
+                  })}
                 />
               )}
             </section>
@@ -167,7 +177,10 @@ function SpendingRing({
         <EmptyState
           icon={PieChart}
           title={emptyTitle}
-          description="כשיירשמו הוצאות לחודש הזה, יופיע כאן לאן הכסף הולך."
+          description={tr({
+            he: 'כשיירשמו הוצאות לחודש הזה, יופיע כאן לאן הכסף הולך.',
+            en: 'Once expenses are added for this month, you will see here where the money goes.',
+          })}
         />
       </div>
     )
@@ -195,7 +208,7 @@ function BalanceCard({ summary, monthLabel }: { summary: MonthSummary; monthLabe
       <div className="flex items-end justify-between gap-3">
         <div className="min-w-0">
           <p id="balance-title" className="text-[13px] font-semibold text-hero-foreground/80">
-            יתרה ל{monthLabel}
+            {tr({ he: `יתרה ל${monthLabel}`, en: `${monthLabel} balance` })}
           </p>
           <p
             className={cn(
@@ -207,13 +220,16 @@ function BalanceCard({ summary, monthLabel }: { summary: MonthSummary; monthLabe
           </p>
         </div>
         <dl className="flex shrink-0 flex-col gap-0.5 text-[13px] text-hero-foreground/85">
-          <FlowStat label="הכנסות" actual={income.actual} />
-          <FlowStat label="הוצאות" actual={expense.actual} />
+          <FlowStat label={tr({ he: 'הכנסות', en: 'Income' })} actual={income.actual} />
+          <FlowStat label={tr({ he: 'הוצאות', en: 'Expenses' })} actual={expense.actual} />
         </dl>
       </div>
       {hasPlanned && (
         <p className="mt-1 text-xs text-hero-foreground/80">
-          כולל מה שעוד לא שולם: {formatMoney(projected_balance)}
+          {tr({
+            he: `כולל מה שעוד לא שולם: ${formatMoney(projected_balance)}`,
+            en: `Including what isn't paid yet: ${formatMoney(projected_balance)}`,
+          })}
         </p>
       )}
       <Link
@@ -224,7 +240,7 @@ function BalanceCard({ summary, monthLabel }: { summary: MonthSummary; monthLabe
           <>
             <span className="flex items-center justify-between gap-2 text-[13px]">
               <span className="flex items-center gap-1.5">
-                תקציב החודש
+                {tr({ he: 'תקציב החודש', en: "This month's budget" })}
                 <span
                   className={cn(
                     'rounded-full px-2 text-xs font-bold tabular-nums',
@@ -237,17 +253,26 @@ function BalanceCard({ summary, monthLabel }: { summary: MonthSummary; monthLabe
                 </span>
               </span>
               <span className="text-hero-foreground/85 tabular-nums">
-                {budget.status === 'over' ? 'חריגה של ' : 'נשארו '}
+                {tr({
+                  he: budget.status === 'over' ? 'חריגה של ' : 'נשארו ',
+                  en: '',
+                })}
                 <b className="text-hero-foreground">
                   {formatMoney(budget.remaining.replace('-', ''))}
                 </b>{' '}
-                מ-{formatMoney(budget.budget)}
+                {tr({
+                  he: `מ-${formatMoney(budget.budget)}`,
+                  en: `${budget.status === 'over' ? 'over' : 'left of'} ${formatMoney(budget.budget)}`,
+                })}
               </span>
             </span>
             <span
               className="mt-2 block h-2 overflow-hidden rounded-full bg-hero-foreground/20"
               role="progressbar"
-              aria-label={`נוצלו ${budget.percent}% מהתקציב`}
+              aria-label={tr({
+                he: `נוצלו ${budget.percent}% מהתקציב`,
+                en: `${budget.percent}% of the budget used`,
+              })}
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={Math.min(budget.percent, 100)}
@@ -263,8 +288,8 @@ function BalanceCard({ summary, monthLabel }: { summary: MonthSummary; monthLabe
           </>
         ) : (
           <span className="flex items-center justify-between text-[13px] text-hero-foreground/85">
-            עדיין לא הוגדר תקציב לחודש הזה
-            <b className="text-hero-foreground">הגדרת תקציב ←</b>
+            {tr({ he: 'עדיין לא הוגדר תקציב לחודש הזה', en: 'No budget set for this month yet' })}
+            <b className="text-hero-foreground">{tr({ he: 'הגדרת תקציב ←', en: 'Set a budget →' })}</b>
           </span>
         )}
       </Link>

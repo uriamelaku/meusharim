@@ -20,6 +20,7 @@ import { CreateHouseholdScreen } from '@/household/CreateHouseholdScreen'
 import { GenderPrompt } from '@/household/GenderPrompt'
 import { JoinScreen } from '@/household/JoinScreen'
 import { usePendingInvitation } from '@/household/pendingInvitation'
+import { isHebrew, tr } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { FLAGS, hasFlag } from '@/onboarding/storage'
 import { tourSteps } from '@/onboarding/steps'
@@ -29,11 +30,15 @@ import { useQuickAdd } from '@/transactions/quickAdd'
 import { QuickAddProvider } from '@/transactions/QuickAddProvider'
 
 const NAV_ITEMS = [
-  { to: '/', label: 'ראשי', icon: LayoutDashboard },
-  { to: '/transactions', label: 'הוצאות והכנסות', icon: ArrowLeftRight },
-  { to: '/budget', label: 'תקציב', icon: Wallet },
-  { to: '/reports', label: 'דוחות', icon: BarChart3 },
-  { to: '/settings', label: 'הגדרות', icon: Settings },
+  { to: '/', label: tr({ he: 'ראשי', en: 'Home' }), icon: LayoutDashboard },
+  {
+    to: '/transactions',
+    label: tr({ he: 'הוצאות והכנסות', en: 'Transactions' }),
+    icon: ArrowLeftRight,
+  },
+  { to: '/budget', label: tr({ he: 'תקציב', en: 'Budget' }), icon: Wallet },
+  { to: '/reports', label: tr({ he: 'דוחות', en: 'Reports' }), icon: BarChart3 },
+  { to: '/settings', label: tr({ he: 'הגדרות', en: 'Settings' }), icon: Settings },
 ]
 
 // On phones settings move to the header, leaving room for the add button in the middle.
@@ -57,15 +62,18 @@ export function AppShell() {
     return (
       <ErrorState
         className="min-h-dvh justify-center"
-        title="לא הצלחנו לטעון את החשבון"
-        description="השרת לא זמין או לא אישר את ההתחברות. אפשר לנסות שוב, או להתחבר מחדש."
+        title={tr({ he: 'לא הצלחנו לטעון את החשבון', en: "We couldn't load your account" })}
+        description={tr({
+          he: 'השרת לא זמין או לא אישר את ההתחברות. אפשר לנסות שוב, או להתחבר מחדש.',
+          en: "The server is unavailable or didn't accept the sign-in. Try again, or sign in again.",
+        })}
         onRetry={() => {
           void currentUser.refetch()
           void household.refetch()
         }}
       >
         <Button variant="outline" onClick={signOut}>
-          התחברות מחדש
+          {tr({ he: 'התחברות מחדש', en: 'Sign in again' })}
         </Button>
       </ErrorState>
     )
@@ -96,7 +104,7 @@ export function AppShell() {
             <Wordmark />
             <NavLink
               to="/settings"
-              aria-label="הגדרות"
+              aria-label={tr({ he: 'הגדרות', en: 'Settings' })}
               className={({ isActive }) =>
                 cn(
                   'flex size-11 items-center justify-center rounded-full transition-colors',
@@ -126,11 +134,16 @@ export function AppShell() {
   )
 }
 
-/** First steps: how to address the member (asked once), then the guided tour. */
+/**
+ * First steps: how to address the member (asked once, in Hebrew only: English has no
+ * gendered forms of address), then the guided tour.
+ */
 function Onboarding({ context, children }: { context: ShellContext; children: ReactNode }) {
   const gender = myGender(context)
   const partner = partnerName(context)
-  const [askGender, setAskGender] = useState(() => gender === null && !hasFlag(FLAGS.genderSkipped))
+  const [askGender, setAskGender] = useState(
+    () => isHebrew && gender === null && !hasFlag(FLAGS.genderSkipped),
+  )
   const steps = useMemo(() => tourSteps(gender, partner), [gender, partner])
   return (
     <TourProvider steps={steps} autoStart={!askGender}>
@@ -161,9 +174,9 @@ function DesktopSidebar({ email }: { email: string | null }) {
       <Wordmark className="px-3" />
       <Button className="mt-8" data-tour="add" onClick={() => add()}>
         <Plus aria-hidden />
-        הוספת הוצאה או הכנסה
+        {tr({ he: 'הוספת הוצאה או הכנסה', en: 'Add expense or income' })}
       </Button>
-      <nav aria-label="ניווט ראשי" className="mt-6 flex flex-col gap-1">
+      <nav aria-label={tr({ he: 'ניווט ראשי', en: 'Main navigation' })} className="mt-6 flex flex-col gap-1">
         {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
@@ -190,7 +203,7 @@ function DesktopSidebar({ email }: { email: string | null }) {
         </p>
         <Button variant="ghost" className="mt-2 w-full justify-start" onClick={signOut}>
           <LogOut aria-hidden />
-          התנתקות
+          {tr({ he: 'התנתקות', en: 'Sign out' })}
         </Button>
       </div>
     </aside>
@@ -220,7 +233,7 @@ function MobileTabBar() {
   )
   return (
     <nav
-      aria-label="ניווט ראשי"
+      aria-label={tr({ he: 'ניווט ראשי', en: 'Main navigation' })}
       className="fixed inset-x-0 bottom-0 z-30 rounded-t-3xl bg-card px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-[0_-6px_20px_rgb(31_92_69/0.08)] lg:hidden"
     >
       <ul className="grid grid-cols-5 items-center">
@@ -228,7 +241,7 @@ function MobileTabBar() {
         <li className="flex justify-center">
           <Button
             size="icon"
-            aria-label="הוספת הוצאה או הכנסה"
+            aria-label={tr({ he: 'הוספת הוצאה או הכנסה', en: 'Add expense or income' })}
             data-tour="add"
             onClick={() => add()}
             className="size-14 rounded-2xl bg-brass text-foreground shadow-lg shadow-brass/35 hover:bg-brass/90"

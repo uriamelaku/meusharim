@@ -3,9 +3,16 @@ import { AlertTriangle } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { RingsMark } from '@/components/RingsMark'
 import { Button } from '@/components/ui/button'
+import { tr } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
-export function LoadingState({ label = 'טוען…', className }: { label?: string; className?: string }) {
+export function LoadingState({
+  label = tr({ he: 'טוען…', en: 'Loading…' }),
+  className,
+}: {
+  label?: string
+  className?: string
+}) {
   return (
     <div
       role="status"
@@ -37,7 +44,7 @@ export function ErrorState({ title, description, onRetry, children, className }:
       <h2 className="font-heading text-xl font-semibold">{title}</h2>
       <p className="max-w-sm text-muted-foreground">{description}</p>
       <div className="mt-2 flex flex-wrap justify-center gap-2">
-        {onRetry && <Button onClick={onRetry}>לנסות שוב</Button>}
+        {onRetry && <Button onClick={onRetry}>{tr({ he: 'לנסות שוב', en: 'Try again' })}</Button>}
         {children}
       </div>
     </div>

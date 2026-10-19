@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { todayIso } from '@/lib/dates'
+import { tr } from '@/lib/i18n'
 import { formatMoney } from '@/lib/money'
 import { monthName, type Period, shiftMonths, toPeriodParam } from '@/lib/period'
 import { useInsights } from '@/reports/api'
@@ -30,7 +31,7 @@ export function MonthlySummaryCard({ today, isCurrent }: { today: Period; isCurr
       <Button
         variant="ghost"
         size="icon"
-        aria-label="סגירת הסיכום"
+        aria-label={tr({ he: 'סגירת הסיכום', en: 'Close summary' })}
         className="absolute end-2 top-2"
         onClick={() => {
           dismissSummary(month)
@@ -40,23 +41,32 @@ export function MonthlySummaryCard({ today, isCurrent }: { today: Period; isCurr
         <X className="size-4" aria-hidden />
       </Button>
       <h2 id="month-summary-title" className="font-heading text-lg font-semibold">
-        סיכום {name}
+        {tr({ he: `סיכום ${name}`, en: `${name} summary` })}
       </h2>
       <ul className="flex flex-col gap-1 text-sm">
         <li>
-          {balance.startsWith('-') ? 'הוצאתם יותר משהכנסתם: ' : 'נשארו לכם '}
+          {balance.startsWith('-')
+            ? tr({ he: 'הוצאתם יותר משהכנסתם: ', en: 'You spent more than you earned: ' })
+            : tr({ he: 'נשארו לכם ', en: 'You have left: ' })}
           <b className="tabular-nums">{formatMoney(balance.replace('-', ''))}</b>
         </li>
         {change !== null && (
           <li>
-            ההוצאות {change > 0 ? 'עלו' : change < 0 ? 'ירדו' : 'נשארו כמו'}{' '}
-            {change !== 0 && <b className="tabular-nums">{Math.abs(change)}%</b>} לעומת החודש
-            שלפני
+            {tr({
+              he: `ההוצאות ${change > 0 ? 'עלו' : change < 0 ? 'ירדו' : 'נשארו כמו'} `,
+              en: `Expenses ${change > 0 ? 'rose' : change < 0 ? 'fell' : 'stayed the same as'} `,
+            })}
+            {change !== 0 && <b className="tabular-nums">{Math.abs(change)}%</b>}
+            {tr({
+              he: ' לעומת החודש שלפני',
+              en: change !== 0 ? ' compared with the month before' : ' the month before',
+            })}
           </li>
         )}
         {biggestRise && (
           <li>
-            העלייה הגדולה: <b>{biggestRise.category.name}</b> (+{formatMoney(biggestRise.difference)})
+            {tr({ he: 'העלייה הגדולה: ', en: 'Biggest rise: ' })}
+            <b>{biggestRise.category.name}</b> (+{formatMoney(biggestRise.difference)})
           </li>
         )}
       </ul>
@@ -64,8 +74,8 @@ export function MonthlySummaryCard({ today, isCurrent }: { today: Period; isCurr
         to={`/reports?month=${month}`}
         className="flex items-center gap-1 self-start text-sm font-semibold text-primary"
       >
-        לדוח המלא
-        <ArrowLeft className="size-4" aria-hidden />
+        {tr({ he: 'לדוח המלא', en: 'Full report' })}
+        <ArrowLeft className="size-4 ltr:-scale-x-100" aria-hidden />
       </Link>
     </section>
   )

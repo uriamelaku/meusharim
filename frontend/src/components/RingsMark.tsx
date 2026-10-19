@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { tr } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 type RingsMarkProps = {
@@ -33,7 +34,9 @@ export function Wordmark({ className }: { className?: string }) {
   return (
     <span className={cn('inline-flex items-center gap-2.5', className)}>
       <RingsMark className="h-7" />
-      <span className="font-heading text-2xl font-semibold tracking-tight">מאושרים</span>
+      <span className="font-heading text-2xl font-semibold tracking-tight">
+        {tr({ he: 'מאושרים', en: 'Meusharim' })}
+      </span>
     </span>
   )
 }

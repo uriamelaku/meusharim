@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import type { Member } from '@/household/api'
 import { newRequestId } from '@/lib/api'
 import { describeError } from '@/lib/errors'
+import { tr } from '@/lib/i18n'
 import { formatMoney, parseAmountInput } from '@/lib/money'
 import { lastParty, rememberParty } from '@/transactions/lastParty'
 import { type Goal, useDeposit } from './api'
@@ -31,7 +32,12 @@ export function DepositForm({ goal, members, userId, onDone }: DepositFormProps)
       { amount, party_user_id: party, request_id: requestId },
       {
         onSuccess: () => {
-          toast.success(`הופקדו ${formatMoney(amount)} ל${goal.name}`)
+          toast.success(
+            tr({
+              he: `הופקדו ${formatMoney(amount)} ל${goal.name}`,
+              en: `${formatMoney(amount)} deposited to ${goal.name}`,
+            }),
+          )
           onDone()
         },
       },
@@ -41,20 +47,35 @@ export function DepositForm({ goal, members, userId, onDone }: DepositFormProps)
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-6">
       <AmountField
-        label="כמה הפקדתם?"
+        label={tr({ he: 'כמה הפקדתם?', en: 'How much did you deposit?' })}
         value={amountText}
         onChange={setAmountText}
-        error={submitted && !amount ? 'צריך סכום חיובי.' : undefined}
+        error={
+          submitted && !amount
+            ? tr({ he: 'צריך סכום חיובי.', en: 'Please enter a positive amount.' })
+            : undefined
+        }
         autoFocus
       />
       {goal.monthly_needed && (
         <p className="-mt-3 text-center text-sm text-muted-foreground">
-          כדי להגיע בזמן: {formatMoney(goal.monthly_needed)} בחודש
+          {tr({
+            he: `כדי להגיע בזמן: ${formatMoney(goal.monthly_needed)} בחודש`,
+            en: `To get there on time: ${formatMoney(goal.monthly_needed)} a month`,
+          })}
         </p>
       )}
-      <PartyPicker label="מאיזה חשבון" members={members} value={party} onChange={setParty} />
+      <PartyPicker
+        label={tr({ he: 'מאיזה חשבון', en: 'From which account' })}
+        members={members}
+        value={party}
+        onChange={setParty}
+      />
       <p className="text-sm text-muted-foreground">
-        הסכום יירשם כהוצאה בקטגוריית "חיסכון", כי הכסף יוצא מהחשבון השוטף.
+        {tr({
+          he: 'הסכום יירשם כהוצאה בקטגוריית "חיסכון", כי הכסף יוצא מהחשבון השוטף.',
+          en: 'The amount is recorded as an expense in the savings category, since the money leaves your current account.',
+        })}
       </p>
       {deposit.isError && (
         <p role="alert" className="text-sm text-destructive">
@@ -63,7 +84,7 @@ export function DepositForm({ goal, members, userId, onDone }: DepositFormProps)
       )}
       <Button type="submit" size="lg" disabled={deposit.isPending}>
         {deposit.isPending && <Loader2 className="animate-spin" aria-hidden />}
-        הפקדה
+        {tr({ he: 'הפקדה', en: 'Deposit' })}
       </Button>
     </form>
   )

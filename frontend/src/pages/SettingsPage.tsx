@@ -13,13 +13,14 @@ import { HouseholdCard } from '@/household/HouseholdCard'
 import { Segmented } from '@/components/Segmented'
 import { describeError } from '@/lib/errors'
 import { GENDER_OPTIONS } from '@/lib/gender'
+import { changeLanguage, isHebrew, language, LANGUAGE_OPTIONS, tr } from '@/lib/i18n'
 import { useTheme } from '@/lib/theme'
 
 export function SettingsPage() {
   const { user, household } = useShellContext()
   return (
     <>
-      <PageHeader title="הגדרות" />
+      <PageHeader title={tr({ he: 'הגדרות', en: 'Settings' })} />
       <div className="flex flex-col gap-4">
         <HelpLink />
         <AppearanceCard />
@@ -27,8 +28,10 @@ export function SettingsPage() {
         <CategoriesCard />
         <Card className="rounded-2xl">
           <CardHeader>
-            <CardTitle className="text-lg">החשבון שלי</CardTitle>
-            <CardDescription>המייל שאיתו נכנסים</CardDescription>
+            <CardTitle className="text-lg">{tr({ he: 'החשבון שלי', en: 'My account' })}</CardTitle>
+            <CardDescription>
+              {tr({ he: 'המייל שאיתו נכנסים', en: 'The email you sign in with' })}
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -37,10 +40,10 @@ export function SettingsPage() {
               </p>
               <Button variant="outline" onClick={signOut}>
                 <LogOut aria-hidden />
-                התנתקות
+                {tr({ he: 'התנתקות', en: 'Sign out' })}
               </Button>
             </div>
-            <GenderSetting gender={myGender({ user, household })} />
+            {isHebrew && <GenderSetting gender={myGender({ user, household })} />}
           </CardContent>
         </Card>
         <DeleteAccountCard partner={partnerOf({ user, household })?.display_name ?? null} />
@@ -60,19 +63,28 @@ function AppearanceCard() {
           ) : (
             <Sun className="size-5" aria-hidden />
           )}
-          תצוגה
+          {tr({ he: 'תצוגה', en: 'Display' })}
         </CardTitle>
-        <CardDescription>נשמר במכשיר הזה בלבד.</CardDescription>
+        <CardDescription>
+          {tr({ he: 'נשמר במכשיר הזה בלבד.', en: 'Saved on this device only.' })}
+        </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col gap-4">
         <Segmented
-          label="ערכת צבעים"
+          label={tr({ he: 'ערכת צבעים', en: 'Color theme' })}
           options={[
-            { value: 'light', label: 'בהיר' },
-            { value: 'dark', label: 'כהה' },
+            { value: 'light', label: tr({ he: 'בהיר', en: 'Light' }) },
+            { value: 'dark', label: tr({ he: 'כהה', en: 'Dark' }) },
           ]}
           value={theme}
           onChange={setTheme}
+        />
+        <Segmented
+          label={tr({ he: 'שפה', en: 'Language' })}
+          showLabel
+          options={LANGUAGE_OPTIONS}
+          value={language}
+          onChange={changeLanguage}
         />
       </CardContent>
     </Card>
@@ -89,7 +101,7 @@ function GenderSetting({ gender }: { gender: Gender | null }) {
       value={update.isPending ? update.variables : gender}
       onChange={(value) =>
         update.mutate(value, {
-          onSuccess: () => toast.success('נשמר'),
+          onSuccess: () => toast.success(tr({ he: 'נשמר', en: 'Saved' })),
           onError: (error) => toast.error(describeError(error)),
         })
       }
@@ -108,12 +120,17 @@ function HelpLink() {
         <CircleHelp className="size-5" aria-hidden />
       </span>
       <span className="flex-1">
-        <span className="block font-heading text-lg font-semibold">איך זה עובד?</span>
+        <span className="block font-heading text-lg font-semibold">
+          {tr({ he: 'איך זה עובד?', en: 'How it works' })}
+        </span>
         <span className="block text-sm text-muted-foreground">
-          הסברים קצרים על כל מה שיש באפליקציה
+          {tr({
+            he: 'הסברים קצרים על כל מה שיש באפליקציה',
+            en: 'Short explanations of everything in the app',
+          })}
         </span>
       </span>
-      <ChevronLeft className="size-5 text-muted-foreground" aria-hidden />
+      <ChevronLeft className="size-5 text-muted-foreground ltr:-scale-x-100" aria-hidden />
     </Link>
   )
 }

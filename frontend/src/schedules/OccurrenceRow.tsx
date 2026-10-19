@@ -2,6 +2,7 @@ import { CalendarClock } from 'lucide-react'
 import { CategoryIconBadge } from '@/categories/CategoryBadge'
 import type { Member } from '@/household/api'
 import { formatShortDate } from '@/lib/dates'
+import { tr } from '@/lib/i18n'
 import { formatFlow } from '@/lib/money'
 import { partyName } from '@/transactions/labels'
 import type { Occurrence } from './api'
@@ -16,8 +17,11 @@ export function OccurrenceRow({
 }) {
   const label =
     occurrence.type === 'installments'
-      ? `תשלום ${occurrence.sequence_no} מתוך ${occurrence.installments_count}`
-      : 'הוראת קבע'
+      ? tr({
+          he: `תשלום ${occurrence.sequence_no} מתוך ${occurrence.installments_count}`,
+          en: `Installment ${occurrence.sequence_no} of ${occurrence.installments_count}`,
+        })
+      : tr({ he: 'הוראת קבע', en: 'Recurring' })
   return (
     <div className="flex items-center gap-3 rounded-2xl px-2 py-2.5">
       <CategoryIconBadge

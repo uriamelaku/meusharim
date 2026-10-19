@@ -1,15 +1,21 @@
 import { CalendarClock } from 'lucide-react'
 import { CategoryIconBadge } from '@/categories/CategoryBadge'
 import { formatRelativeDay } from '@/lib/dates'
+import { tr } from '@/lib/i18n'
 import { formatFlow } from '@/lib/money'
 import type { UpcomingItem } from './api'
 
 function sourceLabel(item: UpcomingItem): string {
   if (item.schedule_type === 'installments') {
-    return `תשלום ${item.sequence_no} מתוך ${item.installments_count}`
+    return tr({
+      he: `תשלום ${item.sequence_no} מתוך ${item.installments_count}`,
+      en: `Installment ${item.sequence_no} of ${item.installments_count}`,
+    })
   }
-  if (item.schedule_type === 'recurring') return 'הוראת קבע'
-  return item.kind === 'expense' ? 'עוד לא שולם' : 'עוד לא התקבל'
+  if (item.schedule_type === 'recurring') return tr({ he: 'הוראת קבע', en: 'Recurring' })
+  return item.kind === 'expense'
+    ? tr({ he: 'עוד לא שולם', en: 'Not paid yet' })
+    : tr({ he: 'עוד לא התקבל', en: 'Not received yet' })
 }
 
 /** A planned item still to come this month. Dimmed: it is not part of the balance yet. */

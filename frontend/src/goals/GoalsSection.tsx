@@ -7,6 +7,7 @@ import { Sheet } from '@/components/Sheet'
 import { ErrorState, LoadingState } from '@/components/states'
 import { Button } from '@/components/ui/button'
 import { formatFullDate } from '@/lib/dates'
+import { tr } from '@/lib/i18n'
 import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import { type Goal, useGoals } from './api'
@@ -43,11 +44,11 @@ export function GoalsSection() {
     >
       <div className="mb-2 flex items-center justify-between gap-2">
         <h2 id="goals-title" className="font-heading text-xl font-semibold">
-          יעדי חיסכון
+          {tr({ he: 'יעדי חיסכון', en: 'Savings goals' })}
         </h2>
         <Button variant="ghost" size="sm" className="h-9" onClick={() => show({ mode: 'new' })}>
           <Plus aria-hidden />
-          יעד חדש
+          {tr({ he: 'יעד חדש', en: 'New goal' })}
         </Button>
       </div>
 
@@ -55,8 +56,8 @@ export function GoalsSection() {
         <LoadingState />
       ) : goals.isError ? (
         <ErrorState
-          title="לא הצלחנו לטעון את היעדים"
-          description="בדקו את החיבור ונסו שוב."
+          title={tr({ he: 'לא הצלחנו לטעון את היעדים', en: "We couldn't load your goals" })}
+          description={tr({ he: 'בדקו את החיבור ונסו שוב.', en: 'Check your connection and try again.' })}
           onRetry={() => void goals.refetch()} />
       ) : goals.data.length === 0 ? (
         <button
@@ -65,7 +66,10 @@ export function GoalsSection() {
           className="flex w-full items-center gap-3 rounded-2xl border border-dashed p-4 text-start text-sm text-muted-foreground hover:bg-muted"
         >
           <PiggyBank className="size-6 shrink-0 text-primary" aria-hidden />
-          חוסכים למשהו? אפשר להגדיר יעד, למשל חופשה או קרן חירום, ולעקוב אחרי ההתקדמות.
+          {tr({
+            he: 'חוסכים למשהו? אפשר להגדיר יעד, למשל חופשה או קרן חירום, ולעקוב אחרי ההתקדמות.',
+            en: 'Saving up for something? Set a goal, like a vacation or an emergency fund, and track your progress.',
+          })}
         </button>
       ) : (
         <ul className="flex flex-col gap-3">
@@ -86,10 +90,13 @@ export function GoalsSection() {
         onOpenChange={(next) => !next && close()}
         title={
           sheet?.mode === 'new'
-            ? 'יעד חיסכון חדש'
+            ? tr({ he: 'יעד חיסכון חדש', en: 'New savings goal' })
             : sheet?.mode === 'edit'
-              ? 'עריכת יעד'
-              : `הפקדה ל${sheet?.goal.name ?? ''}`
+              ? tr({ he: 'עריכת יעד', en: 'Edit goal' })
+              : tr({
+                  he: `הפקדה ל${sheet?.goal.name ?? ''}`,
+                  en: `Deposit to ${sheet?.goal.name ?? ''}`,
+                })
         }
       >
         {open?.mode === 'new' && <GoalForm onDone={close} />}
@@ -122,17 +129,28 @@ function GoalCard({
         <div className="min-w-0">
           <p className="truncate font-semibold">{goal.name}</p>
           <p className="text-sm text-muted-foreground tabular-nums">
-            {formatMoney(goal.saved)} מתוך {formatMoney(goal.target_amount)}
-            {goal.target_date && ` · עד ${formatFullDate(goal.target_date)}`}
+            {formatMoney(goal.saved)}
+            {tr({ he: ' מתוך ', en: ' of ' })}
+            {formatMoney(goal.target_amount)}
+            {goal.target_date &&
+              tr({ he: ' · עד ', en: ' · by ' }) + formatFullDate(goal.target_date)}
           </p>
         </div>
-        <Button variant="ghost" size="icon" aria-label={`עריכת ${goal.name}`} onClick={onEdit}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={tr({ he: `עריכת ${goal.name}`, en: `Edit ${goal.name}` })}
+          onClick={onEdit}
+        >
           <Pencil className="size-4" aria-hidden />
         </Button>
       </div>
       <ProgressBar
         percent={goal.percent}
-        label={`${goal.name}: נחסכו ${goal.percent}%`}
+        label={tr({
+          he: `${goal.name}: נחסכו ${goal.percent}%`,
+          en: `${goal.name}: ${goal.percent}% saved`,
+        })}
         className="h-2.5"
       />
       <div className="flex items-center justify-between gap-2">
@@ -147,14 +165,21 @@ function GoalCard({
           )}
         >
           {goal.reached
-            ? 'הגעתם ליעד!'
+            ? tr({ he: 'הגעתם ליעד!', en: 'Goal reached!' })
             : goal.monthly_needed
-              ? `${goal.behind ? 'מאחור · ' : ''}${formatMoney(goal.monthly_needed)} בחודש כדי להגיע בזמן`
-              : `נשארו ${formatMoney(goal.remaining)}`}
+              ? (goal.behind ? tr({ he: 'מאחור · ', en: 'Behind · ' }) : '') +
+                tr({
+                  he: `${formatMoney(goal.monthly_needed)} בחודש כדי להגיע בזמן`,
+                  en: `${formatMoney(goal.monthly_needed)} a month to get there on time`,
+                })
+              : tr({
+                  he: `נשארו ${formatMoney(goal.remaining)}`,
+                  en: `${formatMoney(goal.remaining)} to go`,
+                })}
         </p>
         <Button size="sm" className="h-9 shrink-0 px-3" onClick={onDeposit}>
           <Plus aria-hidden />
-          הפקדה
+          {tr({ he: 'הפקדה', en: 'Deposit' })}
         </Button>
       </div>
     </div>

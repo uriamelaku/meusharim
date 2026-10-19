@@ -7,6 +7,7 @@ import { ErrorState, LoadingState } from '@/components/states'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { describeError } from '@/lib/errors'
+import { tr } from '@/lib/i18n'
 import { type Category, KIND_OPTIONS, type Kind, useCategories, useDeleteCategory } from './api'
 import { CategoryIconBadge } from './CategoryBadge'
 import { CategoryDialog } from './CategoryDialog'
@@ -28,8 +29,11 @@ export function CategoriesCard() {
       onSuccess: ({ result }) => {
         toast.success(
           result === 'archived'
-            ? `"${deleting.name}" הוסרה מהרשימה. מה שכבר נרשם בה נשאר כמו שהוא.`
-            : `"${deleting.name}" נמחקה`,
+            ? tr({
+                he: `"${deleting.name}" הוסרה מהרשימה. מה שכבר נרשם בה נשאר כמו שהוא.`,
+                en: `"${deleting.name}" was removed from the list. What's already recorded in it stays as it is.`,
+              })
+            : tr({ he: `"${deleting.name}" נמחקה`, en: `"${deleting.name}" was deleted` }),
         )
         setDeleting(null)
       },
@@ -40,25 +44,39 @@ export function CategoriesCard() {
   return (
     <Card className="rounded-2xl">
       <CardHeader>
-        <CardTitle className="text-lg">קטגוריות</CardTitle>
-        <CardDescription>שניכם רואים ועורכים את אותן קטגוריות.</CardDescription>
+        <CardTitle className="text-lg">{tr({ he: 'קטגוריות', en: 'Categories' })}</CardTitle>
+        <CardDescription>
+          {tr({
+            he: 'שניכם רואים ועורכים את אותן קטגוריות.',
+            en: 'You both see and edit the same categories.',
+          })}
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <Segmented label="סוג הקטגוריות" options={KIND_OPTIONS} value={kind} onChange={setKind} />
+        <Segmented
+          label={tr({ he: 'סוג הקטגוריות', en: 'Category type' })}
+          options={KIND_OPTIONS}
+          value={kind}
+          onChange={setKind}
+        />
 
         {categories.isPending ? (
           <LoadingState className="py-8" />
         ) : categories.isError ? (
           <ErrorState
             className="py-8"
-            title="לא הצלחנו לטעון את הקטגוריות"
-            description="בדקו את החיבור ונסו שוב."
+            title={tr({ he: 'לא הצלחנו לטעון את הקטגוריות', en: "We couldn't load the categories" })}
+            description={tr({ he: 'בדקו את החיבור ונסו שוב.', en: 'Check your connection and try again.' })}
             onRetry={() => void categories.refetch()}
           />
         ) : (
           <ul
             className="-mx-2 flex flex-col"
-            aria-label={kind === 'expense' ? 'קטגוריות הוצאה' : 'קטגוריות הכנסה'}
+            aria-label={
+              kind === 'expense'
+                ? tr({ he: 'קטגוריות הוצאה', en: 'Expense categories' })
+                : tr({ he: 'קטגוריות הכנסה', en: 'Income categories' })
+            }
           >
             {visible.map((category) => (
               <li key={category.id} className="flex items-center gap-3 rounded-xl px-2 py-1.5">
@@ -67,7 +85,7 @@ export function CategoriesCard() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  aria-label={`עריכת ${category.name}`}
+                  aria-label={tr({ he: `עריכת ${category.name}`, en: `Edit ${category.name}` })}
                   onClick={() => setEditing({ category })}
                 >
                   <Pencil className="size-4.5" />
@@ -76,7 +94,7 @@ export function CategoriesCard() {
                   variant="ghost"
                   size="icon"
                   className="text-muted-foreground hover:text-destructive"
-                  aria-label={`מחיקת ${category.name}`}
+                  aria-label={tr({ he: `מחיקת ${category.name}`, en: `Delete ${category.name}` })}
                   onClick={() => setDeleting(category)}
                 >
                   <Trash2 className="size-4.5" />
@@ -88,7 +106,9 @@ export function CategoriesCard() {
 
         <Button variant="outline" className="self-start" onClick={() => setEditing({})}>
           <Plus aria-hidden />
-          {kind === 'expense' ? 'קטגוריית הוצאה חדשה' : 'קטגוריית הכנסה חדשה'}
+          {kind === 'expense'
+            ? tr({ he: 'קטגוריית הוצאה חדשה', en: 'New expense category' })
+            : tr({ he: 'קטגוריית הכנסה חדשה', en: 'New income category' })}
         </Button>
       </CardContent>
 
@@ -101,9 +121,15 @@ export function CategoriesCard() {
       <ConfirmDialog
         open={deleting !== null}
         onOpenChange={(open) => !open && setDeleting(null)}
-        title={`למחוק את "${deleting?.name ?? ''}"?`}
-        description="הוצאות, הכנסות, הוראות קבע ותקציבים שכבר משויכים לקטגוריה יישמרו עם השם שלה. היא רק לא תופיע יותר לבחירה."
-        confirmLabel="מחיקה"
+        title={tr({
+          he: `למחוק את "${deleting?.name ?? ''}"?`,
+          en: `Delete "${deleting?.name ?? ''}"?`,
+        })}
+        description={tr({
+          he: 'הוצאות, הכנסות, הוראות קבע ותקציבים שכבר משויכים לקטגוריה יישמרו עם השם שלה. היא רק לא תופיע יותר לבחירה.',
+          en: "Expenses, income, recurring payments and budgets already in this category keep its name. It just won't be offered as a choice anymore.",
+        })}
+        confirmLabel={tr({ he: 'מחיקה', en: 'Delete' })}
         onConfirm={confirmDelete}
         pending={deleteCategory.isPending}
       />

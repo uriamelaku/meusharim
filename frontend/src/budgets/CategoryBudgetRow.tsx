@@ -1,6 +1,7 @@
 import { AlertTriangle } from 'lucide-react'
 import { CategoryIconBadge } from '@/categories/CategoryBadge'
 import { ProgressBar } from '@/components/ProgressBar'
+import { tr } from '@/lib/i18n'
 import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import type { CategoryBudget } from './api'
@@ -25,7 +26,10 @@ export function CategoryBudgetRow({ item }: { item: CategoryBudget }) {
           <ProgressBar
             percent={percent}
             tone={toneOf(status)}
-            label={`${category.name}: נוצלו ${percent}% מהתקציב`}
+            label={tr({
+              he: `${category.name}: נוצלו ${percent}% מהתקציב`,
+              en: `${category.name}: ${percent}% of the budget used`,
+            })}
           />
           <div className="flex items-center justify-between gap-2 text-sm">
             <span
@@ -44,7 +48,12 @@ export function CategoryBudgetRow({ item }: { item: CategoryBudget }) {
         </>
       )}
       {hasPlanned && (
-        <p className="text-sm text-muted-foreground">ועוד {formatMoney(planned)} שעוד לא שולם</p>
+        <p className="text-sm text-muted-foreground">
+          {tr({
+            he: `ועוד ${formatMoney(planned)} שעוד לא שולם`,
+            en: `Plus ${formatMoney(planned)} not paid yet`,
+          })}
+        </p>
       )}
     </div>
   )

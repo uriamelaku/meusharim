@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/PageHeader'
 import { Segmented } from '@/components/Segmented'
 import { EmptyState, ErrorState, LoadingState } from '@/components/states'
 import { Button } from '@/components/ui/button'
+import { tr } from '@/lib/i18n'
 import { formatMoney } from '@/lib/money'
 import { currentPeriod, formatPeriod, parsePeriodParam } from '@/lib/period'
 import { cn } from '@/lib/utils'
@@ -23,10 +24,10 @@ import {
 } from '@/reports/range'
 
 const PRESETS: { value: RangePreset; label: string }[] = [
-  { value: '6m', label: '6 חודשים' },
-  { value: '12m', label: '12 חודשים' },
-  { value: 'year', label: 'השנה' },
-  { value: 'custom', label: 'טווח' },
+  { value: '6m', label: tr({ he: '6 חודשים', en: '6 months' }) },
+  { value: '12m', label: tr({ he: '12 חודשים', en: '12 months' }) },
+  { value: 'year', label: tr({ he: 'השנה', en: 'This year' }) },
+  { value: 'custom', label: tr({ he: 'טווח', en: 'Custom' }) },
 ]
 
 const TOP_CATEGORIES = 5
@@ -63,11 +64,18 @@ export function ReportsPage() {
 
   return (
     <>
-      <PageHeader title="דוחות" />
+      <PageHeader title={tr({ he: 'דוחות', en: 'Reports' })} />
       <MonthInsightsSection />
-      <h2 className="mb-3 font-heading text-xl font-semibold">לאורך זמן</h2>
+      <h2 className="mb-3 font-heading text-xl font-semibold">
+        {tr({ he: 'לאורך זמן', en: 'Over time' })}
+      </h2>
       <div className="mb-6 flex flex-col gap-3">
-        <Segmented label="טווח הדוח" options={PRESETS} value={preset} onChange={choosePreset} />
+        <Segmented
+          label={tr({ he: 'טווח הדוח', en: 'Report range' })}
+          options={PRESETS}
+          value={preset}
+          onChange={choosePreset}
+        />
         {preset === 'custom' && <CustomRange range={range} onApply={applyRange} />}
         <p className="text-sm text-muted-foreground">
           {formatPeriod(range.from)} – {formatPeriod(range.to)}
@@ -78,8 +86,8 @@ export function ReportsPage() {
         <LoadingState />
       ) : report.isError ? (
         <ErrorState
-          title="לא הצלחנו לטעון את הדוח"
-          description="בדקו את החיבור ונסו שוב."
+          title={tr({ he: 'לא הצלחנו לטעון את הדוח', en: "We couldn't load the report" })}
+          description={tr({ he: 'בדקו את החיבור ונסו שוב.', en: 'Check your connection and try again.' })}
           onRetry={() => void report.refetch()}
         />
       ) : (
@@ -102,7 +110,7 @@ function CustomRange({
   return (
     <div className="flex flex-wrap items-end gap-3 rounded-2xl bg-muted/60 p-3">
       <label className="flex flex-col gap-1.5 text-sm font-medium">
-        מחודש
+        {tr({ he: 'מחודש', en: 'From' })}
         <input
           type="month"
           value={from}
@@ -113,7 +121,7 @@ function CustomRange({
         />
       </label>
       <label className="flex flex-col gap-1.5 text-sm font-medium">
-        עד חודש
+        {tr({ he: 'עד חודש', en: 'To' })}
         <input
           type="month"
           value={to}
@@ -124,11 +132,14 @@ function CustomRange({
         />
       </label>
       <Button disabled={!parsed} onClick={() => parsed && onApply(parsed)}>
-        הצגה
+        {tr({ he: 'הצגה', en: 'Show' })}
       </Button>
       {!parsed && (
         <p role="alert" className="w-full text-sm text-destructive">
-          הטווח צריך להיות בין חודש אחד ל-{MAX_RANGE_MONTHS} חודשים, וחודש ההתחלה לא אחרי חודש הסיום.
+          {tr({
+            he: `הטווח צריך להיות בין חודש אחד ל-${MAX_RANGE_MONTHS} חודשים, וחודש ההתחלה לא אחרי חודש הסיום.`,
+            en: `The range must be between 1 and ${MAX_RANGE_MONTHS} months, and the start month can't be after the end month.`,
+          })}
         </p>
       )}
     </div>
@@ -146,8 +157,11 @@ function ReportContent({ report }: { report: Report }) {
     return (
       <EmptyState
         icon={BarChart3}
-        title="אין נתונים בטווח הזה"
-        description="אפשר לבחור טווח אחר. כשיירשמו הכנסות והוצאות, יופיעו כאן מגמות."
+        title={tr({ he: 'אין נתונים בטווח הזה', en: 'No data in this range' })}
+        description={tr({
+          he: 'אפשר לבחור טווח אחר. כשיירשמו הכנסות והוצאות, יופיעו כאן מגמות.',
+          en: 'Try another range. Once income and expenses are recorded, trends will show up here.',
+        })}
       />
     )
   }
@@ -156,59 +170,84 @@ function ReportContent({ report }: { report: Report }) {
   return (
     <div className="flex flex-col gap-8">
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="הכנסות שהתקבלו" value={report.income} planned={report.income_planned} kind="income" />
-        <Stat label="הוצאות ששולמו" value={report.expense} planned={report.expense_planned} kind="expense" />
-        <Stat label="יתרה" value={report.balance} />
-        <Stat label="ממוצע הוצאות לחודש" value={report.average_monthly_expense} />
+        <Stat
+          label={tr({ he: 'הכנסות שהתקבלו', en: 'Income received' })}
+          value={report.income}
+          planned={report.income_planned}
+          kind="income"
+        />
+        <Stat
+          label={tr({ he: 'הוצאות ששולמו', en: 'Expenses paid' })}
+          value={report.expense}
+          planned={report.expense_planned}
+          kind="expense"
+        />
+        <Stat label={tr({ he: 'יתרה', en: 'Balance' })} value={report.balance} />
+        <Stat
+          label={tr({ he: 'ממוצע הוצאות לחודש', en: 'Average monthly expenses' })}
+          value={report.average_monthly_expense}
+        />
       </dl>
 
       <section aria-labelledby="trend-title" className="rounded-3xl border bg-card p-4 sm:p-6">
         <h2 id="trend-title" className="mb-4 font-heading text-xl font-semibold">
-          הכנסות מול הוצאות
+          {tr({ he: 'הכנסות מול הוצאות', en: 'Income vs. expenses' })}
         </h2>
         <IncomeExpenseChart months={report.months} />
       </section>
 
       <section aria-labelledby="top-title">
         <h2 id="top-title" className="mb-4 font-heading text-xl font-semibold">
-          {showAll ? 'הוצאות לפי קטגוריה' : 'הקטגוריות עם ההוצאה הגבוהה ביותר'}
+          {showAll
+            ? tr({ he: 'הוצאות לפי קטגוריה', en: 'Expenses by category' })
+            : tr({ he: 'הקטגוריות עם ההוצאה הגבוהה ביותר', en: 'Top spending categories' })}
         </h2>
         {report.categories.length ? (
           <>
-            <BarList items={categories} label="הוצאות לפי קטגוריה" />
+            <BarList
+              items={categories}
+              label={tr({ he: 'הוצאות לפי קטגוריה', en: 'Expenses by category' })}
+            />
             {report.categories.length > TOP_CATEGORIES && (
               <Button variant="ghost" className="mt-2" onClick={() => setShowAll(!showAll)}>
-                {showAll ? 'הצגת המובילות בלבד' : `הצגת כל ${report.categories.length} הקטגוריות`}
+                {showAll
+                  ? tr({ he: 'הצגת המובילות בלבד', en: 'Show top categories only' })
+                  : tr({
+                      he: `הצגת כל ${report.categories.length} הקטגוריות`,
+                      en: `Show all ${report.categories.length} categories`,
+                    })}
               </Button>
             )}
           </>
         ) : (
-          <p className="text-muted-foreground">אין הוצאות בטווח הזה.</p>
+          <p className="text-muted-foreground">
+            {tr({ he: 'אין הוצאות בטווח הזה.', en: 'No expenses in this range.' })}
+          </p>
         )}
       </section>
 
       <section aria-labelledby="monthly-title">
         <h2 id="monthly-title" className="mb-3 font-heading text-xl font-semibold">
-          השוואה חודשית
+          {tr({ he: 'השוואה חודשית', en: 'Month by month' })}
         </h2>
         <div className="overflow-x-auto rounded-2xl border">
           <table className="w-full min-w-[30rem] text-sm">
             <thead className="bg-muted/60 text-muted-foreground">
               <tr>
                 <th scope="col" className="px-3 py-2 text-start font-medium">
-                  חודש
+                  {tr({ he: 'חודש', en: 'Month' })}
                 </th>
                 <th scope="col" className="px-3 py-2 text-start font-medium">
-                  הכנסות
+                  {tr({ he: 'הכנסות', en: 'Income' })}
                 </th>
                 <th scope="col" className="px-3 py-2 text-start font-medium">
-                  הוצאות
+                  {tr({ he: 'הוצאות', en: 'Expenses' })}
                 </th>
                 <th scope="col" className="px-3 py-2 text-start font-medium">
-                  יתרה
+                  {tr({ he: 'יתרה', en: 'Balance' })}
                 </th>
                 <th scope="col" className="px-3 py-2 text-start font-medium">
-                  שינוי בהוצאות
+                  {tr({ he: 'שינוי בהוצאות', en: 'Change in expenses' })}
                 </th>
               </tr>
             </thead>
@@ -222,7 +261,10 @@ function ReportContent({ report }: { report: Report }) {
                     {formatMoney(month.income)}
                     {month.income_planned !== '0.00' && (
                       <span className="block text-xs text-muted-foreground">
-                        + {formatMoney(month.income_planned)} עוד לא התקבל
+                        {tr({
+                          he: `+ ${formatMoney(month.income_planned)} עוד לא התקבל`,
+                          en: `+ ${formatMoney(month.income_planned)} not received yet`,
+                        })}
                       </span>
                     )}
                   </td>
@@ -230,7 +272,10 @@ function ReportContent({ report }: { report: Report }) {
                     {formatMoney(month.expense)}
                     {month.expense_planned !== '0.00' && (
                       <span className="block text-xs text-muted-foreground">
-                        + {formatMoney(month.expense_planned)} עוד לא שולם
+                        {tr({
+                          he: `+ ${formatMoney(month.expense_planned)} עוד לא שולם`,
+                          en: `+ ${formatMoney(month.expense_planned)} not paid yet`,
+                        })}
                       </span>
                     )}
                   </td>
@@ -254,25 +299,32 @@ function ReportContent({ report }: { report: Report }) {
 
       <section aria-labelledby="yearly-title">
         <h2 id="yearly-title" className="mb-3 font-heading text-xl font-semibold">
-          סיכום שנתי
+          {tr({ he: 'סיכום שנתי', en: 'Yearly summary' })}
         </h2>
         <ul className="grid gap-3 sm:grid-cols-2">
           {report.years.map((year) => (
             <li key={year.year} className="rounded-2xl border bg-card p-4">
               <p className="font-heading text-2xl font-semibold">{year.year}</p>
               <p className="mb-3 text-xs text-muted-foreground">
-                כל השנה (מה ששולם והתקבל), לעומת {year.year - 1}
+                {tr({
+                  he: `כל השנה (מה ששולם והתקבל), לעומת ${year.year - 1}`,
+                  en: `The whole year (paid and received), compared with ${year.year - 1}`,
+                })}
               </p>
               <dl className="flex flex-col gap-2 text-sm">
-                <YearLine label="הכנסות" value={year.income} change={year.income_change_percent} />
                 <YearLine
-                  label="הוצאות"
+                  label={tr({ he: 'הכנסות', en: 'Income' })}
+                  value={year.income}
+                  change={year.income_change_percent}
+                />
+                <YearLine
+                  label={tr({ he: 'הוצאות', en: 'Expenses' })}
                   value={year.expense}
                   change={year.expense_change_percent}
                   higherIsWorse
                 />
                 <div className="flex justify-between gap-2 border-t pt-2">
-                  <dt className="font-medium">יתרה</dt>
+                  <dt className="font-medium">{tr({ he: 'יתרה', en: 'Balance' })}</dt>
                   <dd className="font-semibold tabular-nums">{formatMoney(year.balance)}</dd>
                 </div>
               </dl>
@@ -293,7 +345,10 @@ function Stat({ label, value, planned, kind = 'expense' }: StatProps) {
       <dd className="mt-1 font-heading text-xl font-semibold tabular-nums">{formatMoney(value)}</dd>
       {planned && planned !== '0.00' && (
         <dd className="text-xs text-muted-foreground">
-          + {formatMoney(planned)} {kind === 'income' ? 'עוד לא התקבל' : 'עוד לא שולם'}
+          + {formatMoney(planned)}{' '}
+          {kind === 'income'
+            ? tr({ he: 'עוד לא התקבל', en: 'not received yet' })
+            : tr({ he: 'עוד לא שולם', en: 'not paid yet' })}
         </dd>
       )}
     </div>
@@ -326,7 +381,9 @@ function Change({
   higherIsWorse?: boolean
 }) {
   if (percent === null) return <span className="text-muted-foreground">—</span>
-  if (percent === 0) return <span className="text-muted-foreground">ללא שינוי</span>
+  if (percent === 0) {
+    return <span className="text-muted-foreground">{tr({ he: 'ללא שינוי', en: 'No change' })}</span>
+  }
   const up = percent > 0
   const bad = up === higherIsWorse
   const Icon = up ? TrendingUp : TrendingDown
@@ -339,7 +396,9 @@ function Change({
     >
       <Icon className="size-3.5" aria-hidden />
       <span>
-        {up ? 'עלייה' : 'ירידה'} של {Math.abs(percent)}%
+        {up
+          ? tr({ he: `עלייה של ${Math.abs(percent)}%`, en: `Up ${Math.abs(percent)}%` })
+          : tr({ he: `ירידה של ${Math.abs(percent)}%`, en: `Down ${Math.abs(percent)}%` })}
       </span>
     </span>
   )

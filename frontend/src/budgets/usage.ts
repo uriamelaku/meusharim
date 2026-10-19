@@ -1,4 +1,5 @@
 import type { ProgressTone } from '@/components/ProgressBar'
+import { tr } from '@/lib/i18n'
 import { formatMoney } from '@/lib/money'
 import type { UsageStatus } from './api'
 
@@ -8,15 +9,17 @@ export function toneOf(status: UsageStatus | null): ProgressTone {
   return 'default'
 }
 
-/** "נותרו 200 ₪" or "חריגה של 50 ₪". `remaining` is negative when over budget. */
+/** "נשארו 200 ₪" or "חריגה של 50 ₪". `remaining` is negative when over budget. */
 export function remainingText(remaining: string): string {
-  return remaining.startsWith('-')
-    ? `חריגה של ${formatMoney(remaining.slice(1))}`
-    : `נשארו ${formatMoney(remaining)}`
+  if (remaining.startsWith('-')) {
+    const over = formatMoney(remaining.slice(1))
+    return tr({ he: `חריגה של ${over}`, en: `${over} over` })
+  }
+  const left = formatMoney(remaining)
+  return tr({ he: `נשארו ${left}`, en: `${left} left` })
 }
 
-export const STATUS_TEXT: Record<UsageStatus, string> = {
-  ok: 'בתקציב',
-  near: 'מתקרבים לתקציב',
-  over: 'חריגה מהתקציב',
-}
+export const STATUS_TEXT: Record<UsageStatus, string> = tr({
+  he: { ok: 'בתקציב', near: 'מתקרבים לתקציב', over: 'חריגה מהתקציב' },
+  en: { ok: 'Within budget', near: 'Close to the budget', over: 'Over budget' },
+})

@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { myGender, partnerName, useShellContext } from '@/components/shellContext'
 import type { Gender } from '@/household/api'
 import { byGender } from '@/lib/gender'
+import { isHebrew, tr } from '@/lib/i18n'
 import { useTour } from '@/onboarding/tourContext'
 
 type Question = { q: string; a: ReactNode }
@@ -26,7 +27,7 @@ type Topic = { id: string; title: string; icon: LucideIcon; questions: Question[
 /** Picks the female or male form of a word for the reader. */
 type Say = (female: string, male: string) => string
 
-function topics(say: Say, partner: string): Topic[] {
+function hebrewTopics(say: Say, partner: string): Topic[] {
   return [
     {
       id: 'main',
@@ -270,6 +271,15 @@ function topics(say: Say, partner: string): Topic[] {
           q: 'איך עוברים למצב כהה?',
           a: <p>בהגדרות, תחת ״תצוגה״. הבחירה נשמרת בכל מכשיר בנפרד.</p>,
         },
+        {
+          q: 'אפשר להשתמש באפליקציה באנגלית?',
+          a: (
+            <p>
+              כן. בהגדרות, תחת ״תצוגה״ ← ״שפה״. גם הבחירה הזו נשמרת בכל מכשיר בנפרד, כך שכל אחד
+              מכם יכול לעבוד בשפה שלו.
+            </p>
+          ),
+        },
       ],
     },
     {
@@ -313,11 +323,316 @@ function topics(say: Say, partner: string): Topic[] {
   ]
 }
 
+function englishTopics(partner: string): Topic[] {
+  return [
+    {
+      id: 'main',
+      title: 'The home screen',
+      icon: CircleDot,
+      questions: [
+        {
+          q: 'What do I see on the home screen?',
+          a: (
+            <>
+              <p>
+                At the top: how much money went out this month, and a colored circle for each
+                category (groceries, car, housing…). The ring around each circle shows how much of
+                that category's budget is already used. A red circle means you went over budget.
+              </p>
+              <p>Below: this month's balance (income minus expenses), and what was added recently.</p>
+            </>
+          ),
+        },
+        {
+          q: "What's the fastest way to add an expense?",
+          a: (
+            <>
+              <p>
+                Tap the category's circle, type the amount and save. That's it. The date is today,
+                and the expense is recorded as "Paid".
+              </p>
+              <p>
+                You can also tap the orange + button at the bottom of the screen, and choose an
+                expense, income, a recurring payment or a purchase in installments.
+              </p>
+            </>
+          ),
+        },
+        {
+          q: "How do I see what's in a category?",
+          a: (
+            <p>
+              Press and hold its circle (or right-click with a mouse) to open all the expenses
+              recorded in it this month.
+            </p>
+          ),
+        },
+      ],
+    },
+    {
+      id: 'status',
+      title: 'Paid and not paid yet',
+      icon: CircleCheck,
+      questions: [
+        {
+          q: 'What\'s the difference between "Paid" and "Not paid yet"?',
+          a: (
+            <>
+              <p>
+                <b>Paid</b> – the money already went out (or came in, and then it says "Received").
+                Only what's marked this way counts in the balance, the budget and the reports.
+              </p>
+              <p>
+                <b>Not paid yet</b> – something you know is coming, like rent at the end of the
+                month or an electricity bill. It's shown separately ("Including what isn't paid
+                yet") so you can see where the month is heading, but it doesn't change the balance
+                until you mark it.
+              </p>
+            </>
+          ),
+        },
+        {
+          q: 'What is "Already paid?" on the home screen?',
+          a: (
+            <p>
+              When the date of something not paid yet arrives, it shows up there. If it was paid,
+              tap "Paid". If the amount turned out different (a water bill, for example), tap the
+              row, fix the amount and save. A date alone never marks anything as paid.
+            </p>
+          ),
+        },
+        {
+          q: 'What is "Who paid"?',
+          a: (
+            <p>
+              For every expense you choose who paid: you, {partner}, or the joint account. That way
+              the reports show who spent what, and you can filter by it in the transaction list.
+            </p>
+          ),
+        },
+      ],
+    },
+    {
+      id: 'budget',
+      title: 'Budget',
+      icon: Wallet,
+      questions: [
+        {
+          q: 'What are "total budget" and "unallocated"?',
+          a: (
+            <>
+              <p>
+                <b>Total budget</b> – how much you plan to spend this month altogether. It's a
+                ceiling.
+              </p>
+              <p>
+                <b>Planned by category</b> – how much of the ceiling you've already split into
+                categories (groceries 2,500, car 1,400…). You can't split more than the ceiling.
+              </p>
+              <p>
+                <b>Unallocated</b> – what isn't assigned to any category yet. It stays as a reserve
+                for unplanned spending.
+              </p>
+            </>
+          ),
+        },
+        {
+          q: 'What happens at the end of the month?',
+          a: (
+            <p>
+              Every month starts fresh: what isn't used doesn't carry over to the next month. At the
+              start of a new month the app offers to copy last month's budget, and you can change it
+              afterwards.
+            </p>
+          ),
+        },
+        {
+          q: 'When do I get a budget alert?',
+          a: (
+            <p>
+              When a category reaches 80% of its budget, and when it goes over. The alert appears
+              inside the app, once per category each month. No emails and no phone notifications.
+            </p>
+          ),
+        },
+      ],
+    },
+    {
+      id: 'repeat',
+      title: 'Recurring, installments and savings',
+      icon: Repeat,
+      questions: [
+        {
+          q: 'What is a recurring payment?',
+          a: (
+            <>
+              <p>
+                An expense or income that repeats every month (or every week or year): rent, salary,
+                building fees. Set it up once, and it's recorded by itself on every date.
+              </p>
+              <p>
+                If the amount is always the same, you can turn on "Mark as paid automatically on the
+                date". If the amount changes (like electricity), better leave it off, and then on the
+                date it appears under "Already paid?" for you to confirm.
+              </p>
+              <p>You can pause or cancel a recurring payment. What was already recorded stays.</p>
+            </>
+          ),
+        },
+        {
+          q: 'How do I record a purchase in installments?',
+          a: (
+            <p>
+              With the + button, choose "Installments", then type the total amount and the number
+              of installments. Each payment is recorded in the month it's charged, so each month's
+              budget shows only that month's payment.
+            </p>
+          ),
+        },
+        {
+          q: 'How do savings goals work?',
+          a: (
+            <>
+              <p>
+                On the budget page you create a goal (say "Summer vacation", ₪5,000) and can add a
+                date. With a date, the app works out how much to put aside each month.
+              </p>
+              <p>
+                Each "deposit" is recorded as an expense in the savings category, since the money
+                leaves your current account. No goal, no savings alerts.
+              </p>
+            </>
+          ),
+        },
+      ],
+    },
+    {
+      id: 'reports',
+      title: 'Reports',
+      icon: BarChart3,
+      questions: [
+        {
+          q: "What's in the reports?",
+          a: (
+            <p>
+              Where the money went by category, income vs. expenses over the months, a comparison
+              with last month or the same month last year, how much you saved since the start of
+              the year and an end-of-month forecast. Reports also count only what's marked "Paid".
+            </p>
+          ),
+        },
+      ],
+    },
+    {
+      id: 'together',
+      title: 'Together with your partner',
+      icon: Users,
+      questions: [
+        {
+          q: 'How do I invite my partner?',
+          a: (
+            <p>
+              In Settings, tap "Create invitation link" and send the link on WhatsApp or any other
+              way. The link is valid for a week and works once. Each of you signs in with your own
+              email and password, and you both see and edit the same data.
+            </p>
+          ),
+        },
+        {
+          q: 'Who can change what?',
+          a: (
+            <p>
+              You both have exactly the same permissions: adding, editing and deleting expenses,
+              income, categories and the budget. Every change shows up right away for the other.
+            </p>
+          ),
+        },
+      ],
+    },
+    {
+      id: 'phone',
+      title: 'Installing on your phone',
+      icon: Smartphone,
+      questions: [
+        {
+          q: 'How do I add the app to my home screen?',
+          a: (
+            <>
+              <p>
+                <b>iPhone:</b> open the site in Safari, tap the share button (a square with an
+                arrow pointing up) and choose "Add to Home Screen".
+              </p>
+              <p>
+                <b>Android:</b> open it in Chrome, tap the three dots at the top and choose "Install
+                app" or "Add to Home screen".
+              </p>
+              <p>From then on it opens like any other app, in full screen.</p>
+            </>
+          ),
+        },
+        {
+          q: 'How do I switch to dark mode?',
+          a: <p>In Settings, under "Display". The choice is saved separately on each device.</p>,
+        },
+        {
+          q: 'Can I use the app in Hebrew?',
+          a: (
+            <p>
+              Yes. In Settings, under "Display" → "Language". This choice is also saved separately
+              on each device, so each of you can use your own language.
+            </p>
+          ),
+        },
+      ],
+    },
+    {
+      id: 'more',
+      title: 'Good to know',
+      icon: PiggyBank,
+      questions: [
+        {
+          q: 'How do I find an old expense?',
+          a: (
+            <p>
+              On the Transactions page you can search by word, and filter by category, who paid,
+              "Paid" or "Not yet", and period.
+            </p>
+          ),
+        },
+        {
+          q: 'Can I change or add categories?',
+          a: (
+            <p>
+              Yes, in Settings under "Categories": name, color and icon. A deleted category leaves
+              the list, but what was already recorded in it stays.
+            </p>
+          ),
+        },
+        {
+          q: 'Can I import a bank or credit card statement?',
+          a: <p>Not yet. It's on the way, which is why the button says "Soon".</p>,
+        },
+        {
+          q: 'Is our data safe?',
+          a: (
+            <p>
+              Only the two of you see your household's data, after signing in with email and
+              password. There's no connection to your bank or credit card – everything in the app
+              is what you typed in.
+            </p>
+          ),
+        },
+      ],
+    },
+  ]
+}
+
 export function HelpPage() {
   const context = useShellContext()
   const gender: Gender | null = myGender(context)
   const say: Say = (female, male) => byGender(gender, { female, male, neutral: male })
-  const list = topics(say, partnerName(context))
+  const partner = partnerName(context)
+  const list = isHebrew ? hebrewTopics(say, partner) : englishTopics(partner)
   const tour = useTour()
 
   return (
@@ -326,18 +641,21 @@ export function HelpPage() {
         to="/settings"
         className="mb-3 inline-flex items-center gap-1 text-sm font-medium text-muted-foreground"
       >
-        <ArrowRight className="size-4" aria-hidden />
-        להגדרות
+        <ArrowRight className="size-4 ltr:-scale-x-100" aria-hidden />
+        {tr({ he: 'להגדרות', en: 'Settings' })}
       </Link>
       <PageHeader
-        title="איך זה עובד?"
-        description="כל מה שצריך לדעת כדי להשתמש באפליקציה, בקצרה."
+        title={tr({ he: 'איך זה עובד?', en: 'How it works' })}
+        description={tr({
+          he: 'כל מה שצריך לדעת כדי להשתמש באפליקציה, בקצרה.',
+          en: 'Everything you need to know to use the app, in short.',
+        })}
       />
       <Button className="mb-5 w-full sm:w-auto" variant="outline" onClick={tour.start}>
         <Compass aria-hidden />
-        סיור באפליקציה
+        {tr({ he: 'סיור באפליקציה', en: 'Take the tour' })}
       </Button>
-      <nav aria-label="נושאים" className="mb-5 flex flex-wrap gap-2">
+      <nav aria-label={tr({ he: 'נושאים', en: 'Topics' })} className="mb-5 flex flex-wrap gap-2">
         {list.map((topic) => (
           <a
             key={topic.id}

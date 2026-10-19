@@ -2,6 +2,7 @@ import { XIcon } from 'lucide-react'
 import { Dialog as DialogPrimitive } from 'radix-ui'
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
+import { tr } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 type SheetProps = {
@@ -50,7 +51,7 @@ export function Sheet({ open, onOpenChange, title, description, children, classN
             <DialogPrimitive.Close asChild>
               <Button variant="ghost" size="icon" className="-me-2 -mt-1">
                 <XIcon className="size-5" />
-                <span className="sr-only">סגירה</span>
+                <span className="sr-only">{tr({ he: 'סגירה', en: 'Close' })}</span>
               </Button>
             </DialogPrimitive.Close>
           </div>

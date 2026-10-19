@@ -1,5 +1,6 @@
 import { createElement, useRef } from 'react'
 import { categoryColor, categoryIcon } from '@/categories/appearance'
+import { tr } from '@/lib/i18n'
 import { formatMoney } from '@/lib/money'
 import { cn } from '@/lib/utils'
 import type { RingItem } from './ringItems'
@@ -21,7 +22,7 @@ type CategoryRingProps = {
 export function CategoryRing({ items, total, onAdd, onOpen }: CategoryRingProps) {
   return (
     <section
-      aria-label="הוצאות החודש לפי קטגוריה"
+      aria-label={tr({ he: 'הוצאות החודש לפי קטגוריה', en: "This month's expenses by category" })}
       className="grid grid-cols-5 gap-x-0.5 gap-y-2.5 rounded-[1.6rem] bg-card px-1.5 py-3.5 sm:gap-x-3 sm:px-4"
     >
       <div className="col-span-3 col-start-2 row-span-2 row-start-2 flex items-center justify-center">
@@ -72,7 +73,9 @@ function Donut({ items, total }: Pick<CategoryRingProps, 'items' | 'total'>) {
         ))}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <span className="text-xs font-semibold text-muted-foreground">הוצאות</span>
+        <span className="text-xs font-semibold text-muted-foreground">
+          {tr({ he: 'הוצאות', en: 'Expenses' })}
+        </span>
         <span className="font-heading text-xl font-semibold tabular-nums sm:text-2xl">
           {formatMoney(total)}
         </span>
@@ -94,14 +97,21 @@ function Bubble({ item, onAdd, onOpen }: BubbleProps) {
     : percent === null
       ? color.tint
       : `conic-gradient(${color.ink} ${Math.min(percent, 100)}%, ${color.tint} 0)`
-  const usage = over ? 'חריגה מהתקציב' : percent === null ? 'ללא תקציב' : `נוצלו ${percent}% מהתקציב`
+  const usage = over
+    ? tr({ he: 'חריגה מהתקציב', en: 'over budget' })
+    : percent === null
+      ? tr({ he: 'ללא תקציב', en: 'no budget' })
+      : tr({ he: `נוצלו ${percent}% מהתקציב`, en: `${percent}% of the budget used` })
 
   return (
     <button
       type="button"
       {...longPressHandlers}
       onClick={() => !fired() && onAdd(category.id)}
-      aria-label={`הוספת הוצאה ב${category.name} (עד עכשיו ${formatMoney(actual)}, ${usage})`}
+      aria-label={tr({
+        he: `הוספת הוצאה ב${category.name} (עד עכשיו ${formatMoney(actual)}, ${usage})`,
+        en: `Add an expense in ${category.name} (${formatMoney(actual)} so far, ${usage})`,
+      })}
       className="flex min-w-0 touch-manipulation flex-col items-center rounded-2xl py-0.5 transition-transform select-none [-webkit-touch-callout:none] focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:scale-95"
     >
       <span className="flex size-12 rounded-full p-[3px]" style={{ background: ring }} aria-hidden>

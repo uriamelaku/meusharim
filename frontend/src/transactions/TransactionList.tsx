@@ -14,6 +14,7 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useSelectedPeriod } from '@/hooks/useSelectedPeriod'
 import { useDataPages } from '@/lib/data'
 import { formatRelativeDay, periodRange } from '@/lib/dates'
+import { tr } from '@/lib/i18n'
 import { formatPeriod } from '@/lib/period'
 import { useOccurrences } from '@/schedules/api'
 import { OccurrenceRow } from '@/schedules/OccurrenceRow'
@@ -43,12 +44,25 @@ const NO_FILTERS: Filters = {
   sort: 'date_desc',
 }
 
-const SORT_LABELS: Record<SortOrder, string> = {
-  date_desc: 'תאריך – מהחדש לישן',
-  date_asc: 'תאריך – מהישן לחדש',
-  amount_desc: 'סכום – מהגבוה לנמוך',
-  amount_asc: 'סכום – מהנמוך לגבוה',
-}
+const SEARCH_LABEL = tr({
+  he: 'חיפוש בתיאור או בקטגוריה',
+  en: 'Search description or category',
+})
+
+const SORT_LABELS: Record<SortOrder, string> = tr({
+  he: {
+    date_desc: 'תאריך – מהחדש לישן',
+    date_asc: 'תאריך – מהישן לחדש',
+    amount_desc: 'סכום – מהגבוה לנמוך',
+    amount_asc: 'סכום – מהנמוך לגבוה',
+  },
+  en: {
+    date_desc: 'Date – newest first',
+    date_asc: 'Date – oldest first',
+    amount_desc: 'Amount – highest first',
+    amount_asc: 'Amount – lowest first',
+  },
+})
 
 function activeFilterCount(filters: Filters): number {
   return (
@@ -110,9 +124,11 @@ export function TransactionList({ members }: { members: Member[] }) {
       <div className="flex flex-col gap-3">
         {allTime ? (
           <div className="flex min-h-12 items-center justify-between gap-2">
-            <h2 className="font-heading text-[1.75rem] font-semibold lg:text-4xl">כל התקופות</h2>
+            <h2 className="font-heading text-[1.75rem] font-semibold lg:text-4xl">
+              {tr({ he: 'כל התקופות', en: 'All time' })}
+            </h2>
             <Button variant="ghost" onClick={() => setFilters({ ...filters, scope: 'month' })}>
-              לפי חודש
+              {tr({ he: 'לפי חודש', en: 'By month' })}
             </Button>
           </div>
         ) : (
@@ -129,8 +145,8 @@ export function TransactionList({ members }: { members: Member[] }) {
             />
             <Input
               type="search"
-              aria-label="חיפוש בתיאור או בקטגוריה"
-              placeholder="חיפוש בתיאור או בקטגוריה"
+              aria-label={SEARCH_LABEL}
+              placeholder={SEARCH_LABEL}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               className="ps-10"
@@ -138,7 +154,7 @@ export function TransactionList({ members }: { members: Member[] }) {
           </div>
           <Button variant="outline" onClick={() => setFiltersOpen(true)} className="shrink-0">
             <SlidersHorizontal aria-hidden />
-            סינון
+            {tr({ he: 'סינון', en: 'Filter' })}
             {filterCount > 0 && (
               <span className="flex size-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
                 {filterCount}
@@ -152,28 +168,51 @@ export function TransactionList({ members }: { members: Member[] }) {
         <LoadingState />
       ) : pages.isError ? (
         <ErrorState
-          title="לא הצלחנו לטעון את ההוצאות וההכנסות"
-          description="בדקו את החיבור ונסו שוב."
+          title={tr({
+            he: 'לא הצלחנו לטעון את ההוצאות וההכנסות',
+            en: "We couldn't load your transactions",
+          })}
+          description={tr({ he: 'בדקו את החיבור ונסו שוב.', en: 'Check your connection and try again.' })}
           onRetry={() => void pages.refetch()}
         />
       ) : items.length === 0 ? (
         narrowed ? (
           <EmptyState
             icon={SearchX}
-            title="לא נמצא כלום"
-            description="אפשר לנסות מילה אחרת, לבטל את הסינון או לבחור תקופה אחרת."
+            title={tr({ he: 'לא נמצא כלום', en: 'Nothing found' })}
+            description={tr({
+              he: 'אפשר לנסות מילה אחרת, לבטל את הסינון או לבחור תקופה אחרת.',
+              en: 'Try another word, clear the filters or choose another period.',
+            })}
           />
         ) : (
           <EmptyState
             icon={ArrowLeftRight}
-            title={allTime ? 'עדיין אין הוצאות והכנסות' : `אין הוצאות והכנסות ב${formatPeriod(period)}`}
-            description="מוסיפים הוצאה או הכנסה בכפתור הפלוס הכתום, והיא מופיעה כאן אצל שניכם."
+            title={
+              allTime
+                ? tr({ he: 'עדיין אין הוצאות והכנסות', en: 'No transactions yet' })
+                : tr({
+                    he: `אין הוצאות והכנסות ב${formatPeriod(period)}`,
+                    en: `No transactions in ${formatPeriod(period)}`,
+                  })
+            }
+            description={tr({
+              he: 'מוסיפים הוצאה או הכנסה בכפתור הפלוס הכתום, והיא מופיעה כאן אצל שניכם.',
+              en: 'Add an expense or income with the orange plus button, and it shows up here for both of you.',
+            })}
           />
         )
       ) : (
-        <section aria-label="רשימת ההוצאות וההכנסות" aria-busy={pages.isFetching}>
+        <section
+          aria-label={tr({ he: 'רשימת ההוצאות וההכנסות', en: 'Transaction list' })}
+          aria-busy={pages.isFetching}
+        >
           <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
-            <span>{total === 1 ? 'נמצאה אחת' : `נמצאו ${total}`}</span>
+            <span>
+              {total === 1
+                ? tr({ he: 'נמצאה אחת', en: '1 result' })
+                : tr({ he: `נמצאו ${total}`, en: `${total} results` })}
+            </span>
             {narrowed && (
               <Button
                 variant="ghost"
@@ -184,7 +223,7 @@ export function TransactionList({ members }: { members: Member[] }) {
                 }}
               >
                 <X aria-hidden />
-                ביטול הסינון
+                {tr({ he: 'ביטול הסינון', en: 'Clear filters' })}
               </Button>
             )}
           </div>
@@ -225,7 +264,7 @@ export function TransactionList({ members }: { members: Member[] }) {
               disabled={pages.isFetchingNextPage}
             >
               {pages.isFetchingNextPage && <Loader2 className="animate-spin" aria-hidden />}
-              להציג עוד
+              {tr({ he: 'להציג עוד', en: 'Show more' })}
             </Button>
           )}
         </section>
@@ -233,7 +272,11 @@ export function TransactionList({ members }: { members: Member[] }) {
 
       {!allTime && !narrowed && <UpcomingInPeriod {...periodRange(period)} members={members} />}
 
-      <Sheet open={filtersOpen} onOpenChange={setFiltersOpen} title="סינון ומיון">
+      <Sheet
+        open={filtersOpen}
+        onOpenChange={setFiltersOpen}
+        title={tr({ he: 'סינון ומיון', en: 'Filter and sort' })}
+      >
         <FilterForm
           filters={filters}
           members={members}
@@ -257,7 +300,7 @@ function UpcomingInPeriod({ from, to, members }: { from: string; to: string; mem
         id="upcoming-period-title"
         className="px-2 py-1.5 text-sm font-medium text-muted-foreground"
       >
-        צפוי מהוראות קבע ותשלומים
+        {tr({ he: 'צפוי מהוראות קבע ותשלומים', en: 'Expected from recurring payments and installments' })}
       </h3>
       <ul className="rounded-2xl border border-dashed">
         {occurrences.data.map((occurrence) => (
@@ -284,22 +327,22 @@ function FilterForm({ filters, members, onApply }: FilterFormProps) {
   return (
     <div className="flex flex-col gap-5">
       <Segmented
-        label="תקופה"
+        label={tr({ he: 'תקופה', en: 'Period' })}
         showLabel
         options={[
-          { value: 'month', label: 'החודש שנבחר' },
-          { value: 'all', label: 'כל התקופות' },
+          { value: 'month', label: tr({ he: 'החודש שנבחר', en: 'Selected month' }) },
+          { value: 'all', label: tr({ he: 'כל התקופות', en: 'All time' }) },
         ]}
         value={draft.scope}
         onChange={(scope) => set('scope', scope)}
       />
       <Segmented
-        label="סוג"
+        label={tr({ he: 'סוג', en: 'Type' })}
         showLabel
         options={[
-          { value: '', label: 'הכל' },
-          { value: 'expense', label: 'הוצאות' },
-          { value: 'income', label: 'הכנסות' },
+          { value: '', label: tr({ he: 'הכל', en: 'All' }) },
+          { value: 'expense', label: tr({ he: 'הוצאות', en: 'Expenses' }) },
+          { value: 'income', label: tr({ he: 'הכנסות', en: 'Income' }) },
         ]}
         value={draft.kind}
         onChange={(kind) => {
@@ -312,44 +355,44 @@ function FilterForm({ filters, members, onApply }: FilterFormProps) {
         }}
       />
       <Segmented
-        label="סטטוס"
+        label={tr({ he: 'סטטוס', en: 'Status' })}
         showLabel
         options={[
-          { value: '', label: 'הכל' },
-          { value: 'completed', label: 'שולם / התקבל' },
-          { value: 'planned', label: 'עוד לא' },
+          { value: '', label: tr({ he: 'הכל', en: 'All' }) },
+          { value: 'completed', label: tr({ he: 'שולם / התקבל', en: 'Paid / received' }) },
+          { value: 'planned', label: tr({ he: 'עוד לא', en: 'Not yet' }) },
         ]}
         value={draft.status}
         onChange={(status) => set('status', status)}
       />
       <SelectField
-        label="קטגוריה"
+        label={tr({ he: 'קטגוריה', en: 'Category' })}
         value={draft.categoryId}
         onChange={(event) => set('categoryId', event.target.value)}
       >
-        <option value="">כל הקטגוריות</option>
+        <option value="">{tr({ he: 'כל הקטגוריות', en: 'All categories' })}</option>
         {categoryOptions.map((category) => (
           <option key={category.id} value={category.id}>
             {category.name}
-            {category.archived ? ' (נמחקה)' : ''}
+            {category.archived ? tr({ he: ' (נמחקה)', en: ' (deleted)' }) : ''}
           </option>
         ))}
       </SelectField>
       <SelectField
-        label="מי שילם / קיבל"
+        label={tr({ he: 'מי שילם / קיבל', en: 'Paid / received by' })}
         value={draft.party}
         onChange={(event) => set('party', event.target.value)}
       >
-        <option value="">כולם</option>
+        <option value="">{tr({ he: 'כולם', en: 'Everyone' })}</option>
         {members.map((member) => (
           <option key={member.user_id} value={member.user_id}>
             {member.display_name}
           </option>
         ))}
-        <option value="joint">משותף</option>
+        <option value="joint">{tr({ he: 'משותף', en: 'Joint' })}</option>
       </SelectField>
       <SelectField
-        label="מיון"
+        label={tr({ he: 'מיון', en: 'Sort' })}
         value={draft.sort}
         onChange={(event) => set('sort', event.target.value as SortOrder)}
       >
@@ -361,10 +404,10 @@ function FilterForm({ filters, members, onApply }: FilterFormProps) {
       </SelectField>
       <div className="flex gap-2">
         <Button size="lg" className="flex-1" onClick={() => onApply(draft)}>
-          הצגת התוצאות
+          {tr({ he: 'הצגת התוצאות', en: 'Show results' })}
         </Button>
         <Button size="lg" variant="ghost" onClick={() => setDraft(NO_FILTERS)}>
-          ביטול הסינון
+          {tr({ he: 'ביטול הסינון', en: 'Clear filters' })}
         </Button>
       </div>
     </div>

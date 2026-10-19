@@ -7,12 +7,15 @@ import { Toaster } from '@/components/ui/sonner'
 import { AuthProvider } from '@/auth/AuthProvider'
 import { capturePendingInvitation } from '@/household/pendingInvitation'
 import { queryClient } from '@/lib/queryClient'
+import { applyLanguage, direction } from '@/lib/i18n'
 import { applyTheme, storedTheme } from '@/lib/theme'
 import './index.css'
 import App from './App.tsx'
 
-// Before the first paint, so a dark theme never flashes light.
+// Before the first paint, so a dark theme never flashes light and the layout direction
+// is right from the start.
 applyTheme(storedTheme())
+applyLanguage()
 
 // Before the router renders, so the token leaves the address bar immediately.
 capturePendingInvitation()
@@ -29,12 +32,12 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Direction.Provider dir="rtl">
+    <Direction.Provider dir={direction}>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <AuthProvider>
             <App />
-            <Toaster position="top-center" dir="rtl" richColors />
+            <Toaster position="top-center" dir={direction} richColors />
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>

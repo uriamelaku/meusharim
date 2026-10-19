@@ -1,5 +1,6 @@
 import { Segmented } from '@/components/Segmented'
 import type { Member } from '@/household/api'
+import { tr } from '@/lib/i18n'
 
 const JOINT = 'joint'
 
@@ -14,7 +15,7 @@ type PartyPickerProps = {
 export function PartyPicker({ label, members, value, onChange }: PartyPickerProps) {
   const options = [
     ...members.map((member) => ({ value: member.user_id, label: member.display_name })),
-    { value: JOINT, label: 'משותף' },
+    { value: JOINT, label: tr({ he: 'משותף', en: 'Joint' }) },
   ]
   return (
     <Segmented
