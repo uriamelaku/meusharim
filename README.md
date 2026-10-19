@@ -2,7 +2,7 @@
 
 # מאושרים · Meusharim
 
-**A shared budget app for couples: Hebrew, right-to-left, mobile-first.**
+**A shared budget app for couples: Hebrew and English, mobile-first.**
 
 [**Live app →**](https://meusharim.onrender.com)
 
@@ -19,16 +19,27 @@
 
 </div>
 
-![Home, transactions, budget and reports screens](docs/screenshots/app-light.jpg)
+![Home, transactions, budget and reports screens in English](docs/screenshots/app-light-en.jpg)
+
+![The same screens in Hebrew, right to left](docs/screenshots/app-light.jpg)
 
 <details>
 <summary><b>Dark mode</b></summary>
 
-![The same screens in dark mode](docs/screenshots/app-dark.jpg)
+![Dark mode in English](docs/screenshots/app-dark-en.jpg)
+
+![Dark mode in Hebrew](docs/screenshots/app-dark.jpg)
 
 </details>
 
-![Quick add, recurring payments, savings goals and the in-app help](docs/screenshots/app-features.jpg)
+<details>
+<summary><b>More screens: quick add, recurring payments, savings goals, help</b></summary>
+
+![Quick add, recurring payments, savings goals and the in-app help in English](docs/screenshots/app-features-en.jpg)
+
+![The same screens in Hebrew](docs/screenshots/app-features.jpg)
+
+</details>
 
 <sub>Screenshots use an invented demo household.</sub>
 
@@ -44,6 +55,7 @@ category and always see how much is left.
 - **Savings goals and reports:** compare with last month or the same month last year, plus an end-of-month forecast.
 - **Built for two:** invite your partner with a one-time link; both see and manage everything.
 - **On your phone:** installable (PWA), dark mode and a guided tour on first login.
+- **Hebrew or English:** each device picks its language; the layout flips between right-to-left and left-to-right.
 
 <details>
 <summary><b>בקצרה, בעברית</b></summary>
@@ -60,6 +72,7 @@ category and always see how much is left.
 - **יעדי חיסכון ודוחות:** השוואה לחודש הקודם או לאותו חודש בשנה שעברה, וצפי לסוף החודש.
 - **זוגי באמת:** מזמינים את בן או בת הזוג בקישור חד-פעמי, ושניכם רואים ומנהלים הכול.
 - **בטלפון:** אפשר להתקין כאפליקציה (PWA), עם מצב כהה וסיור מודרך בכניסה הראשונה.
+- **עברית או אנגלית:** כל מכשיר בוחר שפה, והתצוגה מתהפכת בין ימין-לשמאל לשמאל-לימין.
 
 </div>
 </details>
@@ -127,9 +140,10 @@ flowchart LR
 
 - **Row Level Security:** every request runs as a dedicated Postgres role with the user's JWT claims, so one household can never read another's data.
 - **JWT verification:** tokens are checked against Supabase's public keys (JWKS) on every request.
+- **Two languages, no library:** every text sits next to its code as `tr({ he, en })`, so TypeScript rejects a missing translation; dates and amounts use `Intl` with `he-IL` / `en-IL`.
 - **Exact money:** `NUMERIC(12,2)` and `Decimal` end to end; the frontend never does floating-point math on money.
 - **One ledger:** manual entries, recurring payments, installments and savings deposits share one table with a `planned` / `completed` status.
-- **Tested:** 318 backend tests (pytest on real Postgres, including cross-household access) and 98 frontend tests (Vitest).
+- **Tested:** 321 backend tests (pytest on real Postgres, including cross-household access) and 102 frontend tests (Vitest).
 
 ## Tech stack
 

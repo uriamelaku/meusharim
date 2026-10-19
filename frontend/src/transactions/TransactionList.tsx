@@ -146,7 +146,7 @@ export function TransactionList({ members }: { members: Member[] }) {
             <Input
               type="search"
               aria-label={SEARCH_LABEL}
-              placeholder={SEARCH_LABEL}
+              placeholder={tr({ he: SEARCH_LABEL, en: 'Search transactions' })}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               className="ps-10"

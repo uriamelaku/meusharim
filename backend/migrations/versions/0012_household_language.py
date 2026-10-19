@@ -34,7 +34,7 @@ AS $$
     ('expense', 'קניות', 'Shopping', 'pink', 'shopping-bag'),
     ('expense', 'בריאות', 'Health', 'red', 'heart-pulse'),
     ('expense', 'ילדים', 'Kids', 'amber', 'baby'),
-    ('expense', 'תקשורת', 'Phone and internet', 'indigo', 'smartphone'),
+    ('expense', 'תקשורת', 'Telecom', 'indigo', 'smartphone'),
     ('expense', 'ביטוחים', 'Insurance', 'cyan', 'shield-check'),
     ('expense', 'חופשות', 'Vacations', 'sky', 'plane'),
     ('expense', 'מתנות', 'Gifts', 'rose', 'gift'),
