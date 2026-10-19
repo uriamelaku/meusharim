@@ -37,9 +37,9 @@ track recurring bills, installments and savings goals, and see where the money g
 
 ---
 
-## בקצרה
-
 <div dir="rtl">
+
+## בקצרה
 
 **מאושרים** היא אפליקציית תקציב משותפת לזוג. שני בני הזוג רושמים הוצאות והכנסות לאותו
 משק בית, מגדירים תקציב חודשי לכל קטגוריה, ורואים בכל רגע כמה נשאר עד סוף החודש.
@@ -58,7 +58,7 @@ track recurring bills, installments and savings goals, and see where the money g
 
 ## Highlights
 
-| | |
+| Feature | Details |
 |---|---|
 | **Fully containerized** | One `docker compose up` starts PostgreSQL, the FastAPI backend and the Vite frontend, with health checks, hot reload and automatic migrations. The production backend is the same Docker image. |
 | **Database-level security** | Every request runs as a dedicated Postgres role under **Row Level Security**, so one household can never read another's data even if application code has a bug. |
@@ -125,8 +125,8 @@ flowchart LR
     B5173 --> FE
     B8000 --> BE
     B5432 --> DB
-    FE -- "proxy /api → http://backend:8000" --> BE
-    BE -- "postgresql://…@db:5432" --> DB
+    FE -- "proxy /api → backend:8000" --> BE
+    BE -- "SQL → db:5432" --> DB
     DB --- VOL
 ```
 
