@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSession } from '@/auth/useAuth'
-import { apiRequest } from '@/lib/api'
+import { apiDownload, apiRequest } from '@/lib/api'
 
 /**
  * Household data (categories, transactions, budgets, reports) shares one query key
@@ -52,6 +52,32 @@ export function useDataPages<TItem>(path: string, params: QueryParams, pageSize:
     refetchInterval: PARTNER_SYNC_INTERVAL_MS,
     refetchOnWindowFocus: true,
   })
+}
+
+/**
+ * Downloads a file of household data and saves it on the device. A plain link cannot
+ * work: the API needs the access token in a header.
+ */
+export function useDataDownload<TVariables>(
+  toRequest: (variables: TVariables) => { path: string; params?: QueryParams; filename: string },
+) {
+  const session = useSession()
+  return useMutation({
+    mutationFn: async (variables: TVariables) => {
+      const { path, params, filename } = toRequest(variables)
+      saveFile(await apiDownload(withParams(path, params), session.access_token), filename)
+    },
+  })
+}
+
+function saveFile(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  // Some browsers (Safari) read the file after the click returns; free it a little later.
+  setTimeout(() => URL.revokeObjectURL(url), 60_000)
 }
 
 type MutationRequest = {

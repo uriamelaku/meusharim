@@ -62,7 +62,7 @@ Build a mobile-first Hebrew (RTL) web app for a couple to manually track shared 
 10. Automated tests for financial calculations and household authorization.
 
 ## Later phases
-- **Phase 3:** statement import: the backend core (normalized rows → preview with category suggestion and duplicate flags → commit) is done; per-provider file parsers (Cal, Max, Isracard, bank) wait for sample files, and the UI shows a disabled "coming soon" button. CSV export later. Monthly review, insights and the monthly summary are done.
+- **Phase 3:** statement import: the backend core (normalized rows → preview with category suggestion and duplicate flags → commit) is done; per-provider file parsers (Cal, Max, Isracard, bank) wait for sample files, and the UI shows a disabled "coming soon" button. CSV export of the transaction list (current filters, in the app's language) is done. Monthly review, insights and the monthly summary are done.
 - **Phase 4:** savings goals are done; optional AI insights only if useful.
 
 ## Working rules for Claude

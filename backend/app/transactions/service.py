@@ -135,6 +135,17 @@ def list_transactions(
     return TransactionPage(items=[to_transaction(row) for row in rows], total=total or 0)
 
 
+def list_all_transactions(
+    scope: HouseholdScope, filters: TransactionFilters, sort: SortOrder
+) -> list[Transaction]:
+    """Every matching transaction, unpaged (for the CSV export)."""
+    where, params = _where(filters)
+    rows = scope.session.execute(
+        text(f"{SELECT_TRANSACTION}{where} ORDER BY {ORDER_BY[sort]}"), params
+    ).all()
+    return [to_transaction(row) for row in rows]
+
+
 def get_transaction(scope: HouseholdScope, transaction_id: UUID) -> Transaction:
     row = scope.session.execute(
         text(f"{SELECT_TRANSACTION} WHERE t.id = :id"), {"id": transaction_id}

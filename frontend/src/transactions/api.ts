@@ -1,5 +1,6 @@
 import type { Kind } from '@/categories/api'
-import { useDataMutation, useDataQuery } from '@/lib/data'
+import { useDataDownload, useDataMutation, useDataQuery } from '@/lib/data'
+import { language } from '@/lib/i18n'
 
 export type TransactionStatus = 'planned' | 'completed'
 
@@ -51,6 +52,20 @@ export type TransactionQuery = {
 
 export function useTransactions(query: TransactionQuery) {
   return useDataQuery<TransactionPage>('/api/transactions', query)
+}
+
+/**
+ * Downloads the transactions matching `query` (all of them, not one page) as a CSV file,
+ * with headings and labels in the app's language.
+ */
+export function useExportTransactions() {
+  return useDataDownload<{ query: Omit<TransactionQuery, 'limit' | 'offset'>; filename: string }>(
+    ({ query, filename }) => ({
+      path: '/api/transactions/export',
+      params: { ...query, lang: language },
+      filename,
+    }),
+  )
 }
 
 /**

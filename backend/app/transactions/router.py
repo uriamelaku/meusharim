@@ -2,11 +2,12 @@ from datetime import date
 from typing import Annotated, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, Depends, Query, Response, status
 
 from app.categories.schemas import Kind
+from app.households.schemas import Language
 from app.scope import Scope
-from app.transactions import service
+from app.transactions import export, service
 from app.transactions.schemas import (
     ConfirmRequest,
     ConfirmResult,
@@ -23,9 +24,7 @@ router = APIRouter(prefix="/api/transactions", tags=["transactions"])
 MAX_PAGE_SIZE = 100
 
 
-@router.get("")
-def list_transactions(
-    scope: Scope,
+def transaction_filters(
     date_from: Annotated[date | None, Query(alias="from")] = None,
     date_to: Annotated[date | None, Query(alias="to")] = None,
     kind: Kind | None = None,
@@ -33,11 +32,9 @@ def list_transactions(
     category_id: UUID | None = None,
     party: Annotated[UUID | Literal["joint"] | None, Query()] = None,
     q: Annotated[str | None, Query(max_length=100)] = None,
-    sort: SortOrder = "date_desc",
-    limit: Annotated[int, Query(ge=1, le=MAX_PAGE_SIZE)] = 50,
-    offset: Annotated[int, Query(ge=0)] = 0,
-) -> TransactionPage:
-    filters = service.TransactionFilters(
+) -> service.TransactionFilters:
+    """The list filters, shared by the list and the CSV export."""
+    return service.TransactionFilters(
         date_from=date_from,
         date_to=date_to,
         kind=kind,
@@ -46,7 +43,32 @@ def list_transactions(
         party=str(party) if party else None,
         query=q,
     )
+
+
+Filters = Annotated[service.TransactionFilters, Depends(transaction_filters)]
+
+
+@router.get("")
+def list_transactions(
+    scope: Scope,
+    filters: Filters,
+    sort: SortOrder = "date_desc",
+    limit: Annotated[int, Query(ge=1, le=MAX_PAGE_SIZE)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> TransactionPage:
     return service.list_transactions(scope, filters, sort, limit, offset)
+
+
+@router.get("/export", response_class=Response)
+def export_transactions(
+    scope: Scope, filters: Filters, sort: SortOrder = "date_desc", lang: Language = "he"
+) -> Response:
+    """The filtered transactions as a CSV file (UTF-8 with a byte order mark, for Excel)."""
+    return Response(
+        content=export.export_csv(scope, filters, sort, lang),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="meusharim-transactions.csv"'},
+    )
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)

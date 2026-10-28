@@ -29,11 +29,11 @@ const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '
 
 type RequestOptions = { method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'; body?: unknown }
 
-export async function apiRequest<T>(
+async function apiFetch(
   path: string,
   accessToken: string,
   { method = 'GET', body }: RequestOptions = {},
-): Promise<T> {
+): Promise<Response> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method,
     headers: {
@@ -43,8 +43,22 @@ export async function apiRequest<T>(
     body: body === undefined ? undefined : JSON.stringify(body),
   })
   if (!response.ok) throw new ApiError(response.status, await readErrorCode(response))
+  return response
+}
+
+export async function apiRequest<T>(
+  path: string,
+  accessToken: string,
+  options: RequestOptions = {},
+): Promise<T> {
+  const response = await apiFetch(path, accessToken, options)
   if (response.status === 204) return undefined as T
   return response.json() as Promise<T>
+}
+
+/** A file from the API (e.g. a CSV export), as a Blob to save on the device. */
+export async function apiDownload(path: string, accessToken: string): Promise<Blob> {
+  return (await apiFetch(path, accessToken)).blob()
 }
 
 /**

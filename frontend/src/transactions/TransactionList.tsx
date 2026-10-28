@@ -1,6 +1,7 @@
-import { ArrowLeftRight, Loader2, Search, SearchX, SlidersHorizontal, X } from 'lucide-react'
+import { ArrowLeftRight, Download, Loader2, Search, SearchX, SlidersHorizontal, X } from 'lucide-react'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
+import { toast } from 'sonner'
 import { type Kind, useCategories } from '@/categories/api'
 import { PeriodPicker } from '@/components/PeriodPicker'
 import { SelectField } from '@/components/SelectField'
@@ -14,11 +15,17 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useSelectedPeriod } from '@/hooks/useSelectedPeriod'
 import { useDataPages } from '@/lib/data'
 import { formatRelativeDay, periodRange } from '@/lib/dates'
+import { describeError } from '@/lib/errors'
 import { tr } from '@/lib/i18n'
 import { formatPeriod } from '@/lib/period'
 import { useOccurrences } from '@/schedules/api'
 import { OccurrenceRow } from '@/schedules/OccurrenceRow'
-import type { SortOrder, Transaction, TransactionStatus } from './api'
+import {
+  type SortOrder,
+  type Transaction,
+  type TransactionStatus,
+  useExportTransactions,
+} from './api'
 import { PendingConfirmations } from './PendingConfirmations'
 import { useQuickAdd } from './quickAdd'
 import { TransactionRow } from './TransactionRow'
@@ -98,19 +105,25 @@ export function TransactionList({ members }: { members: Member[] }) {
 
   const allTime = filters.scope === 'all'
   const range = allTime ? {} : periodRange(period)
-  const pages = useDataPages<Transaction>(
-    '/api/transactions',
-    {
-      ...range,
-      q: query,
-      kind: filters.kind,
-      status: filters.status,
-      category_id: filters.categoryId,
-      party: filters.party,
-      sort: filters.sort,
-    },
-    PAGE_SIZE,
-  )
+  const listQuery = {
+    ...range,
+    q: query,
+    kind: filters.kind || undefined,
+    status: filters.status || undefined,
+    category_id: filters.categoryId,
+    party: filters.party,
+    sort: filters.sort,
+  }
+  const pages = useDataPages<Transaction>('/api/transactions', listQuery, PAGE_SIZE)
+  const exportCsv = useExportTransactions()
+
+  function downloadCsv() {
+    const filename = `meusharim-${allTime ? 'all' : periodRange(period).from.slice(0, 7)}.csv`
+    exportCsv.mutate(
+      { query: listQuery, filename },
+      { onError: (error) => toast.error(describeError(error)) },
+    )
+  }
   const items = pages.data?.pages.flatMap((page) => page.items) ?? []
   const total = pages.data?.pages[0]?.total ?? 0
   const filterCount = activeFilterCount(filters)
@@ -213,19 +226,35 @@ export function TransactionList({ members }: { members: Member[] }) {
                 ? tr({ he: 'נמצאה אחת', en: '1 result' })
                 : tr({ he: `נמצאו ${total}`, en: `${total} results` })}
             </span>
-            {narrowed && (
+            <span className="flex items-center">
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  setSearch('')
-                  setFilters(NO_FILTERS)
-                }}
+                onClick={downloadCsv}
+                disabled={exportCsv.isPending}
+                aria-label={tr({ he: 'ייצוא הרשימה לקובץ CSV', en: 'Export the list as a CSV file' })}
               >
-                <X aria-hidden />
-                {tr({ he: 'ביטול הסינון', en: 'Clear filters' })}
+                {exportCsv.isPending ? (
+                  <Loader2 className="animate-spin" aria-hidden />
+                ) : (
+                  <Download aria-hidden />
+                )}
+                {tr({ he: 'ייצוא', en: 'Export' })}
               </Button>
-            )}
+              {narrowed && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearch('')
+                    setFilters(NO_FILTERS)
+                  }}
+                >
+                  <X aria-hidden />
+                  {tr({ he: 'ביטול הסינון', en: 'Clear filters' })}
+                </Button>
+              )}
+            </span>
           </div>
           {byDate ? (
             groupByDay(items).map((group) => (
