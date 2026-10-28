@@ -17,6 +17,11 @@ import { tr } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import { type BudgetMonth, useSaveBudget } from './api'
 
+const INVALID_AMOUNT = tr({
+  he: 'צריך מספר חיובי (עד שתי ספרות אחרי הנקודה), או להשאיר ריק.',
+  en: 'Enter a positive number (up to two decimal places), or leave it empty.',
+})
+
 type BudgetEditorProps = { budget: BudgetMonth; periodLabel: string; onDone: () => void }
 
 /**
@@ -79,7 +84,8 @@ export function BudgetEditor({ budget, periodLabel, onDone }: BudgetEditorProps)
         placeholder={tr({ he: 'לא הוגדר', en: 'Not set' })}
         value={total}
         onChange={(event) => setTotal(event.target.value)}
-        aria-invalid={(submitted && invalid(total)) || overCeiling}
+        aria-invalid={overCeiling || undefined}
+        error={submitted && invalid(total) ? INVALID_AMOUNT : undefined}
         hint={tr({
           he: 'כמה מותר להוציא החודש בסך הכול. בלי סכום כאן, התקציב הכולל הוא סכום הקטגוריות.',
           en: 'How much you can spend this month in total. Without an amount here, the total is the sum of the categories.',
@@ -94,48 +100,53 @@ export function BudgetEditor({ budget, periodLabel, onDone }: BudgetEditorProps)
         </legend>
         {options.map((category) => {
           const value = amounts[category.id] ?? ''
+          const rowError = submitted && invalid(value)
           return (
-            <label key={category.id} className="flex items-center gap-3 py-1.5">
-              <CategoryIconBadge color={category.color} icon={category.icon} className="size-9" />
-              <span className="min-w-0 flex-1 truncate">
-                {category.name}
-                {category.archived && (
-                  <span className="text-muted-foreground">
-                    {tr({ he: ' (נמחקה)', en: ' (deleted)' })}
-                  </span>
-                )}
-              </span>
-              <span className="relative w-32 shrink-0">
-                <input
-                  inputMode="decimal"
-                  placeholder={tr({ he: 'ללא', en: 'None' })}
-                  value={value}
-                  onChange={(event) =>
-                    setAmounts((current) => ({ ...current, [category.id]: event.target.value }))
-                  }
-                  aria-invalid={submitted && invalid(value)}
-                  className="h-11 w-full rounded-xl border border-input bg-card ps-3 pe-8 text-base tabular-nums outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive"
-                />
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground"
-                >
-                  ₪
+            <div key={category.id} className="flex flex-col py-1.5">
+              <label className="flex items-center gap-3">
+                <CategoryIconBadge color={category.color} icon={category.icon} className="size-9" />
+                <span className="min-w-0 flex-1 truncate">
+                  {category.name}
+                  {category.archived && (
+                    <span className="text-muted-foreground">
+                      {tr({ he: ' (נמחקה)', en: ' (deleted)' })}
+                    </span>
+                  )}
                 </span>
-              </span>
-            </label>
+                <span className="relative w-32 shrink-0">
+                  <input
+                    inputMode="decimal"
+                    placeholder={tr({ he: 'ללא', en: 'None' })}
+                    value={value}
+                    onChange={(event) =>
+                      setAmounts((current) => ({ ...current, [category.id]: event.target.value }))
+                    }
+                    aria-invalid={rowError || undefined}
+                    aria-describedby={rowError ? `budget-error-${category.id}` : undefined}
+                    className="h-11 w-full rounded-xl border border-input bg-card ps-3 pe-8 text-base tabular-nums outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive"
+                  />
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute end-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground"
+                  >
+                    ₪
+                  </span>
+                </span>
+              </label>
+              {rowError && (
+                <p
+                  id={`budget-error-${category.id}`}
+                  role="alert"
+                  className="mt-1 text-end text-sm text-destructive"
+                >
+                  {INVALID_AMOUNT}
+                </p>
+              )}
+            </div>
           )
         })}
       </fieldset>
 
-      {submitted && hasErrors && !overCeiling && (
-        <p role="alert" className="text-sm text-destructive">
-          {tr({
-            he: 'יש סכום לא תקין. צריך מספר חיובי (עד שתי ספרות אחרי הנקודה), או להשאיר ריק.',
-            en: 'An amount is invalid. Enter a positive number (up to two decimal places), or leave it empty.',
-          })}
-        </p>
-      )}
       {save.isError && (
         <p role="alert" className="text-sm text-destructive">
           {describeError(save.error)}

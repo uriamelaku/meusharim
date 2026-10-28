@@ -23,14 +23,17 @@ export function JoinScreen({ token, onDone }: JoinScreenProps) {
   const [displayName, setDisplayName] = useState('')
   const [gender, setGender] = useState<Gender | null>(null)
   const [submitted, setSubmitted] = useState(false)
+  const nameError = !displayName.trim()
+    ? tr({ he: 'צריך למלא את השם.', en: 'Please enter a name.' })
+    : undefined
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setSubmitted(true)
     // Gender sets the Hebrew form of address, so it is asked in Hebrew only.
-    if (isHebrew && !gender) return
+    if (nameError || (isHebrew && !gender)) return
     accept.mutate(
-      { token, display_name: displayName, gender: gender ?? undefined },
+      { token, display_name: displayName.trim(), gender: gender ?? undefined },
       { onSuccess: onDone },
     )
   }
@@ -85,7 +88,7 @@ export function JoinScreen({ token, onDone }: JoinScreenProps) {
             })}
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-5">
+      <form onSubmit={handleSubmit} noValidate className="mt-6 flex flex-col gap-5">
         <TextField
           label={tr({ he: 'השם שלך', en: 'Your name' })}
           hint={tr({ he: 'כך יופיע השם שלך באפליקציה.', en: 'This is how your name appears in the app.' })}
@@ -94,6 +97,7 @@ export function JoinScreen({ token, onDone }: JoinScreenProps) {
           required
           value={displayName}
           onChange={(event) => setDisplayName(event.target.value)}
+          error={submitted ? nameError : undefined}
         />
         {isHebrew && <GenderField value={gender} onChange={setGender} showError={submitted} />}
         {accept.isError && (

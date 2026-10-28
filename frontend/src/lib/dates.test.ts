@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatRelativeDay, isInPeriod, periodRange, todayIso } from './dates'
+import { dateError, formatRelativeDay, isInPeriod, isValidDate, periodRange, todayIso } from './dates'
 
 describe('todayIso', () => {
   it('uses the Israeli calendar day', () => {
@@ -43,5 +43,30 @@ describe('formatRelativeDay', () => {
 
   it('crosses month and year boundaries', () => {
     expect(formatRelativeDay('2026-12-31', '2027-01-01')).toBe('אתמול')
+  })
+})
+
+describe('isValidDate', () => {
+  it.each(['2026-10-28', '2028-02-29', '1900-01-01', '2100-12-31'])('accepts %s', (iso) => {
+    expect(isValidDate(iso)).toBe(true)
+  })
+
+  it.each(['', '2026-02-30', '2026-13-01', '2026-00-10', '1899-12-31', '2101-01-01', '26-10-28', 'abc'])(
+    'rejects %s',
+    (iso) => {
+      expect(isValidDate(iso)).toBe(false)
+    },
+  )
+})
+
+describe('dateError', () => {
+  it('requires a value only for required fields', () => {
+    expect(dateError('', { required: true })).toBeTruthy()
+    expect(dateError('', { required: false })).toBeUndefined()
+  })
+
+  it('flags invalid dates and accepts valid ones', () => {
+    expect(dateError('0002-01-01', { required: false })).toBeTruthy()
+    expect(dateError('2026-10-28', { required: true })).toBeUndefined()
   })
 })

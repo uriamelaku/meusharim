@@ -16,13 +16,23 @@ export function CreateHouseholdScreen() {
   const [gender, setGender] = useState<Gender | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const createHousehold = useCreateHousehold()
+  const missingName = tr({ he: 'צריך למלא את השם.', en: 'Please enter a name.' })
+  const errors = {
+    name: !name.trim() ? missingName : undefined,
+    displayName: !displayName.trim() ? missingName : undefined,
+  }
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setSubmitted(true)
     // Gender sets the Hebrew form of address, so it is asked in Hebrew only.
-    if (isHebrew && !gender) return
-    createHousehold.mutate({ name, display_name: displayName, gender: gender ?? undefined, language })
+    if (errors.name || errors.displayName || (isHebrew && !gender)) return
+    createHousehold.mutate({
+      name: name.trim(),
+      display_name: displayName.trim(),
+      gender: gender ?? undefined,
+      language,
+    })
   }
 
   return (
@@ -50,7 +60,7 @@ export function CreateHouseholdScreen() {
         })}
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-5">
+      <form onSubmit={handleSubmit} noValidate className="mt-6 flex flex-col gap-5">
         <TextField
           label={tr({ he: 'שם הבית', en: 'Household name' })}
           placeholder={tr({ he: 'למשל: הבית שלנו', en: 'For example: Our home' })}
@@ -58,6 +68,7 @@ export function CreateHouseholdScreen() {
           required
           value={name}
           onChange={(event) => setName(event.target.value)}
+          error={submitted ? errors.name : undefined}
         />
         <TextField
           label={tr({ he: 'השם שלך', en: 'Your name' })}
@@ -67,6 +78,7 @@ export function CreateHouseholdScreen() {
           required
           value={displayName}
           onChange={(event) => setDisplayName(event.target.value)}
+          error={submitted ? errors.displayName : undefined}
         />
         {isHebrew && <GenderField value={gender} onChange={setGender} showError={submitted} />}
         {createHousehold.isError && (

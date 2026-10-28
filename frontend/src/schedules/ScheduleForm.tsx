@@ -11,7 +11,7 @@ import { ToggleField } from '@/components/ToggleField'
 import { Button } from '@/components/ui/button'
 import type { Member } from '@/household/api'
 import { newRequestId } from '@/lib/api'
-import { todayIso } from '@/lib/dates'
+import { dateError, MAX_DATE, MIN_DATE, todayIso } from '@/lib/dates'
 import { describeError } from '@/lib/errors'
 import { tr } from '@/lib/i18n'
 import { amountToInput, formatMoney, parseAmountInput, previewInstallments } from '@/lib/money'
@@ -85,7 +85,9 @@ export function ScheduleForm({
   const countValid =
     Number.isInteger(count) && count >= MIN_INSTALLMENTS && count <= MAX_INSTALLMENTS
   const split = isInstallments && amount && countValid ? previewInstallments(amount, count) : null
-  const endBeforeStart = Boolean(endDate) && endDate < startDate
+  const startDateError = dateError(startDate, { required: true })
+  const endDateError = isInstallments ? undefined : dateError(endDate, { required: false })
+  const endBeforeStart = !startDateError && !endDateError && Boolean(endDate) && endDate < startDate
 
   const errors = {
     amount: !amount
@@ -109,12 +111,20 @@ export function ScheduleForm({
           })
         : undefined,
     category: !categoryId,
-    endDate: endBeforeStart
-      ? tr({ he: 'תאריך הסיום לפני תאריך ההתחלה.', en: 'The end date is before the start date.' })
-      : undefined,
+    startDate: startDateError,
+    endDate:
+      endDateError ??
+      (endBeforeStart
+        ? tr({ he: 'תאריך הסיום לפני תאריך ההתחלה.', en: 'The end date is before the start date.' })
+        : undefined),
   }
   const valid =
-    !errors.amount && !errors.count && !errors.split && !errors.category && !errors.endDate
+    !errors.amount &&
+    !errors.count &&
+    !errors.split &&
+    !errors.category &&
+    !errors.startDate &&
+    !errors.endDate
 
   function changeKind(next: Kind) {
     setKind(next)
@@ -237,9 +247,9 @@ export function ScheduleForm({
             value={countText}
             disabled={planLocked}
             onChange={(event) => setCountText(event.target.value.replace(/\D/g, ''))}
-            aria-invalid={submitted && Boolean(errors.count || errors.split)}
+            error={submitted && !split ? (errors.count ?? errors.split) : undefined}
           />
-          {split ? (
+          {split && (
             <p className="text-sm text-muted-foreground" aria-live="polite">
               {split.first === split.rest
                 ? tr({
@@ -251,12 +261,6 @@ export function ScheduleForm({
                     en: `${count} installments: the first ${formatMoney(split.first)}, the rest ${formatMoney(split.rest)}`,
                   })}
             </p>
-          ) : (
-            submitted && (
-              <p role="alert" className="text-sm text-destructive">
-                {errors.count ?? errors.split}
-              </p>
-            )
           )}
         </div>
       )}
@@ -294,22 +298,23 @@ export function ScheduleForm({
           }
           type="date"
           value={startDate}
-          min="1900-01-01"
-          max="2100-12-31"
+          min={MIN_DATE}
+          max={MAX_DATE}
           disabled={planLocked}
           required
           onChange={(event) => setStartDate(event.target.value)}
+          error={submitted ? errors.startDate : undefined}
         />
         {!isInstallments && (
           <TextField
             label={tr({ he: 'תאריך סיום (לא חובה)', en: 'End date (optional)' })}
             type="date"
             value={endDate}
-            min={startDate}
-            max="2100-12-31"
+            min={startDate || MIN_DATE}
+            max={MAX_DATE}
             onChange={(event) => setEndDate(event.target.value)}
-            aria-invalid={Boolean(errors.endDate) || undefined}
-            hint={errors.endDate}
+            onClear={() => setEndDate('')}
+            error={errors.endDate}
           />
         )}
       </div>

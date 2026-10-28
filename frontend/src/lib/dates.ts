@@ -3,6 +3,35 @@ import type { Period } from './period'
 
 const TIME_ZONE = 'Asia/Jerusalem'
 
+/** The range of dates the server accepts (same as its LedgerDate). */
+export const MIN_DATE = '1900-01-01'
+export const MAX_DATE = '2100-12-31'
+
+/**
+ * Whether a date input's value is a real calendar day the server accepts. Browsers
+ * report an empty string for a missing or half-typed date.
+ */
+export function isValidDate(iso: string): boolean {
+  const match = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!match || iso < MIN_DATE || iso > MAX_DATE) return false
+  const [year, month, day] = match.slice(1).map(Number)
+  return month >= 1 && month <= 12 && day >= 1 && day <= daysInMonth(year, month)
+}
+
+/** Error text for a date field, or undefined when the value is fine. */
+export function dateError(iso: string, { required }: { required: boolean }): string | undefined {
+  if (iso === '') {
+    return required ? tr({ he: 'צריך לבחור תאריך.', en: 'Please choose a date.' }) : undefined
+  }
+  if (!isValidDate(iso)) {
+    return tr({
+      he: 'התאריך לא תקין (בין 1900 ל-2100).',
+      en: 'This date is invalid (between 1900 and 2100).',
+    })
+  }
+  return undefined
+}
+
 /** Today's date in Israel as "YYYY-MM-DD". */
 export function todayIso(now: Date = new Date()): string {
   // en-CA formats as YYYY-MM-DD.

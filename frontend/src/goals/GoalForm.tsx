@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { TextField } from '@/components/TextField'
 import { Button } from '@/components/ui/button'
+import { dateError, MAX_DATE } from '@/lib/dates'
 import { describeError } from '@/lib/errors'
 import { tr } from '@/lib/i18n'
 import { amountToInput, parseAmountInput } from '@/lib/money'
@@ -21,11 +22,21 @@ export function GoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void }) 
   const remove = useDeleteGoal()
   const mutation = goal ? update : create
   const amount = parseAmountInput(target)
+  const errors = {
+    name: !name.trim() ? tr({ he: 'צריך שם ליעד.', en: 'Please enter a name.' }) : undefined,
+    target: !amount
+      ? tr({
+          he: 'צריך סכום יעד חיובי (עד שתי ספרות אחרי הנקודה).',
+          en: 'Please enter a positive target amount (up to two decimal places).',
+        })
+      : undefined,
+    date: dateError(date, { required: false }),
+  }
 
   function submit(event: FormEvent) {
     event.preventDefault()
     setSubmitted(true)
-    if (!name.trim() || !amount) return
+    if (!amount || errors.name || errors.date) return
     const body = { name: name.trim(), target_amount: amount, target_date: date || null }
     const onSuccess = () => {
       toast.success(
@@ -62,7 +73,7 @@ export function GoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void }) 
         maxLength={40}
         value={name}
         onChange={(event) => setName(event.target.value)}
-        aria-invalid={submitted && !name.trim()}
+        error={submitted ? errors.name : undefined}
         autoFocus={!goal}
       />
       <TextField
@@ -70,28 +81,22 @@ export function GoalForm({ goal, onDone }: { goal?: Goal; onDone: () => void }) 
         inputMode="decimal"
         value={target}
         onChange={(event) => setTarget(event.target.value)}
-        aria-invalid={submitted && !amount}
+        error={submitted ? errors.target : undefined}
       />
       <TextField
         label={tr({ he: 'עד מתי (לא חובה)', en: 'By when (optional)' })}
         type="date"
         min="2000-01-01"
-        max="2100-12-31"
+        max={MAX_DATE}
         value={date}
         onChange={(event) => setDate(event.target.value)}
+        onClear={() => setDate('')}
+        error={submitted ? errors.date : undefined}
         hint={tr({
           he: 'עם תאריך נחשב כמה צריך לחסוך בכל חודש.',
           en: "With a date, we'll work out how much to save each month.",
         })}
       />
-      {submitted && (!name.trim() || !amount) && (
-        <p role="alert" className="text-sm text-destructive">
-          {tr({
-            he: 'צריך שם וסכום יעד חיובי.',
-            en: 'Please enter a name and a positive target amount.',
-          })}
-        </p>
-      )}
       {mutation.isError && (
         <p role="alert" className="text-sm text-destructive">
           {describeError(mutation.error)}

@@ -13,7 +13,7 @@ import { TextField } from '@/components/TextField'
 import { Button } from '@/components/ui/button'
 import type { Member } from '@/household/api'
 import { newRequestId } from '@/lib/api'
-import { formatRelativeDay, todayIso } from '@/lib/dates'
+import { dateError, formatRelativeDay, isValidDate, MAX_DATE, MIN_DATE, todayIso } from '@/lib/dates'
 import { describeError } from '@/lib/errors'
 import { tr } from '@/lib/i18n'
 import { amountToInput, parseAmountInput } from '@/lib/money'
@@ -92,6 +92,7 @@ export function TransactionForm({
           en: 'Please enter a positive amount (up to two decimal places).',
         })
       : undefined
+  const dateErrorText = dateError(date, { required: true })
 
   function changeKind(next: Kind) {
     setKind(next)
@@ -102,14 +103,14 @@ export function TransactionForm({
 
   function changeDate(next: string) {
     setDate(next)
-    if (!statusTouched && next) setStatus(defaultStatusFor(next))
+    if (!statusTouched && isValidDate(next)) setStatus(defaultStatusFor(next))
   }
 
   function submit(event: FormEvent) {
     event.preventDefault()
     setSubmitted(true)
-    if (!date) setShowDetails(true)
-    if (!amount || !categoryId || !date) return
+    if (dateErrorText) setShowDetails(true)
+    if (!amount || !categoryId || dateErrorText) return
     rememberParty(party)
     const body = {
       kind,
@@ -236,10 +237,11 @@ export function TransactionForm({
               label={tr({ he: 'תאריך', en: 'Date' })}
               type="date"
               value={date}
-              min="1900-01-01"
-              max="2100-12-31"
+              min={MIN_DATE}
+              max={MAX_DATE}
               required
               onChange={(event) => changeDate(event.target.value)}
+              error={submitted ? dateErrorText : undefined}
             />
             <Segmented
               label={
@@ -339,7 +341,7 @@ function detailsSummary(
   party: string,
   note: string,
 ) {
-  return [formatRelativeDay(date), statusLabel(status, kind), party, note.trim()]
+  return [isValidDate(date) ? formatRelativeDay(date) : '', statusLabel(status, kind), party, note.trim()]
     .filter(Boolean)
     .join(' · ')
 }

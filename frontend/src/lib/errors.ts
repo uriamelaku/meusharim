@@ -77,6 +77,13 @@ export function describeError(error: unknown): string {
   if (error instanceof ApiError && error.code && messages[error.code]) {
     return tr(messages[error.code])
   }
+  // The server rejected the input itself (FastAPI's field validation).
+  if (error instanceof ApiError && error.status === 422) {
+    return tr({
+      he: 'חלק מהפרטים לא תקינים. כדאי לבדוק את השדות ולנסות שוב.',
+      en: 'Some of the details are invalid. Check the fields and try again.',
+    })
+  }
   return tr({
     he: 'הפעולה לא הצליחה. בדקו את החיבור ונסו שוב.',
     en: 'Something went wrong. Check your connection and try again.',

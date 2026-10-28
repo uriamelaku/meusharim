@@ -15,6 +15,8 @@ import { supabase } from '@/supabase'
 type Mode = 'signIn' | 'signUp'
 
 const MIN_PASSWORD_LENGTH = 8
+// The same loose check browsers apply to type="email"; Supabase has the final word.
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 const TAGLINE = tr({
   he: 'התקציב של שניכם, במקום אחד.',
@@ -130,20 +132,39 @@ function CredentialsForm({ mode }: { mode: Mode }) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [submitted, setSubmitted] = useState(false)
+  const trimmedEmail = email.trim()
+  const emailError = !trimmedEmail
+    ? tr({ he: 'צריך למלא מייל.', en: 'Please enter your email.' })
+    : !EMAIL_PATTERN.test(trimmedEmail)
+      ? tr({ he: 'כתובת המייל לא תקינה.', en: 'This email address is invalid.' })
+      : undefined
+  const passwordError = !password
+    ? tr({ he: 'צריך למלא סיסמה.', en: 'Please enter your password.' })
+    : !isSignIn && password.length < MIN_PASSWORD_LENGTH
+      ? tr({
+          he: `הסיסמה צריכה להכיל לפחות ${MIN_PASSWORD_LENGTH} תווים.`,
+          en: `The password must have at least ${MIN_PASSWORD_LENGTH} characters.`,
+        })
+      : undefined
+  const showEmailError = submitted ? emailError : undefined
+  const showPasswordError = submitted ? passwordError : undefined
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
+    setSubmitted(true)
+    if (emailError || passwordError) return
     setSubmitting(true)
     setError(null)
     setNotice(null)
     try {
       if (isSignIn) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        const { error } = await supabase.auth.signInWithPassword({ email: trimmedEmail, password })
         if (error) setError(describeError(error))
         return
       }
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: trimmedEmail,
         password,
         options: { emailRedirectTo: window.location.origin },
       })
@@ -165,7 +186,7 @@ function CredentialsForm({ mode }: { mode: Mode }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
         <Label htmlFor={`${fieldId}-email`}>{tr({ he: 'מייל', en: 'Email' })}</Label>
         <Input
@@ -176,9 +197,16 @@ function CredentialsForm({ mode }: { mode: Mode }) {
           autoComplete="email"
           placeholder="name@example.com"
           required
+          aria-invalid={showEmailError ? true : undefined}
+          aria-describedby={showEmailError ? `${fieldId}-email-error` : undefined}
           value={email}
           onChange={(event) => setEmail(event.target.value)}
         />
+        {showEmailError && (
+          <p id={`${fieldId}-email-error`} role="alert" className="text-sm text-destructive">
+            {showEmailError}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -191,7 +219,10 @@ function CredentialsForm({ mode }: { mode: Mode }) {
             autoComplete={isSignIn ? 'current-password' : 'new-password'}
             minLength={MIN_PASSWORD_LENGTH}
             required
-            aria-describedby={isSignIn ? undefined : `${fieldId}-password-hint`}
+            aria-invalid={showPasswordError ? true : undefined}
+            aria-describedby={
+              showPasswordError || !isSignIn ? `${fieldId}-password-hint` : undefined
+            }
             className="pe-12"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
@@ -210,13 +241,19 @@ function CredentialsForm({ mode }: { mode: Mode }) {
             {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
           </button>
         </div>
-        {!isSignIn && (
-          <p id={`${fieldId}-password-hint`} className="text-sm text-muted-foreground">
-            {tr({
-              he: `לפחות ${MIN_PASSWORD_LENGTH} תווים.`,
-              en: `At least ${MIN_PASSWORD_LENGTH} characters.`,
-            })}
+        {showPasswordError ? (
+          <p id={`${fieldId}-password-hint`} role="alert" className="text-sm text-destructive">
+            {showPasswordError}
           </p>
+        ) : (
+          !isSignIn && (
+            <p id={`${fieldId}-password-hint`} className="text-sm text-muted-foreground">
+              {tr({
+                he: `לפחות ${MIN_PASSWORD_LENGTH} תווים.`,
+                en: `At least ${MIN_PASSWORD_LENGTH} characters.`,
+              })}
+            </p>
+          )
         )}
       </div>
 
