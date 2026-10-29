@@ -71,6 +71,28 @@ from `public/`. Browsers only offer installation over HTTPS (or `localhost`), so
 on the local network (`http://10.x.x.x:5173`) cannot install the development server; the
 deployed site can. The service worker caches nothing; it only shows an offline page.
 
+## Continuous integration and deploys
+
+`.github/workflows/ci.yml` runs on every push and pull request to `main`:
+
+- **backend:** Ruff (lint and format check), `alembic upgrade head` on an empty PostgreSQL
+  service container, then the full pytest suite.
+- **frontend:** `npm ci`, oxlint, Vitest, then `npm run build` (which typechecks with `tsc -b`).
+
+The workflow holds no secrets. Tests sign their own JWTs and fake the Supabase Auth calls;
+the Supabase URLs and the publishable key in it are placeholders.
+
+Render deploys only commits whose CI passed. Set this on **both** services (backend web
+service and frontend static site):
+
+1. Service → **Settings** → **Build & Deploy** → **Auto-Deploy** → **After CI Checks Pass**.
+2. Make sure the branch is `main` and the service is connected to the GitHub repository
+   through Render's GitHub app (needed for Render to read the check results).
+
+Render then waits for all GitHub checks on the pushed commit: if any fails, that commit is
+not deployed and the previous version keeps running. A manual deploy (**Manual Deploy**)
+still works and skips the check, so use it only for a commit whose CI is green.
+
 ## Supabase
 
 - Auth → URL Configuration: set **Site URL** (and Redirect URLs) to the frontend URL.

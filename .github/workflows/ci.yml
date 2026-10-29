@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      db:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: meusharim
+          POSTGRES_PASSWORD: meusharim
+          POSTGRES_DB: meusharim
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U meusharim -d meusharim"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 15
+    env:
+      # Throwaway CI database, not a secret. Tests never call Supabase: they sign their
+      # own tokens and fake the Auth admin calls, so the URL only has to be well formed.
+      DATABASE_URL: postgresql+psycopg://meusharim:meusharim@localhost:5432/meusharim
+      SUPABASE_URL: https://example.supabase.co
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: ruff format --check .
+      - name: Migrations on an empty database
+        run: alembic upgrade head
+      - run: pytest
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      # Public placeholders: the build refuses to run without them.
+      VITE_SUPABASE_URL: https://example.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - name: Typecheck and build
+        run: npm run build
