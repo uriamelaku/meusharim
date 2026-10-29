@@ -90,7 +90,11 @@ service and frontend static site):
    through Render's GitHub app (needed for Render to read the check results).
 
 Render then waits for all GitHub checks on the pushed commit: if any fails, that commit is
-not deployed and the previous version keeps running. A manual deploy (**Manual Deploy**)
+not deployed and the previous version keeps running.
+
+Each service has a root directory (`backend`, `frontend`), and Render auto-deploys a service
+only when a commit changes files inside it. A commit that touches only `docs/` or `.github/`,
+or an empty commit, deploys nothing; that is expected. A manual deploy (**Manual Deploy**)
 still works and skips the check, so use it only for a commit whose CI is green.
 
 ## Supabase

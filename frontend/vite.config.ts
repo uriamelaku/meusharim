@@ -4,7 +4,8 @@ import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv } from 'vite'
 
 // Embedded in the bundle at build time. Without them the app throws on load and shows
-// a blank page, so a production build must fail instead of shipping that.
+// a blank page, so a production build must fail instead of shipping that. CI builds with
+// public placeholders (.github/workflows/ci.yml).
 const REQUIRED_BUILD_ENV = ['VITE_SUPABASE_URL', 'VITE_SUPABASE_PUBLISHABLE_KEY']
 
 // https://vite.dev/config/
