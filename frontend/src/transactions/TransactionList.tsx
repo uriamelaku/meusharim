@@ -21,6 +21,7 @@ import { formatPeriod } from '@/lib/period'
 import { useOccurrences } from '@/schedules/api'
 import { OccurrenceRow } from '@/schedules/OccurrenceRow'
 import {
+  exportFilename,
   type SortOrder,
   type Transaction,
   type TransactionStatus,
@@ -118,9 +119,8 @@ export function TransactionList({ members }: { members: Member[] }) {
   const exportCsv = useExportTransactions()
 
   function downloadCsv() {
-    const filename = `meusharim-${allTime ? 'all' : periodRange(period).from.slice(0, 7)}.csv`
     exportCsv.mutate(
-      { query: listQuery, filename },
+      { query: listQuery, filename: exportFilename(allTime ? null : period) },
       { onError: (error) => toast.error(describeError(error)) },
     )
   }

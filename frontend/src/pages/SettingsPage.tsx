@@ -15,6 +15,7 @@ import { describeError } from '@/lib/errors'
 import { GENDER_OPTIONS } from '@/lib/gender'
 import { changeLanguage, isHebrew, language, LANGUAGE_OPTIONS, tr } from '@/lib/i18n'
 import { useTheme } from '@/lib/theme'
+import { ExportCard } from '@/transactions/ExportCard'
 
 export function SettingsPage() {
   const { user, household } = useShellContext()
@@ -26,6 +27,7 @@ export function SettingsPage() {
         <AppearanceCard />
         <HouseholdCard household={household} userId={user.id} />
         <CategoriesCard />
+        <ExportCard />
         <Card className="rounded-2xl">
           <CardHeader>
             <CardTitle className="text-lg">{tr({ he: 'החשבון שלי', en: 'My account' })}</CardTitle>

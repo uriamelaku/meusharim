@@ -1,6 +1,7 @@
 import type { Kind } from '@/categories/api'
 import { useDataDownload, useDataMutation, useDataQuery } from '@/lib/data'
 import { language } from '@/lib/i18n'
+import { type Period, toPeriodParam } from '@/lib/period'
 
 export type TransactionStatus = 'planned' | 'completed'
 
@@ -58,6 +59,11 @@ export function useTransactions(query: TransactionQuery) {
  * Downloads the transactions matching `query` (all of them, not one page) as a CSV file,
  * with headings and labels in the app's language.
  */
+/** "meusharim-2026-10.csv" for one month, "meusharim-all.csv" for all time. */
+export function exportFilename(period: Period | null): string {
+  return `meusharim-${period ? toPeriodParam(period) : 'all'}.csv`
+}
+
 export function useExportTransactions() {
   return useDataDownload<{ query: Omit<TransactionQuery, 'limit' | 'offset'>; filename: string }>(
     ({ query, filename }) => ({
