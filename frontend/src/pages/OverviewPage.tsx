@@ -9,6 +9,7 @@ import { useShellContext } from '@/components/shellContext'
 import { EmptyState, ErrorState, LoadingState } from '@/components/states'
 import { Button } from '@/components/ui/button'
 import { useSelectedPeriod } from '@/hooks/useSelectedPeriod'
+import { periodRange } from '@/lib/dates'
 import { tr } from '@/lib/i18n'
 import { formatMoney, isNegative } from '@/lib/money'
 import { formatPeriod, monthName, toPeriodParam } from '@/lib/period'
@@ -87,7 +88,10 @@ export function OverviewPage() {
                 he: `אין הוצאות ב${formatPeriod(period)}`,
                 en: `No expenses in ${formatPeriod(period)}`,
               })}
-              onAdd={(categoryId) => add('expense', 'once', categoryId)}
+              // Another month: the expense goes into that month, on its last day.
+              onAdd={(categoryId) =>
+                add('expense', 'once', categoryId, isCurrent ? undefined : periodRange(period).to)
+              }
               onOpen={(categoryId) =>
                 navigate(`/transactions?month=${month}&category=${categoryId}`)
               }

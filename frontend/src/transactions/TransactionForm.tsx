@@ -39,6 +39,8 @@ type TransactionFormProps = {
   initialKind: Kind
   /** Preselected category for a new transaction, e.g. from the main screen. */
   initialCategoryId?: string
+  /** Preselected date for a new transaction (default: today). */
+  initialDate?: string
   members: Member[]
   userId: string
   onDone: () => void
@@ -48,6 +50,7 @@ export function TransactionForm({
   transaction,
   initialKind,
   initialCategoryId,
+  initialDate,
   members,
   userId,
   onDone,
@@ -61,8 +64,10 @@ export function TransactionForm({
   const [categoryId, setCategoryId] = useState<string | null>(
     transaction?.category.id ?? initialCategoryId ?? null,
   )
-  const [date, setDate] = useState(transaction?.occurred_on ?? todayIso())
-  const [status, setStatus] = useState<TransactionStatus>(transaction?.status ?? 'completed')
+  const [date, setDate] = useState(transaction?.occurred_on ?? initialDate ?? todayIso())
+  const [status, setStatus] = useState<TransactionStatus>(
+    () => transaction?.status ?? defaultStatusFor(date),
+  )
   const [statusTouched, setStatusTouched] = useState(Boolean(transaction))
   const [party, setParty] = useState<string | null>(() =>
     transaction ? transaction.party_user_id : lastParty(members, userId),
