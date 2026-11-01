@@ -37,3 +37,14 @@ export function ringItems(categories: Category[], budgetRows: CategoryBudget[]):
       }
     })
 }
+
+/** Returns `ids` with `moved` taken out and put where `target` was. */
+export function moveId(ids: string[], moved: string, target: string): string[] {
+  const from = ids.indexOf(moved)
+  const to = ids.indexOf(target)
+  if (from === -1 || to === -1 || from === to) return ids
+  const result = [...ids]
+  result.splice(from, 1)
+  result.splice(to, 0, moved)
+  return result
+}

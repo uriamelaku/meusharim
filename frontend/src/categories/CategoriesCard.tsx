@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { describeError } from '@/lib/errors'
 import { tr } from '@/lib/i18n'
+import { moveId } from '@/summary/ringItems'
 import {
   type Category,
   KIND_OPTIONS,
@@ -20,13 +21,6 @@ import { CategoryIconBadge } from './CategoryBadge'
 import { CategoryDialog } from './CategoryDialog'
 
 type Editing = { category?: Category } | null
-
-/** Returns `ids` with the item at `index` moved one place up (-1) or down (+1). */
-function moveId(ids: string[], index: number, step: -1 | 1): string[] {
-  const moved = [...ids]
-  ;[moved[index], moved[index + step]] = [moved[index + step], moved[index]]
-  return moved
-}
 
 export function CategoriesCard() {
   const categories = useCategories()
@@ -153,8 +147,8 @@ export function CategoriesCard() {
                         setOrder(
                           moveId(
                             visible.map((c) => c.id),
-                            index,
-                            -1,
+                            category.id,
+                            visible[index - 1].id,
                           ),
                         )
                       }
@@ -173,8 +167,8 @@ export function CategoriesCard() {
                         setOrder(
                           moveId(
                             visible.map((c) => c.id),
-                            index,
-                            1,
+                            category.id,
+                            visible[index + 1].id,
                           ),
                         )
                       }

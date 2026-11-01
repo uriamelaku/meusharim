@@ -1,15 +1,26 @@
-import { ArrowLeft, CalendarCheck, CalendarClock, PieChart, Receipt, Settings } from 'lucide-react'
+import {
+  ArrowLeft,
+  ArrowUpDown,
+  CalendarCheck,
+  CalendarClock,
+  PieChart,
+  Receipt,
+  Settings,
+} from 'lucide-react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { toast } from 'sonner'
 import { useBudget } from '@/budgets/api'
 import { NewMonthBudgetPrompt } from '@/budgets/NewMonthBudgetPrompt'
 import { GoalPaceNotice } from '@/goals/GoalPaceNotice'
-import { useCategories } from '@/categories/api'
+import { type Category, useCategories, useReorderCategories } from '@/categories/api'
 import { PeriodPicker } from '@/components/PeriodPicker'
 import { useShellContext } from '@/components/shellContext'
 import { EmptyState, ErrorState, LoadingState } from '@/components/states'
 import { Button } from '@/components/ui/button'
 import { useSelectedPeriod } from '@/hooks/useSelectedPeriod'
 import { periodRange } from '@/lib/dates'
+import { describeError } from '@/lib/errors'
 import { tr } from '@/lib/i18n'
 import { formatMoney, isNegative } from '@/lib/money'
 import { formatPeriod, monthName, toPeriodParam } from '@/lib/period'
@@ -18,7 +29,7 @@ import { RingTip } from '@/onboarding/RingTip'
 import { type MonthSummary, useMonthSummary } from '@/summary/api'
 import { CategoryRing } from '@/summary/CategoryRing'
 import { MonthlySummaryCard } from '@/summary/MonthlySummaryCard'
-import { ringItems } from '@/summary/ringItems'
+import { moveId, ringItems } from '@/summary/ringItems'
 import { UpcomingRow } from '@/summary/UpcomingRow'
 import { PendingConfirmations } from '@/transactions/PendingConfirmations'
 import { useQuickAdd } from '@/transactions/quickAdd'
@@ -83,6 +94,7 @@ export function OverviewPage() {
             <GoalPaceNotice />
             <SpendingRing
               total={summary.data.expense.actual}
+              categories={categories.data}
               items={ringItems(categories.data, budget.data.categories)}
               emptyTitle={tr({
                 he: `אין הוצאות ב${formatPeriod(period)}`,
@@ -164,17 +176,41 @@ export function OverviewPage() {
 
 function SpendingRing({
   total,
+  categories,
   items,
   emptyTitle,
   onAdd,
   onOpen,
 }: {
   total: string
+  categories: Category[]
   items: ReturnType<typeof ringItems>
   emptyTitle: string
   onAdd: (categoryId: string) => void
   onOpen: (categoryId: string) => void
 }) {
+  /** Category ids in the order being arranged, or null when not arranging. */
+  const [order, setOrder] = useState<string[] | null>(null)
+  const reorder = useReorderCategories()
+
+  function startArranging() {
+    setOrder(categories.filter((c) => c.kind === 'expense' && !c.archived).map((c) => c.id))
+  }
+
+  function saveOrder() {
+    if (!order) return
+    reorder.mutate(
+      { kind: 'expense', ids: order },
+      {
+        onSuccess: () => {
+          toast.success(tr({ he: 'הסדר נשמר', en: 'Order saved' }))
+          setOrder(null)
+        },
+        onError: (error) => toast.error(describeError(error)),
+      },
+    )
+  }
+
   if (!items.length) {
     return (
       <div data-tour="ring">
@@ -189,12 +225,56 @@ function SpendingRing({
       </div>
     )
   }
+  // While arranging, only active categories (deleted ones with spending cannot move).
+  const byId = new Map(items.map((item) => [item.category.id, item]))
+  const shown = order ? order.map((id) => byId.get(id)).filter((item) => item !== undefined) : items
+
   return (
     <>
       <div data-tour="ring">
-        <CategoryRing items={items} total={total} onAdd={onAdd} onOpen={onOpen} />
+        <CategoryRing
+          items={shown}
+          total={total}
+          onAdd={onAdd}
+          onOpen={onOpen}
+          onMove={
+            order
+              ? (moved, target) => setOrder((current) => current && moveId(current, moved, target))
+              : undefined
+          }
+        />
       </div>
-      <RingTip />
+      {order ? (
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-center text-sm text-muted-foreground">
+            {tr({
+              he: 'גררו עיגול למקום שתרצו.',
+              en: 'Drag a circle to where you want it.',
+            })}
+          </p>
+          <div className="flex gap-2">
+            <Button onClick={saveOrder} disabled={reorder.isPending}>
+              {tr({ he: 'שמירה', en: 'Save' })}
+            </Button>
+            <Button variant="outline" onClick={() => setOrder(null)} disabled={reorder.isPending}>
+              {tr({ he: 'ביטול', en: 'Cancel' })}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <RingTip />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="self-center text-muted-foreground"
+            onClick={startArranging}
+          >
+            <ArrowUpDown aria-hidden />
+            {tr({ he: 'סידור העיגולים', en: 'Arrange circles' })}
+          </Button>
+        </>
+      )}
     </>
   )
 }

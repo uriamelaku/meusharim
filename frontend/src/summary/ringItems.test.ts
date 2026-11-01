@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { CategoryBudget } from '@/budgets/api'
 import type { Category } from '@/categories/api'
-import { ringItems } from './ringItems'
+import { moveId, ringItems } from './ringItems'
 
 const category = (id: string, name: string, extra: Partial<Category> = {}): Category => ({
   id,
@@ -49,5 +49,23 @@ describe('ringItems', () => {
   it('carries budget use and over-budget state', () => {
     const [item] = ringItems([food], [row(food, '1100.00', { percent: 110, status: 'over' })])
     expect(item).toMatchObject({ percent: 110, over: true })
+  })
+})
+
+describe('moveId', () => {
+  const ids = ['a', 'b', 'c', 'd']
+
+  it('moves an item forward to the target place', () => {
+    expect(moveId(ids, 'a', 'c')).toEqual(['b', 'c', 'a', 'd'])
+  })
+
+  it('moves an item back to the target place', () => {
+    expect(moveId(ids, 'd', 'b')).toEqual(['a', 'd', 'b', 'c'])
+  })
+
+  it('keeps the order for the same or an unknown id', () => {
+    expect(moveId(ids, 'b', 'b')).toBe(ids)
+    expect(moveId(ids, 'x', 'b')).toBe(ids)
+    expect(moveId(ids, 'b', 'x')).toBe(ids)
   })
 })
