@@ -79,23 +79,30 @@ deployed site can. The service worker caches nothing; it only shows an offline p
   service container, then the full pytest suite.
 - **frontend:** `npm ci`, oxlint, Vitest, then `npm run build` (which typechecks with `tsc -b`).
 
-The workflow holds no secrets. Tests sign their own JWTs and fake the Supabase Auth calls;
-the Supabase URLs and the publishable key in it are placeholders.
+The test jobs hold no secrets. Tests sign their own JWTs and fake the Supabase Auth calls;
+the Supabase URLs and the publishable key in them are placeholders.
 
-Render deploys only commits whose CI passed. Set this on **both** services (backend web
-service and frontend static site):
+**Deploying.** After both test jobs pass on a push to `main`, the `deploy` job triggers both
+Render services through their deploy hooks, at exactly the tested commit (`ref=<sha>`).
+A failed check means nothing is deployed and the previous version keeps running.
 
-1. Service → **Settings** → **Build & Deploy** → **Auto-Deploy** → **After CI Checks Pass**.
-2. Make sure the branch is `main` and the service is connected to the GitHub repository
-   through Render's GitHub app (needed for Render to read the check results).
+Render's own auto-deploy is not used: with a root directory set, it decides only by the
+push's last commit, so a push ending in a docs-only commit deployed nothing even when
+earlier commits in it changed the app. Every green push now redeploys both services,
+including docs-only pushes; that is harmless.
 
-Render then waits for all GitHub checks on the pushed commit: if any fails, that commit is
-not deployed and the previous version keeps running.
+One-time setup:
 
-Each service has a root directory (`backend`, `frontend`), and Render auto-deploys a service
-only when a commit changes files inside it. A commit that touches only `docs/` or `.github/`,
-or an empty commit, deploys nothing; that is expected. A manual deploy (**Manual Deploy**)
-still works and skips the check, so use it only for a commit whose CI is green.
+1. On **each** service: **Settings** → **Build & Deploy** → **Auto-Deploy** → **Off**
+   (otherwise some pushes deploy twice).
+2. On each service: **Settings** → **Deploy Hook** → copy the URL. It is a secret: anyone
+   holding it can trigger deploys.
+3. GitHub → repository **Settings** → **Secrets and variables** → **Actions** → add
+   `RENDER_DEPLOY_HOOK_BACKEND` and `RENDER_DEPLOY_HOOK_FRONTEND` with those URLs.
+
+Without the secrets the `deploy` job fails with a clear error. A manual deploy
+(**Manual Deploy**) still works; use it only for a commit whose CI is green. If a hook URL
+leaks, regenerate it in Render and update the secret.
 
 ## Supabase
 

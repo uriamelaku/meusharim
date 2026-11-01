@@ -75,3 +75,23 @@ jobs:
       - run: npm test
       - name: Typecheck and build
         run: npm run build
+
+  # Render's own auto-deploy only looks at the push's last commit, so a push ending in a
+  # docs-only commit deployed nothing. Instead, every green push to main deploys both
+  # services at exactly the tested commit through their deploy hooks (auto-deploy is off).
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploys
+        env:
+          BACKEND_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}
+          FRONTEND_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}
+        run: |
+          if [ -z "$BACKEND_HOOK" ] || [ -z "$FRONTEND_HOOK" ]; then
+            echo "::error::Missing RENDER_DEPLOY_HOOK_BACKEND / RENDER_DEPLOY_HOOK_FRONTEND secret"
+            exit 1
+          fi
+          curl -fsS -X POST "$BACKEND_HOOK&ref=$GITHUB_SHA" -o /dev/null
+          curl -fsS -X POST "$FRONTEND_HOOK&ref=$GITHUB_SHA" -o /dev/null
