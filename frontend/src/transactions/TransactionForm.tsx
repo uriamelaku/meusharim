@@ -67,7 +67,7 @@ export function TransactionForm({
   const [party, setParty] = useState<string | null>(() =>
     transaction ? transaction.party_user_id : lastParty(members, userId),
   )
-  // Details (date, status, payer, description) start open; they can be collapsed.
+  // Details (date, status, payer) start open; they can be collapsed.
   const [showDetails, setShowDetails] = useState(true)
   // Opened from a category on the main screen: the category is known, so the form
   // starts at the amount. "Change" brings back the full picker.
@@ -182,6 +182,14 @@ export function TransactionForm({
         tone={kind}
       />
 
+      {/* Right under the amount, so it stays above the on-screen keyboard. */}
+      <TextField
+        label={tr({ he: 'תיאור (לא חובה)', en: 'Description (optional)' })}
+        value={description}
+        maxLength={120}
+        onChange={(event) => setDescription(event.target.value)}
+      />
+
       {categories.isPending ? (
         <p className="text-sm text-muted-foreground">
           {tr({ he: 'טוען קטגוריות…', en: 'Loading categories…' })}
@@ -221,7 +229,7 @@ export function TransactionForm({
             <span className="font-semibold">{tr({ he: 'עוד פרטים', en: 'More details' })}</span>
             {!showDetails && (
               <span className="block truncate text-muted-foreground">
-                {detailsSummary(date, status, kind, partyName(party, members), description)}
+                {detailsSummary(date, status, kind, partyName(party, members))}
               </span>
             )}
           </span>
@@ -269,14 +277,6 @@ export function TransactionForm({
             value={party}
             onChange={setParty}
           />
-
-          <TextField
-            label={tr({ he: 'תיאור (לא חובה)', en: 'Description (optional)' })}
-            value={description}
-            maxLength={120}
-            onChange={(event) => setDescription(event.target.value)}
-          />
-
           </div>
         )}
       </div>
@@ -334,14 +334,8 @@ export function TransactionForm({
 }
 
 /** "Today · Paid · Noa": what will be saved while the details are closed. */
-function detailsSummary(
-  date: string,
-  status: TransactionStatus,
-  kind: Kind,
-  party: string,
-  note: string,
-) {
-  return [isValidDate(date) ? formatRelativeDay(date) : '', statusLabel(status, kind), party, note.trim()]
+function detailsSummary(date: string, status: TransactionStatus, kind: Kind, party: string) {
+  return [isValidDate(date) ? formatRelativeDay(date) : '', statusLabel(status, kind), party]
     .filter(Boolean)
     .join(' · ')
 }
