@@ -4,7 +4,7 @@ from psycopg import errors as pg_errors
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 
-from app.categories.schemas import Category, CategoryCreate, CategoryUpdate
+from app.categories.schemas import Category, CategoryCreate, CategoryOrder, CategoryUpdate
 from app.errors import AppError, NotFoundError
 from app.scope import HouseholdScope
 
@@ -19,7 +19,9 @@ def _is_unique_violation(error: DBAPIError) -> bool:
 
 
 def list_categories(scope: HouseholdScope) -> list[Category]:
-    rows = scope.session.execute(text(f"{SELECT_CATEGORY} ORDER BY kind, created_at, name")).all()
+    rows = scope.session.execute(
+        text(f"{SELECT_CATEGORY} ORDER BY kind, position, created_at, name")
+    ).all()
     return [Category.model_validate(row, from_attributes=True) for row in rows]
 
 
@@ -36,8 +38,10 @@ def create_category(scope: HouseholdScope, body: CategoryCreate) -> Category:
     try:
         category_id = scope.session.execute(
             text(
-                "INSERT INTO categories (household_id, kind, name, color, icon)"
-                " VALUES (:household_id, :kind, :name, :color, :icon) RETURNING id"
+                "INSERT INTO categories (household_id, kind, name, color, icon, position)"
+                " SELECT :household_id, :kind, :name, :color, :icon,"
+                " coalesce(max(position) + 1, 0) FROM categories WHERE kind = :kind"
+                " RETURNING id"
             ),
             {"household_id": scope.household_id, **body.model_dump()},
         ).scalar_one()
@@ -67,6 +71,21 @@ def update_category(scope: HouseholdScope, category_id: UUID, body: CategoryUpda
         if updated is None:
             raise NotFoundError("category_not_found")
     return get_category(scope, category_id)
+
+
+def reorder_categories(scope: HouseholdScope, body: CategoryOrder) -> list[Category]:
+    """Sets the order of a kind's active categories; `ids` must list each of them once."""
+    active = scope.session.execute(
+        text("SELECT id FROM categories WHERE kind = :kind AND archived_at IS NULL"),
+        {"kind": body.kind},
+    ).scalars()
+    if len(set(body.ids)) != len(body.ids) or set(body.ids) != set(active):
+        raise AppError("category_order_mismatch")
+    scope.session.execute(
+        text("UPDATE categories SET position = :position WHERE id = :id"),
+        [{"id": category_id, "position": index} for index, category_id in enumerate(body.ids)],
+    )
+    return list_categories(scope)
 
 
 def delete_category(scope: HouseholdScope, category_id: UUID) -> str:

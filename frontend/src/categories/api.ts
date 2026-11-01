@@ -45,3 +45,11 @@ export function useDeleteCategory() {
     method: 'DELETE',
   }))
 }
+
+export function useReorderCategories() {
+  return useDataMutation<Category[], { kind: Kind; ids: string[] }>((body) => ({
+    path: '/api/categories/order',
+    method: 'PUT',
+    body,
+  }))
+}

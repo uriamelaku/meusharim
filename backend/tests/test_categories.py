@@ -163,3 +163,89 @@ def test_kind_and_household_cannot_be_updated(couple, column):
     with pytest.raises(DBAPIError) as error, user_transaction(owner.id) as session:
         session.execute(text(f"UPDATE categories SET {column}"))
     assert isinstance(error.value.orig, pg_errors.InsufficientPrivilege)
+
+
+def expense_ids(partner: Partner) -> list[str]:
+    categories = partner.ok("get", "/api/categories")
+    return [c["id"] for c in categories if c["kind"] == "expense" and not c["archived"]]
+
+
+def test_new_category_goes_to_the_end(couple):
+    owner, _ = couple
+    created = new_category(owner).json()
+
+    assert expense_ids(owner)[-1] == created["id"]
+
+
+def test_partners_see_the_order_one_of_them_chose(couple):
+    owner, partner = couple
+    reordered = list(reversed(expense_ids(owner)))
+
+    response = owner.put("/api/categories/order", {"kind": "expense", "ids": reordered})
+
+    assert response.status_code == 200
+    assert [c["id"] for c in response.json() if c["kind"] == "expense"] == reordered
+    assert expense_ids(partner) == reordered
+    created = new_category(partner).json()
+    assert expense_ids(owner) == [*reordered, created["id"]]
+
+
+def test_reorder_keeps_income_order(couple):
+    owner, _ = couple
+    income_before = [c["id"] for c in owner.ok("get", "/api/categories") if c["kind"] == "income"]
+
+    owner.ok("put", "/api/categories/order", {"kind": "expense", "ids": expense_ids(owner)[::-1]})
+
+    income_after = [c["id"] for c in owner.ok("get", "/api/categories") if c["kind"] == "income"]
+    assert income_after == income_before
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        lambda ids: ids[1:],  # one missing
+        lambda ids: [*ids, ids[0]],  # one twice
+        lambda ids: [*ids[1:], str(uuid4())],  # unknown id
+    ],
+)
+def test_reorder_must_list_each_active_category_once(couple, change):
+    owner, _ = couple
+    before = expense_ids(owner)
+
+    response = owner.put("/api/categories/order", {"kind": "expense", "ids": change(before)})
+
+    assert response.status_code == 409
+    assert response.json() == {"detail": "category_order_mismatch"}
+    assert expense_ids(owner) == before
+
+
+def test_reorder_rejects_ids_of_the_other_kind_or_archived(couple):
+    owner, _ = couple
+    ids = expense_ids(owner)
+    salary = owner.category_id("משכורת")
+    assert (
+        owner.put(
+            "/api/categories/order", {"kind": "expense", "ids": [*ids[1:], salary]}
+        ).status_code
+        == 409
+    )
+
+    used = new_category(owner).json()["id"]
+    owner.ok("post", "/api/transactions", {
+        "kind": "expense", "amount": "10.00", "category_id": used, "occurred_on": "2026-10-01",
+        "status": "completed",
+    })  # fmt: skip
+    assert owner.ok("delete", f"/api/categories/{used}")["result"] == "archived"
+    assert owner.put("/api/categories/order", {"kind": "expense", "ids": ids}).status_code == 200
+
+
+def test_cannot_reorder_another_households_categories(couple):
+    owner, _ = couple
+    before = expense_ids(owner)
+    stranger = Partner()
+    assert stranger.create_household().status_code == 201
+
+    response = stranger.put("/api/categories/order", {"kind": "expense", "ids": before[::-1]})
+
+    assert response.status_code == 409
+    assert expense_ids(owner) == before

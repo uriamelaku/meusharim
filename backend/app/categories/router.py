@@ -3,7 +3,13 @@ from uuid import UUID
 from fastapi import APIRouter, status
 
 from app.categories import service
-from app.categories.schemas import Category, CategoryCreate, CategoryDeleted, CategoryUpdate
+from app.categories.schemas import (
+    Category,
+    CategoryCreate,
+    CategoryDeleted,
+    CategoryOrder,
+    CategoryUpdate,
+)
 from app.scope import Scope
 
 router = APIRouter(prefix="/api/categories", tags=["categories"])
@@ -17,6 +23,11 @@ def list_categories(scope: Scope) -> list[Category]:
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_category(body: CategoryCreate, scope: Scope) -> Category:
     return service.create_category(scope, body)
+
+
+@router.put("/order")
+def reorder_categories(body: CategoryOrder, scope: Scope) -> list[Category]:
+    return service.reorder_categories(scope, body)
 
 
 @router.patch("/{category_id}")

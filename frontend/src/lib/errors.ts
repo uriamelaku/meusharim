@@ -14,6 +14,10 @@ const messages: Record<string, { he: string; en: string }> = {
     he: 'הקטגוריה הזו נמחקה. צריך לבחור קטגוריה אחרת.',
     en: 'This category was deleted. Please choose another one.',
   },
+  category_order_mismatch: {
+    he: 'הקטגוריות השתנו בינתיים. נסו לסדר שוב.',
+    en: 'The categories changed in the meantime. Please try again.',
+  },
   category_kind_mismatch: {
     he: 'הקטגוריה לא מתאימה (הוצאה או הכנסה).',
     en: 'This category does not match (expense or income).',

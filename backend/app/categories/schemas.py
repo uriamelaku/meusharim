@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, StringConstraints
+from pydantic import BaseModel, Field, StringConstraints
 
 Kind = Literal["income", "expense"]
 
@@ -34,6 +34,11 @@ class CategoryUpdate(BaseModel):
     name: CategoryName | None = None
     color: CategoryColor | None = None
     icon: CategoryIcon | None = None
+
+
+class CategoryOrder(BaseModel):
+    kind: Kind
+    ids: list[UUID] = Field(max_length=200)
 
 
 class Category(BaseModel):
