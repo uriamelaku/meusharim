@@ -13,8 +13,9 @@ export type RingItem = {
 }
 
 /**
- * Every active expense category, with this month's spending and budget use, biggest
- * spending first. Categories deleted since still appear while they have spending.
+ * Every active expense category, with this month's spending and budget use, in the
+ * categories' own order so each bubble keeps its place from month to month. Categories
+ * deleted since still appear, at the end, while they have spending.
  */
 export function ringItems(categories: Category[], budgetRows: CategoryBudget[]): RingItem[] {
   const rows = new Map(budgetRows.map((row) => [row.category.id, row]))
@@ -35,5 +36,4 @@ export function ringItems(categories: Category[], budgetRows: CategoryBudget[]):
         over: row?.status === 'over',
       }
     })
-    .sort((a, b) => Number(b.actual) - Number(a.actual) || a.category.name.localeCompare(b.category.name, 'he'))
 }

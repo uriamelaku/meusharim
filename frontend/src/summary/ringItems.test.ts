@@ -31,18 +31,18 @@ describe('ringItems', () => {
   const salary = category('4', 'משכורת', { kind: 'income' })
   const oldGym = category('5', 'כושר', { archived: true })
 
-  it('lists active expense categories, biggest spending first, idle ones as zero', () => {
+  it('lists active expense categories in their own order, idle ones as zero', () => {
     const items = ringItems([food, rent, kids, salary], [row(food, '120.50'), row(rent, '4200.00')])
     expect(items.map((i) => [i.category.name, i.actual])).toEqual([
-      ['דיור', '4200.00'],
       ['מזון', '120.50'],
+      ['דיור', '4200.00'],
       ['ילדים', '0.00'],
     ])
   })
 
   it('keeps a deleted category while it has spending this month', () => {
     const items = ringItems([food], [row(oldGym, '90.00')])
-    expect(items.map((i) => i.category.name)).toEqual(['כושר', 'מזון'])
+    expect(items.map((i) => i.category.name)).toEqual(['מזון', 'כושר'])
     expect(ringItems([food, oldGym], []).map((i) => i.category.name)).toEqual(['מזון'])
   })
 
